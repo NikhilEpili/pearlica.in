@@ -1,0 +1,382 @@
+/**
+ * Profile page — Pearlica luxury design system
+ * Single-column form with clear sections. Inputs: 1px border, slight radius (tokens).
+ * --font-editorial: assets/css/tokens.css (Cormorant linked in components/head.php)
+ */
+
+.profile-page main,
+.profile-main {
+	background: var(--white);
+}
+
+.profile-wrap {
+	padding-top: 40px;
+	padding-bottom: 80px;
+}
+@media (max-width: 767px) {
+	.profile-wrap {
+		padding-left: 20px;
+		padding-right: 20px;
+		padding-top: 24px;
+		padding-bottom: 60px;
+	}
+}
+
+.page-content-constrained.profile-wrap {
+	max-width: var(--layout-content-max);
+	margin-left: auto;
+	margin-right: auto;
+	width: 100%;
+	padding-left: 56px;
+	padding-right: 56px;
+}
+@media (max-width: 767px) {
+	.page-content-constrained.profile-wrap {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+}
+
+/* ---------- fadeUp ---------- */
+@keyframes profileFadeUp {
+	from {
+		opacity: 0;
+		transform: translateY(18px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+.profile-fade-up {
+	opacity: 0;
+	animation: profileFadeUp 0.6s ease-out forwards;
+}
+.profile-form-block.profile-fade-up:nth-of-type(1) { animation-delay: 0.05s; }
+.profile-form-block.profile-fade-up:nth-of-type(2) { animation-delay: 0.12s; }
+.profile-form-actions.profile-fade-up { animation-delay: 0.18s; }
+
+/* ---------- Content: breadcrumb, label, title, rule ---------- */
+.profile-breadcrumb-wrap {
+	margin-bottom: 16px;
+}
+.profile-breadcrumb {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0 8px;
+	font-family: var(--font-body);
+	font-size: 11px;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+}
+.profile-breadcrumb-item a {
+	color: var(--text-muted);
+	text-decoration: none;
+}
+.profile-breadcrumb-item a:hover {
+	color: var(--black);
+}
+.profile-breadcrumb-item.active {
+	color: var(--black);
+}
+.profile-breadcrumb-item:not(:last-child)::after {
+	content: " / ";
+	margin-left: 4px;
+	color: var(--text-muted);
+}
+.profile-content-label {
+	font-family: var(--font-body);
+	font-size: var(--font-size-label);
+	font-weight: var(--font-weight-normal);
+	letter-spacing: var(--letter-spacing-section-label);
+	text-transform: uppercase;
+	color: var(--text-muted);
+	margin: 0 0 8px;
+}
+.profile-content-title {
+	font-family: var(--font-editorial);
+	font-size: 36px;
+	font-weight: var(--font-weight-normal);
+	color: var(--text-main);
+	margin: 0 0 var(--space-2xl);
+	letter-spacing: 0.02em;
+}
+@media (max-width: 767px) {
+	.profile-content-title {
+		margin-bottom: var(--space-xl);
+	}
+}
+/* Optional rule under page title (orders, order detail) */
+.profile-content-rule {
+	border: none;
+	height: 1px;
+	background: var(--border);
+	margin: var(--space-xl) 0 var(--space-lg);
+}
+
+/* ---------- Alerts ---------- */
+.profile-alert {
+	border: none;
+	border-radius: 0;
+	border-left: 4px solid currentColor;
+	font-family: var(--font-body);
+	padding: 12px 16px;
+	margin-bottom: 20px;
+}
+.profile-alert-success {
+	background: var(--off-white);
+	color: var(--text-main);
+	border-left-color: var(--black);
+}
+.profile-alert-danger {
+	background: var(--off-white);
+	color: var(--text-main);
+	border-left-color: var(--text-muted);
+}
+
+/* ---------- Form blocks ---------- */
+.profile-form-block {
+	margin-bottom: 40px;
+}
+.profile-form-block-label {
+	font-family: var(--font-body);
+	font-size: 10px;
+	font-weight: 400;
+	letter-spacing: 0.3em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+	margin: 0 0 20px;
+	padding-bottom: 0;
+}
+.profile-form-grid {
+	display: grid;
+	gap: 0 32px;
+}
+.profile-form-grid > .profile-field {
+	min-width: 0;
+}
+.profile-form-grid-2 {
+	grid-template-columns: 1fr 1fr;
+}
+.profile-form-grid-3 {
+	grid-template-columns: 1fr 1fr 140px;
+}
+@media (max-width: 767px) {
+	.profile-form-grid-2,
+	.profile-form-grid-3 {
+		grid-template-columns: 1fr;
+	}
+}
+.profile-form-fields {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+}
+.profile-form-fields .profile-field-full {
+	margin-bottom: 20px;
+}
+.profile-form-fields .profile-form-grid {
+	margin-top: 0;
+}
+
+/* ---------- Fields ---------- */
+.profile-field {
+	margin-bottom: 20px;
+}
+.profile-field-full {
+	grid-column: 1 / -1;
+}
+.profile-field-label {
+	display: block;
+	font-family: var(--font-body);
+	font-size: 10px;
+	font-weight: 400;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+	margin-bottom: 8px;
+}
+.profile-input {
+	display: block;
+	width: 100%;
+	font-family: var(--font-body);
+	font-size: 14px;
+	color: var(--text-main);
+	background: var(--white);
+	border: 1px solid var(--border);
+	border-radius: var(--pearlica-input-radius);
+	padding: 0.65rem 0.9rem;
+	box-sizing: border-box;
+	transition: border-color 0.2s ease;
+}
+/* Selects: boxed like inputs; extra right padding for chevron from style.css ::after on .profile-select-wrap */
+.profile-form .profile-select-wrap {
+	position: relative;
+	width: 100%;
+	min-width: 0;
+}
+.profile-form .profile-select-wrap::after {
+	right: 0.85rem;
+}
+.profile-form .profile-select-wrap .profile-select {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+	cursor: pointer;
+	font-family: var(--font-body);
+	font-size: 14px;
+	line-height: 1.4;
+	color: var(--text-main);
+	background-color: var(--white);
+	border: 1px solid var(--border);
+	border-radius: var(--pearlica-input-radius);
+	padding: 0.65rem 2.4rem 0.65rem 0.9rem;
+	min-height: calc(1.3em + 1.3rem);
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+@media (max-width: 767px) {
+	.profile-form .profile-select-wrap .profile-select {
+		font-size: 16px;
+	}
+}
+.profile-input:hover,
+.profile-form .profile-select-wrap .profile-select:hover {
+	border-color: var(--silver-dark);
+}
+.profile-input:focus,
+.profile-form .profile-select-wrap .profile-select:focus {
+	outline: none;
+	border-color: var(--black);
+	box-shadow: none;
+}
+.profile-form .profile-select-wrap .profile-select:focus-visible {
+	outline: 2px solid var(--black);
+	outline-offset: 2px;
+}
+.profile-input::placeholder {
+	color: var(--text-muted);
+	opacity: 1;
+}
+.profile-input-disabled {
+	opacity: 0.65;
+	cursor: not-allowed;
+	background: var(--off-white);
+	border-color: var(--silver-light);
+}
+/* Keep the date picker hit-target inside this input only.
+   Without position:relative, an absolute calendar indicator can cover sibling fields
+   (e.g. Full Name), making clicks open the DOB calendar instead. */
+.profile-input-date {
+	position: relative;
+	-webkit-appearance: none;
+	appearance: none;
+}
+.profile-input-date::-webkit-calendar-picker-indicator {
+	opacity: 0.55;
+	cursor: pointer;
+	position: static;
+	width: 1.25rem;
+	height: 1.25rem;
+}
+.profile-field-note {
+	display: block;
+	font-family: var(--font-body);
+	font-size: 11px;
+	font-style: italic;
+	color: var(--text-muted);
+	margin-top: 6px;
+}
+
+/* ---------- Save button ---------- */
+.profile-form-actions {
+	margin-top: 8px;
+}
+.profile-btn-save {
+	width: auto;
+	min-width: 180px;
+	background: var(--black);
+	color: var(--white);
+	border: none;
+	border-radius: 0;
+	padding: 16px 32px;
+	font-family: var(--font-body);
+	font-size: 11px;
+	font-weight: 400;
+	letter-spacing: 0.28em;
+	text-transform: uppercase;
+	cursor: pointer;
+	position: relative;
+	overflow: hidden;
+	transition: color 0.25s ease;
+}
+.profile-btn-save::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+	transform: scaleX(0);
+	transform-origin: left;
+	transition: transform 0.5s ease;
+	pointer-events: none;
+}
+.profile-btn-save:hover::after {
+	transform: scaleX(1);
+}
+.profile-btn-save:hover {
+	color: var(--white);
+}
+
+/* Contact page: keep shared form styles if contact uses same classes */
+.contact-section .section-title {
+	font-family: var(--font-heading);
+	color: var(--text-main);
+	font-weight: 400;
+}
+.contact-section .section-label {
+	font-family: var(--font-body);
+	font-size: 10px;
+	letter-spacing: 0.3em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+}
+.contact-form .form-label {
+	font-family: var(--font-body);
+	font-weight: 500;
+	color: var(--text-main);
+}
+.contact-form .form-control,
+.contact-form .form-select {
+	font-family: var(--font-body);
+	border: 1px solid var(--border);
+	border-radius: var(--pearlica-input-radius);
+	background: var(--white);
+	padding: 0.65rem 0.9rem;
+}
+.contact-form .btn-save {
+	font-family: var(--font-body);
+	font-size: 11px;
+	letter-spacing: 0.28em;
+	text-transform: uppercase;
+	padding: 18px 28px;
+	border: none;
+	border-radius: 0;
+	background: var(--black);
+	color: var(--white);
+	cursor: pointer;
+}
+.contact-section .alert {
+	border: none;
+	border-radius: 0;
+	border-left: 4px solid currentColor;
+	font-family: var(--font-body);
+}

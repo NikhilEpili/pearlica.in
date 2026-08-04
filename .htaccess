@@ -1,0 +1,58 @@
+# Enable URL rewriting
+RewriteEngine On
+
+# Absolute error document (leading /). Relative "404.php" breaks under nested
+# paths like /uploads/products/.../image.jpg on Apache/LiteSpeed.
+ErrorDocument 404 /404.php
+
+# Maintenance gate (disabled): uncomment the blocks below to show maintenance on production.
+# Admin -> `admin/maintenance.php`, storefront -> `maintenance.php`.
+#
+# # --- Admin maintenance ---
+# RewriteCond %{HTTP_HOST} !^localhost(:[0-9]+)?$ [NC]
+# RewriteCond %{HTTP_HOST} !^127\.0\.0\.1(:[0-9]+)?$ [NC]
+# RewriteCond %{HTTP_HOST} !^.+\.local(:[0-9]+)?$ [NC]
+# RewriteCond %{HTTP_HOST} !^.+\.test(:[0-9]+)?$ [NC]
+# RewriteCond %{REQUEST_URI} ^.*/admin(/|$) [NC]
+# RewriteCond %{REQUEST_URI} !\.(css|js|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|eot|otf|map|txt|xml|json|pdf|mp4|webm|ogg)$ [NC]
+# RewriteCond %{REQUEST_URI} !maintenance\.php$ [NC]
+# RewriteRule ^.*$ admin/maintenance.php [L]
+#
+# # --- Storefront maintenance ---
+# RewriteCond %{HTTP_HOST} !^localhost(:[0-9]+)?$ [NC]
+# RewriteCond %{HTTP_HOST} !^127\.0\.0\.1(:[0-9]+)?$ [NC]
+# RewriteCond %{HTTP_HOST} !^.+\.local(:[0-9]+)?$ [NC]
+# RewriteCond %{HTTP_HOST} !^.+\.test(:[0-9]+)?$ [NC]
+# RewriteCond %{REQUEST_URI} !^.*\/admin(/|$) [NC]
+# RewriteCond %{REQUEST_URI} !\.(css|js|png|jpe?g|gif|svg|webp|ico|woff2?|ttf|eot|otf|map|txt|xml|json|pdf|mp4|webm|ogg)$ [NC]
+# RewriteCond %{REQUEST_URI} !maintenance\.php$ [NC]
+# RewriteRule ^.*$ maintenance.php [L]
+
+# Existing upload files: serve statically, do not apply later rewrite rules.
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^uploads/(products|collections|banners)/ - [L]
+
+# Local clone only: missing uploads → production (before PHP media gateway).
+RewriteCond %{HTTP_HOST} ^(localhost|127\.0\.0\.1)(:[0-9]+)?$ [NC,OR]
+RewriteCond %{HTTP_HOST} ^.+\.(local|test|localhost)(:[0-9]+)?$ [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^uploads/(products|collections|banners)/(.*)$ https://www.pearlica.in/uploads/$1/$2 [R=302,L]
+
+# Production / other hosts: missing static file → stream via PHP from BASE_PATH.
+# Keeps public URLs as /uploads/... while surviving rewrite / path quirks.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^uploads/(products|collections|banners)/(.*)$ media.php?bucket=$1&path=$2 [L,QSA]
+
+# Blog single article (JSON feed / Custom Interface): /blogs/{slug} -> blogs/post.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^blogs/(?!index$|rss$)([A-Za-z0-9][A-Za-z0-9_-]*)/?$ blogs/post.php?slug=$1 [L,QSA]
+
+# Check if the request is not a directory
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Check if the .php version of the file exists
+RewriteCond %{REQUEST_FILENAME}.php -f
+
+# Rewrite to the .php file
+RewriteRule ^(.*)$ $1.php [L]

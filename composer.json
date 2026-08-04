@@ -1,0 +1,6 @@
+{
+    "require": {
+        "picqer/php-barcode-generator": "^2",
+        "endroid/qr-code": "^4"
+    }
+}

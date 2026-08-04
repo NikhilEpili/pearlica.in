@@ -1,0 +1,684 @@
+/*
+ * Admin panel styling.
+ * Typography is restricted to Helvetica across admin screens.
+ */
+
+/* Site variables and typography */
+body.admin-body {
+	--body-font: "Helvetica", "Helvetica Neue", Arial, sans-serif;
+	--heading-font: var(--body-font);
+	--bs-primary: #8C907E;
+	--bs-primary-hover: #5e624e;
+	--bs-black: #111;
+	--bs-light: #F1F1F0;
+	--bs-body-color: #51565b;
+	--bs-body-bg: #F8F8F7;
+	--bs-border-color: #e9e9e8;
+	--bs-card-bg: #fff;
+	margin: 0;
+	min-height: 100vh;
+	background: var(--bs-body-bg);
+	font-family: var(--body-font);
+	font-size: 1rem;
+	color: var(--bs-body-color);
+	letter-spacing: 0.02em;
+}
+
+body.admin-body h1, body.admin-body .h1,
+body.admin-body h2, body.admin-body .h2,
+body.admin-body h3, body.admin-body .h3,
+body.admin-body h4, body.admin-body .h4,
+body.admin-body h5, body.admin-body .h5,
+body.admin-body h6, body.admin-body .h6 {
+	font-family: var(--heading-font);
+	font-weight: 400;
+	color: var(--bs-black);
+	line-height: 1.3;
+}
+
+/* Navbar – light like frontend, sage accent */
+.admin-navbar {
+	background: var(--bs-card-bg) !important;
+	border-bottom: 1px solid var(--bs-border-color);
+	font-family: var(--body-font);
+	text-transform: uppercase;
+	font-size: 0.85rem;
+	letter-spacing: 0.08em;
+	padding: 0.75rem 1rem;
+}
+
+.admin-navbar .navbar-brand {
+	font-family: var(--heading-font);
+	color: var(--bs-black) !important;
+	font-weight: 400;
+	font-size: 1.25rem;
+}
+
+.admin-navbar .nav-link {
+	color: var(--bs-black) !important;
+	padding: 0.5rem 0.75rem !important;
+	font-weight: 700;
+}
+
+.admin-navbar .nav-link:hover,
+.admin-navbar .nav-link:focus {
+	color: var(--bs-primary) !important;
+}
+
+.admin-navbar .navbar-text {
+	color: var(--bs-body-color) !important;
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.admin-navbar .btn-logout {
+	background: var(--bs-black);
+	color: #fff !important;
+	border: none;
+	border-radius: 0;
+	padding: 0.4rem 0.9rem;
+	font-size: 0.75rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.admin-navbar .btn-logout:hover {
+	background: var(--bs-primary);
+	color: #fff !important;
+}
+
+/* Wrapper: sidebar + main */
+.admin-wrapper {
+	display: flex;
+	min-height: 100vh;
+}
+
+/* Sidebar – collapsible */
+.admin-sidebar {
+	width: 280px;
+	min-width: 280px;
+	background: var(--bs-card-bg);
+	border-right: 1px solid var(--bs-border-color);
+	display: flex;
+	flex-direction: column;
+	transition: width 0.2s ease, min-width 0.2s ease;
+	flex-shrink: 0;
+	position: relative;
+}
+
+.admin-sidebar.collapsed {
+	width: 72px;
+	min-width: 72px;
+}
+
+.admin-sidebar-toggle {
+	position: absolute;
+	top: 0.75rem;
+	right: 0.5rem;
+	width: 32px;
+	height: 32px;
+	border: 1px solid var(--bs-border-color);
+	background: var(--bs-light);
+	color: var(--bs-body-color);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 0;
+	transition: background 0.15s, color 0.15s;
+}
+
+.admin-sidebar-toggle:hover {
+	background: var(--bs-primary);
+	color: #fff;
+	border-color: var(--bs-primary);
+}
+
+.admin-sidebar .sidebar-chevron {
+	transition: transform 0.2s ease;
+}
+
+.admin-sidebar-nav {
+	display: flex;
+	flex-direction: column;
+	padding: 3rem 0 1rem 0.5rem;
+	gap: 0.25rem;
+}
+
+.admin-sidebar-section-label {
+	padding: 0.55rem 0.75rem 0.35rem;
+	margin-top: 0.4rem;
+	font-size: 0.68rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: #8a8f95;
+}
+
+.admin-sidebar-link {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.6rem 0.75rem;
+	color: var(--bs-body-color);
+	text-decoration: none;
+	font-size: 0.9rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	transition: background 0.15s, color 0.15s;
+	border-left: 3px solid transparent;
+}
+
+.admin-sidebar-link:hover {
+	background: var(--bs-light);
+	color: var(--bs-primary);
+}
+
+.admin-sidebar-link .sidebar-icon {
+	flex-shrink: 0;
+	width: 1.75rem;
+	text-align: center;
+	font-size: 0.9rem;
+	opacity: 0.9;
+}
+
+.admin-sidebar-link .sidebar-icon i {
+	font-size: 1rem;
+}
+
+.admin-sidebar-link .sidebar-text {
+	white-space: nowrap;
+	overflow: hidden;
+	transition: opacity 0.2s ease;
+}
+
+.admin-sidebar.collapsed .sidebar-text {
+	opacity: 0;
+	width: 0;
+	overflow: hidden;
+	padding: 0;
+}
+
+.admin-sidebar.collapsed .admin-sidebar-section-label {
+	display: none;
+}
+
+.admin-sidebar.collapsed .admin-sidebar-link {
+	justify-content: center;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
+}
+
+.admin-sidebar.collapsed .admin-sidebar-toggle {
+	right: 50%;
+	transform: translateX(50%);
+}
+
+/* Main content area (next to sidebar) */
+.admin-main {
+	flex: 1;
+	min-width: 0;
+	overflow-x: auto;
+}
+
+/* Main content */
+.admin-content {
+	min-height: calc(100vh - 60px);
+	padding: 1.5rem 0 2rem;
+}
+
+.admin-content .container-fluid {
+	max-width: 1400px;
+}
+
+/* Page title */
+.admin-content .page-title {
+	font-family: var(--heading-font);
+	font-size: 1.5rem;
+	margin-bottom: 1.25rem;
+	color: var(--bs-black);
+	letter-spacing: 0.02em;
+}
+
+/* Cards – clean, light, subtle border */
+.admin-content .card {
+	border: 1px solid var(--bs-border-color);
+	border-radius: 0;
+	background: var(--bs-card-bg);
+	box-shadow: none;
+}
+
+.admin-content .card-header {
+	background: var(--bs-light);
+	border-bottom: 1px solid var(--bs-border-color);
+	font-family: var(--heading-font);
+	font-size: 1rem;
+	font-weight: 400;
+	color: var(--bs-black);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 0.75rem 1rem;
+}
+
+.admin-content .card-body {
+	padding: 1.25rem;
+}
+
+/* Buttons – match site (square, primary = sage) */
+.admin-content .btn {
+	border-radius: 0;
+	font-family: var(--body-font);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	font-size: 0.8rem;
+}
+
+.admin-content .btn-primary {
+	background: var(--bs-primary);
+	border-color: var(--bs-primary);
+	color: #fff;
+}
+
+.admin-content .btn-primary:hover {
+	background: var(--bs-primary-hover);
+	border-color: var(--bs-primary-hover);
+	color: #fff;
+}
+
+.admin-content .btn-outline-primary {
+	background: var(--bs-primary);
+	border-color: var(--bs-primary);
+	color: #fff;
+}
+
+.admin-content .btn-outline-primary:hover {
+	background: var(--bs-primary-hover);
+	border-color: var(--bs-primary-hover);
+	color: #fff;
+}
+
+.admin-content .btn-secondary {
+	background: #6c757d;
+	border-color: #6c757d;
+	color: #fff;
+}
+
+.admin-content .btn-outline-secondary {
+	background: #6c757d;
+	border-color: #6c757d;
+	color: #fff;
+}
+
+.admin-content .btn-outline-secondary:hover {
+	background: #5c636a;
+	border-color: #565e64;
+	color: #fff;
+}
+
+.admin-content .btn-danger {
+	background: #c45c5c;
+	border-color: #c45c5c;
+}
+
+.admin-content .btn-outline-danger {
+	background: #c45c5c;
+	border-color: #c45c5c;
+	color: #fff;
+}
+
+.admin-content .btn-outline-danger:hover {
+	background: #b14f4f;
+	border-color: #a94b4b;
+	color: #fff;
+}
+
+.admin-content .btn-outline-dark {
+	background: #212529;
+	border-color: #212529;
+	color: #fff;
+}
+
+.admin-content .btn-outline-dark:hover {
+	background: #1a1e21;
+	border-color: #161a1d;
+	color: #fff;
+}
+
+/* Forms */
+.admin-content .form-label {
+	font-weight: 500;
+	color: var(--bs-black);
+	font-size: 0.9rem;
+}
+
+.admin-content .form-control,
+.admin-content .form-select {
+	border-radius: 0;
+	border-color: var(--bs-border-color);
+	font-family: var(--body-font);
+}
+
+.admin-content .form-control:focus,
+.admin-content .form-select:focus {
+	border-color: var(--bs-primary);
+	box-shadow: 0 0 0 0.2rem rgba(140, 144, 126, 0.2);
+}
+
+/* Tables */
+.admin-content .table {
+	font-family: var(--body-font);
+	color: var(--bs-body-color);
+}
+
+.admin-content .table thead th {
+	font-family: var(--heading-font);
+	font-weight: 400;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	font-size: 0.8rem;
+	color: var(--bs-black);
+	border-bottom: 1px solid var(--bs-border-color);
+	padding: 0.75rem 1rem;
+	background: var(--bs-light);
+}
+
+.admin-content .table tbody td {
+	padding: 0.75rem 1rem;
+	border-color: var(--bs-border-color);
+	vertical-align: middle;
+}
+
+.admin-content .table-hover tbody tr:hover {
+	background: rgba(140, 144, 126, 0.06);
+}
+
+/* Alerts */
+.admin-content .alert {
+	border-radius: 0;
+	border: 1px solid transparent;
+}
+
+.admin-content .alert-success {
+	background: rgba(140, 144, 126, 0.15);
+	border-color: var(--bs-primary);
+	color: var(--bs-primary-hover);
+}
+
+.admin-content .alert-danger {
+	background: #fde8e8;
+	border-color: #c45c5c;
+	color: #8b3a3a;
+}
+
+.admin-content .alert-warning {
+	background: #fff8e6;
+	border-color: #d4a84b;
+	color: #7a5f20;
+}
+
+/* Pagination */
+.admin-content .pagination .page-link {
+	border-radius: 0;
+	border-color: var(--bs-border-color);
+	color: var(--bs-black);
+}
+
+.admin-content .pagination .page-item.active .page-link {
+	background: var(--bs-black);
+	border-color: var(--bs-black);
+	color: #fff;
+}
+
+.admin-content .pagination .page-link:hover {
+	background: var(--bs-light);
+	border-color: var(--bs-border-color);
+	color: var(--bs-black);
+}
+
+/* Modals */
+.admin-content .modal-content {
+	border-radius: 0;
+	border: 1px solid var(--bs-border-color);
+}
+
+.admin-content .modal-header {
+	background: var(--bs-light);
+	border-bottom: 1px solid var(--bs-border-color);
+	font-family: var(--heading-font);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.admin-content .modal-footer {
+	border-top: 1px solid var(--bs-border-color);
+}
+
+/* Footer */
+.admin-footer {
+	background: var(--bs-card-bg);
+	border-top: 1px solid var(--bs-border-color);
+	padding: 1rem 0;
+	font-size: 0.8rem;
+	color: var(--bs-body-color);
+	font-family: var(--body-font);
+}
+
+.admin-footer a {
+	color: var(--bs-primary);
+}
+
+/* Small helpers */
+.admin-content .text-muted {
+	color: var(--bs-body-color) !important;
+}
+
+.admin-content small.text-muted {
+	font-size: 0.8rem;
+}
+
+/* Login page */
+body.admin-body.admin-login-page {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+	padding: 1rem;
+}
+
+.admin-login-page .login-card {
+	border: 1px solid var(--bs-border-color);
+	border-radius: 0;
+	background: var(--bs-card-bg);
+	max-width: 400px;
+	width: 100%;
+}
+
+.admin-login-page .login-card .card-title {
+	font-family: var(--heading-font);
+	color: var(--bs-black);
+	font-size: 1.35rem;
+	letter-spacing: 0.02em;
+	margin-bottom: 1.25rem;
+}
+
+.admin-login-page .btn-primary {
+	width: 100%;
+	background: var(--bs-primary);
+	border-color: var(--bs-primary);
+	border-radius: 0;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: 0.6rem;
+}
+
+.admin-login-page .btn-primary:hover {
+	background: var(--bs-primary-hover);
+	border-color: var(--bs-primary-hover);
+	color: #fff;
+}
+
+/* Dashboard stat cards */
+.admin-content .stat-card .card-body {
+	padding: 1.25rem;
+}
+
+.admin-content .stat-card h6 {
+	font-family: var(--body-font);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	font-size: 0.8rem;
+	color: var(--bs-body-color);
+	margin-bottom: 0.35rem;
+}
+
+.admin-content .stat-card h3 {
+	font-family: var(--heading-font);
+	font-weight: 400;
+	color: var(--bs-black);
+	margin-bottom: 0.5rem;
+}
+
+/* —— UX: breathing room, touch-friendly controls, clearer focus —— */
+.admin-content {
+	padding: 1.75rem 0 2.5rem;
+}
+
+.admin-content .container-fluid {
+	max-width: 1680px;
+	margin-left: auto;
+	margin-right: auto;
+	padding-left: clamp(1rem, 2.5vw, 2rem);
+	padding-right: clamp(1rem, 2.5vw, 2rem);
+}
+
+.admin-content .page-title {
+	margin-bottom: 1.5rem;
+	font-size: 1.6rem;
+}
+
+.admin-content .card {
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.admin-content .card-body {
+	padding: 1.35rem 1.4rem;
+}
+
+.admin-content .form-control,
+.admin-content .form-select {
+	min-height: 2.65rem;
+	padding: 0.5rem 0.85rem;
+}
+
+.admin-content .form-control-sm,
+.admin-content .form-select-sm {
+	min-height: 2.15rem;
+}
+
+.admin-content textarea.form-control {
+	min-height: auto;
+}
+
+.admin-body .btn:focus-visible,
+.admin-body .form-control:focus-visible,
+.admin-body .form-select:focus-visible,
+.admin-body .nav-link:focus-visible,
+.admin-body .admin-sidebar-link:focus-visible {
+	outline: 2px solid var(--bs-primary);
+	outline-offset: 2px;
+}
+
+.admin-content .table thead th {
+	padding: 0.85rem 1.1rem;
+}
+
+.admin-content .table tbody td {
+	padding: 0.85rem 1.1rem;
+}
+
+.admin-main {
+	scroll-behavior: smooth;
+}
+
+/* Admin — Products list: compact single-row toolbar */
+.admin-products-page-header {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	margin-bottom: 1rem;
+}
+
+.admin-products-header-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: center;
+	margin-left: auto;
+}
+
+.admin-products-filters-card-body {
+	padding: 0.5rem 0.75rem;
+}
+
+.admin-products-toolbar-form {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+	gap: 0.5rem;
+	width: 100%;
+}
+
+.admin-products-toolbar-search {
+	flex: 1 1 12rem;
+	min-width: 8rem;
+	max-width: none;
+}
+
+.admin-products-toolbar-select {
+	flex: 0 1 11rem;
+	min-width: 7.5rem;
+	max-width: 14rem;
+	width: auto;
+}
+
+.admin-content .admin-products-toolbar-form .form-control-sm,
+.admin-content .admin-products-toolbar-form .form-select-sm {
+	min-height: calc(1.5em + 0.5rem + 2px);
+	padding-top: 0.25rem;
+	padding-bottom: 0.25rem;
+}
+
+.admin-products-toolbar-btn {
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+	.admin-products-toolbar-form {
+		flex-wrap: wrap;
+	}
+
+	.admin-products-toolbar-search {
+		flex: 1 1 100%;
+		min-width: 0;
+	}
+
+	.admin-products-toolbar-select {
+		flex: 1 1 calc(50% - 0.25rem);
+		max-width: none;
+	}
+
+	.admin-products-toolbar-btn {
+		flex: 1 1 auto;
+	}
+}
+
+@media (max-width: 576px) {
+	.admin-products-header-actions {
+		width: 100%;
+		margin-left: 0;
+	}
+}

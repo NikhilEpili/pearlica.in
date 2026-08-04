@@ -1,0 +1,185 @@
+<?php
+/**
+ * Jewellery care guide — policies/doc/09_Care_Guide_Website_Page.docx
+ */
+declare(strict_types=1);
+
+$base_path = '../';
+$meta_title_full = 'Jewellery care guide | Pearlica 925 silver jewellery India';
+$meta_description = 'Learn how to care for your Pearlica 925 sterling silver, rose gold plated, and rhodium plated jewellery. Tips for cleaning, storing, and maintaining your jewellery’s shine.';
+?>
+<!DOCTYPE html>
+<html lang="en">
+<?php include __DIR__ . '/../components/head.php'; ?>
+
+<body class="homepage">
+
+	<?php include __DIR__ . '/../components/navbar.php'; ?>
+
+	<main>
+		<section class="py-4 py-lg-5">
+			<div class="container">
+				<h4 class="section-title text-uppercase mb-4">Jewellery care guide</h4>
+				<p class="lead text-secondary">Pearlica – 925 Sterling Silver Jewellery</p>
+				<p class="text-secondary mb-4"><em>Last updated: March 2026</em></p>
+				<div class="policy-content">
+					<p>Your Pearlica jewellery is crafted in certified 925 sterling silver with a premium rose gold or rhodium
+						plating finish. With the right care, your pieces will stay beautiful and retain their shine for a long
+						time. Follow this guide to get the most out of your jewellery and keep your
+						<a href="<?php echo htmlspecialchars($base_path, ENT_QUOTES, 'UTF-8'); ?>policies/pearlica-care">Pearlica Care Promise</a> warranty valid.</p>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">Why jewellery care matters</h2>
+					<p>Both rose gold plating and rhodium plating are durable, high-quality finishes — but like all plated
+						jewellery, they can be affected by everyday exposure to moisture, chemicals, and friction. A small daily
+						habit makes a big difference.</p>
+					<p>The good news: most plating wear and tarnishing can be prevented simply by removing your jewellery at the
+						right times and storing it correctly.</p>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">Daily care habits</h2>
+					<h3 class="h6 mt-3 mb-2">The golden rule — last on, first off</h3>
+					<p>Always put your jewellery on <strong>last</strong>, after applying perfume, lotion, hairspray, or makeup.
+						Always take it off <strong>first</strong>, before bathing, washing hands, or sleeping. This one habit
+						dramatically extends the life of your plating.</p>
+					<h3 class="h6 mt-3 mb-2">After wearing</h3>
+					<ul>
+						<li>Wipe gently with a soft, dry lint-free cloth after every use</li>
+						<li>This removes natural oils, sweat, and residue</li>
+						<li>Never use paper towels or rough fabrics — they can scratch the plating</li>
+					</ul>
+					<h3 class="h6 mt-3 mb-2">Remove before these activities</h3>
+					<ul>
+						<li>Bathing, showering, or washing hands</li>
+						<li>Swimming — chlorinated pool water and saltwater are damaging</li>
+						<li>Exercising or any activity where you will sweat</li>
+						<li>Sleeping — friction against pillows and sheets wears plating over time</li>
+						<li>Cooking — heat, steam, and food acids affect plating</li>
+						<li>Cleaning the house — cleaning products are highly corrosive to plating</li>
+					</ul>
+					<h3 class="h6 mt-3 mb-2">Keep away from</h3>
+					<ul>
+						<li>Perfume and cologne — alcohol attacks plating</li>
+						<li>Body lotion, sunscreen, and moisturisers</li>
+						<li>Hairspray and dry shampoo</li>
+						<li>Hand sanitiser — alcohol is very damaging</li>
+						<li>Makeup and foundation</li>
+						<li>Household cleaning products, bleach, or detergents</li>
+					</ul>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">Storing your jewellery</h2>
+					<p>Improper storage causes scratching, tangling, and speeds up tarnishing.</p>
+					<h3 class="h6 mt-3 mb-2">Best practices</h3>
+					<ul>
+						<li>Store each piece separately in its sealed anti-tarnish pouch when not in use</li>
+						<li>The pouch slows tarnishing significantly</li>
+						<li>Never pile jewellery together — pieces scratch and tangle</li>
+						<li>Keep in a cool, dry place away from humidity, direct sunlight, and heat</li>
+						<li>Do not store jewellery in the bathroom — daily humidity is damaging</li>
+						<li>Keep away from open windows or airflow that carries moisture or pollutants</li>
+					</ul>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">Travelling with jewellery</h2>
+					<ul>
+						<li>Use the original Pearlica pouch or a dedicated jewellery travel case</li>
+						<li>Keep jewellery in hand luggage, not checked baggage, to avoid temperature extremes</li>
+						<li>Keep each piece in its own compartment or pouch to prevent scratching</li>
+					</ul>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">Cleaning your jewellery</h2>
+					<p>Plated jewellery requires gentle cleaning. Harsh chemicals or abrasives strip plating fastest.</p>
+					<h3 class="h6 mt-3 mb-2">Safe cleaning method</h3>
+					<ul>
+						<li>Use a soft, dry lint-free cloth — gently polish in small circular motions</li>
+						<li>For a slightly deeper clean: lightly dampen the cloth with plain water only, wipe gently, then dry thoroughly immediately</li>
+						<li>Allow the piece to air dry completely before storing it back in its pouch</li>
+					</ul>
+					<h3 class="h6 mt-3 mb-2">Never use these on plated jewellery</h3>
+					<ul>
+						<li>Chemical jewellery cleaning solutions</li>
+						<li>Toothpaste or baking soda</li>
+						<li>Ultrasonic cleaners</li>
+						<li>Steam cleaners</li>
+						<li>Rough cloths, sponges, or paper towels</li>
+					</ul>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">Rose gold vs rhodium — specific care notes</h2>
+					<h3 class="h6 mt-3 mb-2">Rose gold plated jewellery</h3>
+					<ul>
+						<li>Warm, romantic pink-gold tone; slightly softer finish — avoid friction and chemical contact</li>
+						<li>Extra care at high-friction areas: inner ring band, bracelet underside, chain links</li>
+						<li>Rose gold may subtly shift to a cooler tone over time as it thins — natural</li>
+						<li>Remove rings when using hand soap, hand sanitiser, or washing up</li>
+					</ul>
+					<h3 class="h6 mt-3 mb-2">Rhodium plated jewellery</h3>
+					<ul>
+						<li>Bright, platinum-like white shine; harder and more durable than rose gold plating</li>
+						<li>More resistant to everyday wear but still benefits from the same care habits</li>
+						<li>Rhodium can develop a slight yellow tint over time as the silver base shows through — normal</li>
+						<li>Avoid chlorine (pools), which can dull rhodium faster</li>
+					</ul>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">Skin sensitivity &amp; reactions</h2>
+					<ul>
+						<li>925 sterling silver is generally hypoallergenic for most people</li>
+						<li>People with very sensitive skin or nickel sensitivity should check full product material details before purchasing</li>
+						<li>If you notice redness or irritation, stop wearing the piece and consult a dermatologist</li>
+						<li>Reactions are more likely when plating has worn and the silver alloy base contacts skin directly</li>
+						<li>If unsure, wear jewellery for short periods initially and observe your skin’s reaction</li>
+					</ul>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">Your Pearlica Care Promise</h2>
+					<p>Every Pearlica piece is backed by our Care Promise:</p>
+					<ul>
+						<li><strong>6-Month Plating Warranty</strong> — covers plating defects under normal use</li>
+						<li><strong>Anti-Tarnish Guarantee</strong> — covers premature tarnishing under proper care</li>
+					</ul>
+					<p>To keep your warranty valid, follow this guide. For full terms, exclusions, and how to raise a claim, see our
+						<a href="<?php echo htmlspecialchars($base_path, ENT_QUOTES, 'UTF-8'); ?>policies/pearlica-care">Pearlica Care Promise — warranty &amp; plating policy</a>.
+						Claims must be raised within 6 months of delivery. Required: order ID and clear photographs or video of the issue.</p>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">Quick care reference — do’s and don’ts</h2>
+					<div class="row g-4 mt-1">
+						<div class="col-md-6">
+							<p class="small text-uppercase text-secondary mb-2">Always do</p>
+							<ul>
+								<li>Wipe with soft dry cloth after wearing</li>
+								<li>Put jewellery on last after perfume and lotions</li>
+								<li>Store in sealed anti-tarnish pouch separately</li>
+								<li>Remove before water, exercise, sleep, and cooking</li>
+							</ul>
+						</div>
+						<div class="col-md-6">
+							<p class="small text-uppercase text-secondary mb-2">Never do</p>
+							<ul>
+								<li>Wear jewellery in the shower, pool, or sea</li>
+								<li>Apply perfume or sanitiser while wearing jewellery</li>
+								<li>Store pieces piled together without pouches</li>
+								<li>Clean with chemicals, toothpaste, or abrasive cloths</li>
+								<li>Leave jewellery in the bathroom or humid areas</li>
+							</ul>
+						</div>
+					</div>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">Need assistance?</h2>
+					<p>Email: <a href="mailto:contact@pearlica.in">contact@pearlica.in</a><br>
+						Phone: <a href="tel:+919699518449">+91 9699518449</a><br>
+						Hours: Monday to Saturday, 10:00 AM – 6:00 PM</p>
+					<p>Please keep your order ID and product photographs ready when raising a warranty claim.</p>
+
+					<?php include __DIR__ . '/includes/related-policies.php'; ?>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<?php include __DIR__ . '/../components/footer.php'; ?>
+
+	<script src="<?php echo htmlspecialchars($base_path, ENT_QUOTES, 'UTF-8'); ?>assets/js/jquery.min.js"></script>
+	<script src="<?php echo htmlspecialchars($base_path, ENT_QUOTES, 'UTF-8'); ?>assets/js/plugins.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+		integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+		crossorigin="anonymous"></script>
+	<?php include __DIR__ . '/../components/swiper_bundle_script.php'; ?>
+	<script src="<?php echo htmlspecialchars($base_path, ENT_QUOTES, 'UTF-8'); ?>assets/js/script.min.js"></script>
+</body>
+
+</html>

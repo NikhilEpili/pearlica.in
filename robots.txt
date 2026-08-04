@@ -1,0 +1,42 @@
+# https://pearlica.in — adjust Sitemap URL if SITE_PUBLIC_URL uses another host (e.g. www).
+User-agent: *
+Disallow: /admin/
+Disallow: /payment/
+Disallow: /vendor/
+Disallow: /config/
+Disallow: /lib/
+Disallow: /includes/
+Disallow: /templates/
+Disallow: /components/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /wishlist
+Disallow: /wishlist-toggle
+Disallow: /profile
+Disallow: /order
+Disallow: /logout
+Disallow: /product-review-submit
+Disallow: /search-suggest
+
+Sitemap: https://pearlica.in/sitemap.xml
+
+#	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$	
+#	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+#	$$$$$$$$$$              $$$$$$$$$              $$$$$$$
+#	$$$$$$$                    $$$$$$                $$$$$
+#	$$$$$$     $$$$$$$$$$$      $$$$$   $$$$$$$$$$    $$$$
+#	$$$$      $$$$$$$$$$$$$$     $$$$   $$$$$$$$$$$    $$$
+#	$$$     $$$$$$$$$$$$$$$$$$    $$$   $$$$$$$$$$$    $$$
+#	$$    $$$$$$$$$$$$$$$$$$$$$    $$   $$$$$$$$$$    $$$$
+#	$$    $$$$$$$$$$$$$$$$$$$$$$   $$                 $$$$
+#	$$   $$$$$$$$$$$$$$$$$$$$$$$    $                $$$$$
+#	$$   $$$$$$$$$$$$$$$$$$$$$$$    $                  $$$
+#	$$    $$$$$$$$$$$$$$$$$$$$$$   $$   $$$$$$$$$$$     $$
+#	$$    $$$$$$$$$$$$$    $$$$    $$   $$$$$$$$$$$$$   $$
+#	$$$    $$$$$$$$$$$$      $    $$$   $$$$$$$$$$$$$   $$
+#	$$$$     $$$$$$$$$$$$        $$$$   $$$$$$$$$$$$    $$
+#	$$$$$      $$$$$$$$$$$$     $$$$$   $$$$$$$$$$$    $$$
+#	$$$$$$$                       $$$                  $$$
+#	$$$$$$$$$               $$    $$$                $$$$$
+#	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+#	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$

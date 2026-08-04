@@ -1,0 +1,11 @@
+root = true
+
+[*]
+indent_size = 4
+indent_style = tab
+charset = utf-8
+
+[*.php]
+indent_size = 4
+indent_style = tab
+charset = utf-8

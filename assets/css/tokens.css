@@ -1,0 +1,195 @@
+/**
+ * Pearlica — single source of design tokens (colours, type, spacing, layout, motion).
+ *
+ * Loaded immediately after Bootstrap, before design-system.css and all other site CSS.
+ * Change values here to update the storefront consistently. Page stylesheets should use
+ * these variables (e.g. var(--space-lg), var(--font-size-cta)) instead of duplicating numbers.
+ *
+ * Naming:
+ *   --pearlica-palette-*     raw colours
+ *   --color-*                semantic UI colours
+ *   --font-* / --text-*      typography
+ *   --space-*                spacing scale
+ *   --layout-*               widths, navbar, content padding
+ *   --motion-*               transitions
+ *   --z-*                    stacking
+ *   --black, --white, …      legacy aliases (kept for existing rules)
+ */
+
+:root {
+	/* ----- Primitive palette ----- */
+	--pearlica-palette-black: #0a0a0a;
+	--pearlica-palette-white: #ffffff;
+	--pearlica-palette-off-white: #ffffff;
+	--pearlica-palette-silver: #c8c8c8;
+	--pearlica-palette-silver-light: #e8e8e8;
+	--pearlica-palette-silver-dark: #888888;
+	--pearlica-palette-border: #d4d4d4;
+
+	/* ----- Semantic colours ----- */
+	--color-text-default: #1a1a1a;
+	--color-text-muted: #888888;
+	--color-surface-base: var(--pearlica-palette-white);
+	--color-surface-inverse: var(--pearlica-palette-black);
+	--color-text-on-inverse: var(--pearlica-palette-white);
+	--color-text-on-inverse-muted: rgba(255, 255, 255, 0.65);
+	--color-text-on-inverse-soft: rgba(255, 255, 255, 0.85);
+	--color-border-subtle: rgba(255, 255, 255, 0.08);
+	--color-border-on-inverse: rgba(255, 255, 255, 0.4);
+	--color-overlay-scrim: rgba(0, 0, 0, 0.4);
+	--color-overlay-scrim-soft: rgba(0, 0, 0, 0.25);
+	--color-icon-muted: rgba(0, 0, 0, 0.5);
+	--color-success: #2d6a4f;
+	--color-body-dark-bg: #111111;
+	--color-body-dark-fg: #d1d1d1;
+
+	/* ----- Typography: families ----- */
+	--font-heading: "Helvetica", "Helvetica Neue", Arial, sans-serif;
+	--font-body: "Helvetica", "Helvetica Neue", Arial, sans-serif;
+	/* Display / account page titles (loaded in head.php with Jost) */
+	--font-editorial: "Nunito Sans", sans-serif;
+
+	/* ----- Typography: scale (rem) ----- */
+	--font-size-root: 16px;
+	--font-size-xs: 0.6875rem;
+	--font-size-2xs: 0.75rem;
+	--font-size-sm: 0.875rem;
+	--font-size-base: 1.0625rem;
+	--font-size-md: 1.1875rem;
+	--font-size-lg: 1.4rem;
+	--font-size-xl: 1.8rem;
+	--font-size-2xl: 2.8rem;
+	--font-size-3xl: 3.6rem;
+	--font-size-4xl: 4.5rem;
+	--font-size-nav: 12px;
+	--font-size-ui: 13px;
+	--font-size-label: 11px;
+	--font-size-cta: 12px;
+	--font-size-price: 22px;
+	--font-size-product-name: clamp(17px, 2.2vw, 22px);
+
+	/* ----- Typography: weights & rhythm ----- */
+	--font-weight-normal: 400;
+	--font-weight-medium: 500;
+	--font-weight-semibold: 600;
+	--line-height-tight: 1.24;
+	--line-height-snug: 1.35;
+	--line-height-body: 1.5;
+	--letter-spacing-body: 0.02em;
+	--letter-spacing-nav: 0.2em;
+	--letter-spacing-breadcrumb: 0.14em;
+	--letter-spacing-section-label: 0.3em;
+	--letter-spacing-cta: 0.28em;
+	--letter-spacing-cta-tight: 0.2em;
+	--letter-spacing-caption: 0.12em;
+	--letter-spacing-wide-ui: 0.08em;
+
+	/* ----- Spacing scale ----- */
+	--space-2xs: 4px;
+	--space-xs: 8px;
+	--space-sm: 12px;
+	--space-md: 16px;
+	--space-lg: 20px;
+	--space-xl: 24px;
+	--space-2xl: 32px;
+	--space-3xl: 40px;
+	--space-4xl: 56px;
+	--space-5xl: 64px;
+	--space-6xl: 72px;
+	--space-7xl: 80px;
+	--space-8xl: 88px;
+
+	/* ----- Layout ----- */
+	--layout-content-max: none;
+	--layout-content-max-wide: 1800px;
+	--layout-page-padding-x: 56px;
+	--layout-page-padding-x-mobile: 20px;
+	--layout-page-padding-top: 12px;
+	--layout-page-padding-top-mobile: 10px;
+	--layout-page-padding-bottom: 48px;
+	--layout-page-padding-bottom-mobile: 40px;
+	--layout-navbar-height: 72px;
+	--layout-thumb-size: 72px;
+
+	/* ----- Borders & radius (site policy: sharp corners; inputs use --pearlica-input-radius) ----- */
+	--border-width: 1px;
+	--radius-none: 0;
+	--pearlica-input-radius: 6px;
+
+	/* ----- Motion ----- */
+	--motion-fast: 0.2s ease;
+	--motion-medium: 0.25s ease;
+	--motion-slow: 0.35s ease;
+	--motion-slower: 0.5s ease;
+	--motion-cta-color: 0.25s ease;
+	--motion-preloader: 0.8s cubic-bezier(0.075, 0.82, 0.165, 1);
+
+	/* ----- Elevation / focus ----- */
+	--shadow-sticky-bar: 0 -4px 24px rgba(0, 0, 0, 0.06);
+	--shadow-hero-text: 0 1px 2px rgba(0, 0, 0, 0.5);
+
+	/* ----- Z-index scale ----- */
+	--z-preloader: 99;
+	--z-sticky-cta: 1040;
+	--z-navbar: 1030;
+
+	/* ----- Components: primary CTA (filled black) ----- */
+	--btn-filled-bg: var(--color-surface-inverse);
+	--btn-filled-fg: var(--color-text-on-inverse);
+	--btn-filled-border: var(--color-surface-inverse);
+	--btn-filled-hover-bg: var(--color-surface-inverse);
+	--btn-filled-hover-fg: var(--color-text-on-inverse);
+	--btn-filled-disabled-bg: var(--pearlica-palette-silver-dark);
+	--btn-filled-disabled-fg: var(--color-text-on-inverse-muted);
+	--btn-cta-padding-y: 18px;
+	--btn-cta-padding-y-compact: 14px;
+	--btn-sticky-padding-y: 12px;
+
+	/* ----- Legacy aliases (define before tokens that reference them) ----- */
+	--black: var(--pearlica-palette-black);
+	--white: var(--pearlica-palette-white);
+	--off-white: var(--pearlica-palette-off-white);
+	--silver: var(--pearlica-palette-silver);
+	--silver-light: var(--pearlica-palette-silver-light);
+	--silver-dark: var(--pearlica-palette-silver-dark);
+	--border: var(--pearlica-palette-border);
+	--text-main: var(--color-text-default);
+	--text-muted: var(--color-text-muted);
+
+	/* ----- Template / heading helpers (used by style.css) ----- */
+	--heading-font: var(--font-heading);
+	--heading-font-weight: var(--font-weight-normal);
+	--heading-color: var(--text-main);
+	--heading-line-height: var(--line-height-tight);
+	--light-color: var(--white);
+
+	/* ----- Swiper ----- */
+	--swiper-theme-color: var(--black);
+
+	/* ----- Bootstrap 5 bridge (light theme) — edit here instead of scattered files ----- */
+	--bs-body-font-family: var(--font-body);
+	--bs-body-font-size: var(--font-size-base);
+	--bs-body-color: var(--text-main);
+	--bs-primary: var(--black);
+	--bs-secondary: var(--text-muted);
+	--bs-black: var(--black);
+	--bs-light: var(--off-white);
+	--bs-dark: var(--black);
+	--bs-gray: var(--silver-dark);
+	--bs-gray-dark: var(--text-muted);
+	--bs-link-color: var(--text-main);
+	--bs-link-hover-color: var(--black);
+}
+
+/* Dark theme (Bootstrap data attribute) — token-based for one place to tune */
+[data-bs-theme="dark"] body {
+	color-scheme: dark;
+	--heading-color: var(--pearlica-palette-white);
+	--bs-link-color: var(--pearlica-palette-white);
+	--bs-link-hover-color: var(--pearlica-palette-white);
+	--bs-link-color-rgb: 255, 255, 255;
+	--bs-link-hover-color-rgb: 255, 255, 255;
+	--bs-body-color: var(--color-body-dark-fg);
+	--bs-body-bg: var(--color-body-dark-bg);
+	--bs-body-bg-rgb: 17, 17, 17;
+}

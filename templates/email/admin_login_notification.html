@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin login</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px;">
+<tr><td align="center">
+<table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #e0e0e0;">
+<tr>
+<td style="background:#0a0a0a;padding:24px 28px;text-align:center;">
+<img src="{{site_url}}/assets/images/footer_white-logo_trans-bg.png" alt="Pearlica" width="100" style="display:block;margin:0 auto;">
+<p style="margin:12px 0 0;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.45);">Admin alert</p>
+</td>
+</tr>
+<tr>
+<td style="padding:32px 28px;">
+<p style="margin:0 0 8px;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#888;">Security</p>
+<h1 style="margin:0 0 16px;font-family:Georgia,serif;font-size:22px;font-weight:400;color:#0a0a0a;">Admin panel sign-in</h1>
+<p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#555;">Someone successfully logged into the Pearlica admin using the account below.</p>
+<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e8e8e8;">
+<tr><td style="padding:12px 14px;border-bottom:1px solid #e8e8e8;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#aaa;">Username</td></tr>
+<tr><td style="padding:14px;font-size:15px;color:#0a0a0a;">{{username}}</td></tr>
+<tr><td style="padding:12px 14px;border-top:1px solid #e8e8e8;border-bottom:1px solid #e8e8e8;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#aaa;">Time</td></tr>
+<tr><td style="padding:14px;font-size:13px;color:#444;">{{login_time}}</td></tr>
+<tr><td style="padding:12px 14px;border-top:1px solid #e8e8e8;border-bottom:1px solid #e8e8e8;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#aaa;">IP</td></tr>
+<tr><td style="padding:14px;font-size:13px;color:#444;word-break:break-all;">{{ip_address}}</td></tr>
+<tr><td style="padding:12px 14px;border-top:1px solid #e8e8e8;border-bottom:1px solid #e8e8e8;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#aaa;">User agent</td></tr>
+<tr><td style="padding:14px;font-size:12px;color:#666;word-break:break-word;">{{user_agent}}</td></tr>
+</table>
+<p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:#999;">If this was not you, change the admin password and review server access immediately.</p>
+</td>
+</tr>
+<tr>
+<td style="border-top:1px solid #e8e8e8;padding:16px 28px;">
+<p style="margin:0;font-size:10px;color:#bbb;">Pearlica admin notifications</p>
+</td>
+</tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>

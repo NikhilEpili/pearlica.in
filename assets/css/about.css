@@ -1,0 +1,348 @@
+/**
+ * About page — Pearlica luxury design system.
+ * Sharp corners, generous whitespace, no border-radius.
+ */
+
+/* ----- Hero ----- */
+.about-hero {
+	padding: 80px 56px;
+	text-align: center;
+	max-width: none;
+	margin-left: auto;
+	margin-right: auto;
+}
+.about-hero .about-hero-label {
+	font-family: var(--font-body);
+	font-size: 10px;
+	font-weight: 400;
+	letter-spacing: 0.3em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+	margin-bottom: 12px;
+}
+.about-hero .about-hero-title {
+	font-family: var(--font-heading);
+	font-size: 48px;
+	font-weight: 400;
+	color: var(--text-main);
+	margin-bottom: 12px;
+}
+.about-hero .about-hero-subtitle {
+	font-family: var(--font-heading);
+	font-size: 20px;
+	font-weight: 400;
+	font-style: italic;
+	color: var(--text-muted);
+	margin: 0;
+}
+@media (max-width: 767px) {
+	.about-hero {
+		padding: 80px 20px;
+	}
+	.about-hero .about-hero-title {
+		font-size: clamp(28px, 8vw, 48px);
+	}
+	.about-hero .about-hero-subtitle {
+		font-size: 16px;
+	}
+}
+
+/* ----- Section wrapper (breathable) ----- */
+.about-section {
+	max-width: none;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 80px 56px 0;
+}
+.about-section:last-of-type {
+	padding-bottom: 80px;
+}
+@media (max-width: 767px) {
+	.about-section {
+		padding: 60px 20px 0;
+	}
+	.about-section:last-of-type {
+		padding-bottom: 60px;
+	}
+}
+
+/* ----- Brand story & founder: full-width prose (no image column) ----- */
+.about-prose-wide {
+	width: 100%;
+	max-width: none;
+}
+.about-story-label {
+	font-family: var(--font-body);
+	font-size: 10px;
+	font-weight: 400;
+	letter-spacing: 0.3em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+	margin-bottom: 16px;
+}
+.about-story-text p {
+	font-family: var(--font-body);
+	font-size: 14px;
+	line-height: 1.9;
+	color: var(--text-muted);
+	margin: 0 0 20px 0;
+}
+.about-story-text p:last-child {
+	margin-bottom: 0;
+}
+
+.about-founder-label {
+	font-family: var(--font-body);
+	font-size: 10px;
+	font-weight: 400;
+	letter-spacing: 0.3em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+	margin-bottom: 12px;
+}
+.about-founder-name {
+	font-family: var(--font-heading);
+	font-size: 32px;
+	font-weight: 400;
+	color: var(--text-main);
+	margin-bottom: 8px;
+}
+.about-founder-title {
+	font-family: var(--font-body);
+	font-size: 12px;
+	font-style: italic;
+	color: var(--text-muted);
+	margin-bottom: 20px;
+}
+.about-founder-text p {
+	font-family: var(--font-body);
+	font-size: 14px;
+	line-height: 1.8;
+	color: var(--text-muted);
+	margin: 0 0 16px 0;
+}
+.about-founder-text p:last-of-type {
+	margin-bottom: 24px;
+}
+.about-founder-blockquote {
+	border-left: 2px solid var(--black);
+	padding-left: 20px;
+	margin: 0;
+	font-family: var(--font-heading);
+	font-size: 20px;
+	font-style: italic;
+	color: var(--text-main);
+}
+@media (max-width: 767px) {
+	.about-founder-name {
+		font-size: 26px;
+	}
+}
+
+/* ----- Values: 4 cards in a row ----- */
+.about-values-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 24px;
+}
+.about-value-card {
+	border: 1px solid var(--border);
+	background: #fff;
+	padding: 32px 24px;
+}
+.about-value-card .about-value-icon {
+	display: block;
+	margin-bottom: 20px;
+}
+.about-value-card .about-value-icon svg {
+	width: 28px;
+	height: 28px;
+	stroke: var(--text-main);
+	fill: none;
+}
+.about-value-card .about-value-heading {
+	font-family: var(--font-heading);
+	font-size: 18px;
+	font-weight: 400;
+	color: var(--text-main);
+	margin-bottom: 8px;
+}
+.about-value-card .about-value-text {
+	font-family: var(--font-body);
+	font-size: 12px;
+	color: var(--text-muted);
+	line-height: 1.6;
+	margin: 0;
+}
+@media (max-width: 991px) {
+	.about-values-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+@media (max-width: 575px) {
+	.about-values-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* ----- FAQ: two-column accordion ----- */
+.about-faq-section .about-section-label {
+	font-family: var(--font-body);
+	font-size: 10px;
+	letter-spacing: 0.3em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+	margin-bottom: 12px;
+}
+.about-faq-section .about-faq-title {
+	font-family: var(--font-heading);
+	font-size: 32px;
+	font-weight: 400;
+	color: var(--text-main);
+	margin-bottom: 48px;
+}
+.about-faq-columns {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 48px;
+}
+.about-faq-column {
+	display: flex;
+	flex-direction: column;
+}
+.about-faq-item {
+	border-bottom: 1px solid var(--border);
+}
+.about-faq-item .about-faq-question-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 18px 0;
+	cursor: pointer;
+	text-align: left;
+	width: 100%;
+	background: none;
+	border: none;
+	font-family: var(--font-body);
+	font-size: 10px;
+	letter-spacing: 0.3em;
+	text-transform: uppercase;
+	color: var(--text-main);
+}
+.about-faq-item .about-faq-question-row .about-faq-question-text {
+	flex: 1;
+}
+.about-faq-item .about-faq-answer-wrap {
+	max-height: 0;
+	overflow: hidden;
+	transition: max-height 0.3s ease;
+}
+.about-faq-item.active .about-faq-answer-wrap {
+	max-height: 300px;
+	overflow-y: auto;
+}
+.about-faq-item .about-faq-answer {
+	font-family: var(--font-body);
+	font-size: 13px;
+	line-height: 1.8;
+	color: var(--text-muted);
+	padding-bottom: 16px;
+	padding-right: 24px;
+}
+.about-faq-item .about-faq-answer a {
+	color: var(--black);
+	text-decoration: none;
+	border-bottom: 1px solid var(--border);
+}
+.about-faq-item .about-faq-answer a:hover {
+	border-bottom-color: var(--black);
+}
+.about-faq-toggle-icon {
+	flex-shrink: 0;
+	width: 14px;
+	height: 14px;
+	transition: transform 0.3s ease;
+}
+.about-faq-item.active .about-faq-toggle-icon {
+	transform: rotate(45deg);
+}
+@media (max-width: 767px) {
+	.about-faq-columns {
+		grid-template-columns: 1fr;
+		gap: 0;
+	}
+	.about-faq-section {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+}
+
+/* ----- CTA strip (before footer) ----- */
+.about-cta-strip {
+	background: var(--black);
+	color: var(--white);
+	padding: 60px 24px;
+	text-align: center;
+}
+.about-cta-strip .about-cta-heading {
+	font-family: var(--font-heading);
+	font-size: 32px;
+	font-weight: 400;
+	font-style: italic;
+	color: var(--white);
+	margin-bottom: 12px;
+}
+.about-cta-strip .about-cta-subtitle {
+	font-family: var(--font-body);
+	font-size: 14px;
+	color: rgba(255, 255, 255, 0.85);
+	margin-bottom: 24px;
+}
+.about-cta-strip .about-cta-btn {
+	display: inline-block;
+	border: 1px solid rgba(255, 255, 255, 0.4);
+	color: var(--white);
+	background: transparent;
+	padding: 14px 36px;
+	font-family: var(--font-body);
+	font-size: 11px;
+	letter-spacing: 0.28em;
+	text-transform: uppercase;
+	text-decoration: none;
+	transition: border-color 0.25s ease, color 0.25s ease;
+}
+.about-cta-strip .about-cta-btn:hover {
+	color: var(--white);
+	border-color: rgba(255, 255, 255, 0.8);
+}
+
+/* ----- Staggered fadeUp (use animation-delay on sections) ----- */
+.about-animate .about-hero {
+	opacity: 0;
+	animation: fadeUp 0.6s ease-out 0s forwards;
+}
+.about-animate .about-section:nth-child(2) {
+	opacity: 0;
+	animation: fadeUp 0.6s ease-out 0.05s forwards;
+}
+.about-animate .about-section:nth-child(3) {
+	opacity: 0;
+	animation: fadeUp 0.6s ease-out 0.1s forwards;
+}
+.about-animate .about-section:nth-child(4) {
+	opacity: 0;
+	animation: fadeUp 0.6s ease-out 0.15s forwards;
+}
+.about-animate .about-section:nth-child(5) {
+	opacity: 0;
+	animation: fadeUp 0.6s ease-out 0.2s forwards;
+}
+.about-animate .about-section:nth-child(6) {
+	opacity: 0;
+	animation: fadeUp 0.6s ease-out 0.25s forwards;
+}
+.about-animate .about-cta-strip {
+	opacity: 0;
+	animation: fadeUp 0.6s ease-out 0.3s forwards;
+}

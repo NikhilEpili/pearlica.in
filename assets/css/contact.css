@@ -1,0 +1,350 @@
+/**
+ * Contact Us — Pearlica luxury design system
+ * Two-column grid, boxed form fields (1px border, slight radius).
+ */
+
+/* ---------- Breadcrumb: 11px Jost uppercase 0.14em, Home --text-muted, Contact Us --black ---------- */
+.contact-page .breadcrumb,
+.contact-section .breadcrumb {
+	font-family: var(--font-body);
+	font-size: 11px;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+}
+.contact-page .breadcrumb-item a,
+.contact-section .breadcrumb-item a {
+	color: var(--text-muted);
+	text-decoration: none;
+	transition: color 0.2s ease;
+}
+.contact-page .breadcrumb-item a:hover,
+.contact-section .breadcrumb-item a:hover {
+	color: var(--black);
+}
+.contact-page .breadcrumb-item.active,
+.contact-section .breadcrumb-item.active {
+	color: var(--black);
+}
+
+/* ---------- Hero ---------- */
+.contact-hero-label {
+	font-family: var(--font-body);
+	font-size: 10px;
+	font-weight: 400;
+	letter-spacing: 0.3em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+	margin-bottom: 0.25em;
+}
+.contact-hero-title {
+	font-family: var(--font-heading);
+	font-size: 42px;
+	font-weight: 400;
+	letter-spacing: 0.04em;
+	color: var(--text-main);
+	margin-bottom: 0.35em;
+}
+.contact-hero-subtitle {
+	font-family: var(--font-body);
+	font-size: 13px;
+	letter-spacing: 0.06em;
+	color: var(--text-muted);
+	max-width: 480px;
+	line-height: 1.6;
+	margin-bottom: 0;
+}
+
+/* ---------- Two-column layout: 1fr 380px, 64px gap, vertical rule ---------- */
+.contact-grid {
+	display: grid;
+	grid-template-columns: 1fr 380px;
+	gap: 64px;
+	align-items: stretch;
+}
+.contact-form-col {
+	position: relative;
+	min-height: 1px;
+}
+.contact-info-col {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+@media (max-width: 991px) {
+	.contact-grid {
+		grid-template-columns: 1fr;
+		gap: 48px;
+	}
+	.contact-form-col::after {
+		display: none;
+	}
+}
+
+/* ---------- Form: no visible form styling ---------- */
+.contact-section form {
+	border: none;
+	background: transparent;
+	padding: 0;
+	margin: 0;
+}
+.contact-field-group {
+	margin-bottom: 1.5rem;
+	opacity: 0;
+	animation: fadeUp 0.6s ease-out forwards;
+}
+.contact-field-group.contact-delay-1 { animation-delay: 0.08s; }
+.contact-field-group.contact-delay-2 { animation-delay: 0.16s; }
+.contact-field-group.contact-delay-3 { animation-delay: 0.24s; }
+.contact-field-group.contact-delay-4 { animation-delay: 0.32s; }
+.contact-field-group.contact-delay-5 { animation-delay: 0.4s; }
+.contact-field-group.contact-delay-6 { animation-delay: 0.48s; }
+.contact-form-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 24px;
+	margin-bottom: 1.5rem;
+	opacity: 0;
+	animation: fadeUp 0.6s ease-out forwards;
+}
+.contact-form-row.contact-delay-1 { animation-delay: 0.08s; }
+.contact-form-row.contact-delay-2 { animation-delay: 0.16s; }
+.contact-form-row .contact-field-group {
+	margin-bottom: 0;
+	animation: none;
+	opacity: 1;
+}
+.contact-label {
+	display: block;
+	font-family: var(--font-body);
+	font-size: 10px;
+	font-weight: 400;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+	margin-bottom: 0.5rem;
+}
+.contact-input,
+.contact-textarea {
+	display: block;
+	width: 100%;
+	font-family: var(--font-body);
+	font-size: 14px;
+	font-weight: 400;
+	color: var(--text-main);
+	background: var(--white);
+	border: 1px solid var(--border);
+	border-radius: var(--pearlica-input-radius);
+	padding: 0.65rem 0.9rem;
+	box-sizing: border-box;
+	transition: border-color 0.2s ease;
+}
+.contact-input::placeholder,
+.contact-textarea::placeholder {
+	color: var(--text-muted);
+	opacity: 1;
+}
+.contact-input:focus,
+.contact-textarea:focus {
+	outline: none;
+	border-color: var(--black);
+	box-shadow: none;
+}
+.contact-select {
+	display: block;
+	width: 100%;
+	font-family: var(--font-body);
+	font-size: 14px;
+	font-weight: 400;
+	color: var(--text-main);
+	background: var(--white);
+	border: 1px solid var(--border);
+	border-radius: var(--pearlica-input-radius);
+	padding: 0.65rem 0.9rem;
+	box-sizing: border-box;
+	cursor: pointer;
+}
+.contact-select:focus {
+	outline: none;
+	border-color: var(--black);
+	box-shadow: none;
+}
+.contact-select-wrap {
+	position: relative;
+	display: block;
+	width: 100%;
+}
+.contact-textarea {
+	min-height: 140px;
+	resize: none;
+	vertical-align: top;
+}
+@media (max-width: 575px) {
+	.contact-form-row {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* ---------- Send button: primary style, width auto, min-width 200px, shimmer ---------- */
+.contact-submit-btn {
+	display: inline-block;
+	width: auto;
+	min-width: 200px;
+	font-family: var(--font-body);
+	font-size: 11px;
+	font-weight: 400;
+	letter-spacing: 0.28em;
+	text-transform: uppercase;
+	color: var(--white);
+	background-color: var(--black);
+	border: none;
+	padding: 18px 32px;
+	position: relative;
+	overflow: hidden;
+	transition: color 0.25s ease;
+	cursor: pointer;
+	border-radius: 0;
+}
+.contact-submit-btn::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+	transform: scaleX(0);
+	transform-origin: left;
+	transition: transform 0.5s ease;
+	pointer-events: none;
+}
+.contact-submit-btn:hover::after {
+	transform: scaleX(1);
+}
+.contact-submit-btn:hover {
+	color: var(--white);
+	background-color: var(--black);
+}
+
+/* ---------- Info cards: 1px --border, white bg, 28px padding, sharp ---------- */
+.contact-info-card {
+	border: 1px solid var(--border);
+	background-color: #fff;
+	padding: 28px;
+	border-radius: 0;
+	opacity: 0;
+	animation: fadeUp 0.6s ease-out forwards;
+}
+.contact-info-card:nth-child(1) { animation-delay: 0.08s; }
+.contact-info-card:nth-child(2) { animation-delay: 0.16s; }
+.contact-info-card:nth-child(3) { animation-delay: 0.24s; }
+.contact-info-card-label {
+	font-family: var(--font-body);
+	font-size: 10px;
+	font-weight: 400;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--text-muted);
+	margin-bottom: 1rem;
+}
+
+/* Registered Office: address 13px Jost 1.8 line-height --text-muted, GSTIN bold Cormorant */
+.contact-address {
+	font-family: var(--font-body);
+	font-size: 13px;
+	line-height: 1.8;
+	color: var(--text-muted);
+	margin-bottom: 0.75rem;
+}
+.contact-gstin-label {
+	font-family: var(--font-heading);
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--text-main);
+}
+.contact-gstin-value {
+	font-family: var(--font-body);
+	font-size: 13px;
+	color: var(--text-muted);
+}
+
+/* Contact Details: flex row, SVG 14px stroke 1.4, label 10px uppercase muted, value 13px --black; links no blue */
+.contact-detail-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	margin-bottom: 1rem;
+}
+.contact-detail-row:last-child {
+	margin-bottom: 0;
+}
+.contact-detail-icon {
+	flex-shrink: 0;
+	width: 14px;
+	height: 14px;
+	margin-top: 2px;
+	color: var(--text-muted);
+}
+.contact-detail-icon svg {
+	width: 14px;
+	height: 14px;
+	stroke-width: 1.4;
+	stroke: currentColor;
+}
+.contact-detail-content {
+	flex: 1;
+}
+.contact-detail-value {
+	font-family: var(--font-body);
+	font-size: 13px;
+	color: var(--black);
+}
+.contact-detail-value a {
+	color: var(--black);
+	text-decoration: none;
+	border-bottom: 1px solid var(--border);
+	transition: border-color 0.2s ease;
+}
+.contact-detail-value a:hover {
+	border-bottom-color: var(--black);
+	color: var(--black);
+}
+
+/* Opening Hours: grid-template-columns: auto 1fr, Sunday Closed --text-muted */
+.contact-hours-grid {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 0.25rem 2rem;
+	font-family: var(--font-body);
+	font-size: 13px;
+	color: var(--text-main);
+}
+.contact-hours-grid .contact-hours-closed {
+	color: var(--text-muted);
+}
+
+/* ---------- Alerts: no blue, monochromatic ---------- */
+.contact-section .alert-success {
+	background: var(--off-white);
+	border: 1px solid var(--border);
+	color: var(--text-main);
+	border-radius: 0;
+}
+.contact-section .alert-danger {
+	background: var(--off-white);
+	border: 1px solid var(--border);
+	color: var(--text-main);
+	border-radius: 0;
+}
+.contact-section .alert a {
+	color: var(--black);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+/* Cards / buttons / alerts stay sharp; fields use --pearlica-input-radius via component classes */
+.contact-page .contact-section button,
+.contact-page .contact-section .contact-info-card,
+.contact-page .contact-section .alert {
+	border-radius: 0;
+}

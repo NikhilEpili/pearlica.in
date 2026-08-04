@@ -1,0 +1,137 @@
+/**
+ * Pearlica contrast guard — loaded last (after page-specific CSS).
+ * Ensures filled / inverse controls keep readable labels when sections
+ * reset link colours (e.g. color: inherit on anchors).
+ */
+
+/* Bootstrap filled buttons */
+.btn-dark,
+.btn.btn-dark,
+button.btn.btn-dark,
+a.btn.btn-dark,
+a.btn.btn-dark:visited,
+a.btn.btn-dark:hover,
+a.btn.btn-dark:focus,
+.btn.btn-dark:hover,
+.btn.btn-dark:focus-visible {
+	--bs-btn-color: var(--btn-filled-fg);
+	--bs-btn-bg: var(--btn-filled-bg);
+	--bs-btn-border-color: var(--btn-filled-border);
+	--bs-btn-hover-color: var(--btn-filled-hover-fg);
+	--bs-btn-hover-bg: var(--btn-filled-hover-bg);
+	--bs-btn-hover-border-color: var(--btn-filled-border);
+	--bs-btn-active-color: var(--btn-filled-hover-fg);
+	--bs-btn-active-bg: var(--btn-filled-hover-bg);
+	--bs-btn-active-border-color: var(--btn-filled-border);
+	--bs-btn-disabled-color: var(--btn-filled-disabled-fg);
+	--bs-btn-disabled-bg: var(--btn-filled-disabled-bg);
+	--bs-btn-disabled-border-color: var(--btn-filled-disabled-bg);
+	color: var(--btn-filled-fg) !important;
+}
+
+.btn-primary,
+.btn.btn-primary,
+button.btn.btn-primary,
+a.btn.btn-primary,
+a.btn.btn-primary:visited,
+a.btn.btn-primary:hover,
+a.btn.btn-primary:focus,
+.btn.btn-primary:hover,
+.btn.btn-primary:focus-visible {
+	--bs-btn-color: var(--btn-filled-fg);
+	--bs-btn-bg: var(--btn-filled-bg);
+	--bs-btn-border-color: var(--btn-filled-border);
+	--bs-btn-hover-color: var(--btn-filled-hover-fg);
+	--bs-btn-hover-bg: var(--btn-filled-hover-bg);
+	--bs-btn-hover-border-color: var(--btn-filled-border);
+	--bs-btn-active-color: var(--btn-filled-hover-fg);
+	--bs-btn-active-bg: var(--btn-filled-hover-bg);
+	--bs-btn-active-border-color: var(--btn-filled-border);
+	--bs-btn-disabled-color: var(--btn-filled-disabled-fg);
+	--bs-btn-disabled-bg: var(--btn-filled-disabled-bg);
+	--bs-btn-disabled-border-color: var(--btn-filled-disabled-bg);
+	color: var(--btn-filled-fg) !important;
+}
+
+/* Custom site CTAs that mirror filled primary */
+.product-btn-add,
+.product-btn-add:hover,
+.product-sticky-btn--primary,
+.product-sticky-btn--primary:hover,
+.products-filter-apply,
+.products-filter-apply:hover,
+.checkout-coupon-btn,
+.checkout-coupon-btn:hover,
+a.orders-btn-shop,
+a.orders-btn-shop:visited,
+a.orders-btn-shop:hover,
+.checkout-btn-primary,
+.checkout-btn-primary:hover {
+	color: var(--btn-filled-fg) !important;
+}
+
+a.cart-drawer-btn-primary,
+a.cart-drawer-btn-primary:visited,
+a.cart-drawer-btn-primary:hover,
+a.cart-drawer-btn-primary:focus,
+a.cart-drawer-btn-primary:focus-visible,
+a.cart-drawer-btn-primary:active {
+	color: var(--btn-filled-fg) !important;
+	-webkit-text-fill-color: var(--btn-filled-fg);
+}
+
+/* Dark text links on light surfaces (beat global a:visited) */
+a.orders-link-view,
+a.orders-link-view:visited,
+a.orders-page-link,
+a.orders-page-link:visited {
+	color: var(--black) !important;
+}
+
+/* "The Collection" (index-editorial) CTA — keep white outline/text */
+.index-editorial-btn,
+a.index-editorial-btn:visited,
+.index-editorial-btn:hover,
+.index-editorial-btn:focus-visible {
+	color: var(--white) !important;
+	border-color: var(--white) !important;
+}
+
+/* Footer links — readable on #E9ECEB background (including :visited) */
+.footer-pearlica .footer-link,
+.footer-pearlica .footer-link:visited {
+	color: var(--black) !important;
+}
+
+.footer-pearlica .footer-link:hover,
+.footer-pearlica .footer-link:focus-visible {
+	color: var(--black) !important;
+	opacity: 0.75;
+}
+
+/* ----- Text fields site-wide: 1px border, slight radius, placeholders ----- */
+textarea.form-control,
+input.form-control:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]):not([type="range"]):not([type="color"]),
+select.form-select,
+.form-select {
+	border: 1px solid var(--border);
+	border-radius: var(--pearlica-input-radius);
+	background-color: var(--white);
+	padding: 0.65rem 0.9rem;
+	box-sizing: border-box;
+}
+
+textarea.form-control::placeholder,
+input.form-control::placeholder {
+	color: var(--text-muted);
+	opacity: 1;
+}
+
+textarea.form-control:focus,
+input.form-control:focus,
+select.form-select:focus,
+.form-select:focus {
+	border-color: var(--black);
+	box-shadow: none;
+	outline: none;
+}

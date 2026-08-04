@@ -1,0 +1,198 @@
+<?php
+/**
+ * Pearlica Care Promise — policies/doc/08_Pearlica_Care_Promise_Warranty_Policy.docx (customer-facing; internal marketing § omitted)
+ */
+declare(strict_types=1);
+
+$base_path = '../';
+$meta_title_full = 'Pearlica Care Promise | 6-Month Plating Warranty & Anti-Tarnish Guarantee';
+$meta_description = 'Pearlica offers a 6-month plating warranty and anti-tarnish guarantee on all rose gold and rhodium plated 925 silver jewellery. Shop with confidence.';
+?>
+<!DOCTYPE html>
+<html lang="en">
+<?php include __DIR__ . '/../components/head.php'; ?>
+
+<body class="homepage">
+
+	<?php include __DIR__ . '/../components/navbar.php'; ?>
+
+	<main>
+		<section class="py-4 py-lg-5">
+			<div class="container">
+				<h4 class="section-title text-uppercase mb-4">Pearlica Care Promise</h4>
+				<p class="lead text-secondary mb-1">Product warranty &amp; plating policy</p>
+				<p class="text-secondary mb-1">Pearlica – 925 Sterling Silver Jewellery</p>
+				<p class="text-secondary mb-4"><em>Effective date: 18 February 2026 · Last reviewed: March 2026</em></p>
+				<div class="policy-content">
+					<p>At Pearlica, we stand behind every piece we make. The Pearlica Care Promise is our commitment to your
+						satisfaction — covering plating quality, anti-tarnish performance, and honest guidance on how to care
+						for your jewellery so it stays beautiful for as long as possible.</p>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">1. Our product range</h2>
+					<p>All Pearlica jewellery is crafted on a certified 925 sterling silver base (92.5% pure silver). We
+						currently offer two premium plated finishes:</p>
+					<ul>
+						<li><strong>Rose gold plated 925 sterling silver</strong> — a warm, romantic rose-pink gold finish over the silver base</li>
+						<li><strong>Rhodium plated 925 sterling silver</strong> — a bright white, platinum-like finish over the silver base</li>
+					</ul>
+					<p>Both finishes use high-quality plating applied over genuine 925 sterling silver. The product listing on
+						our website clearly states which finish each item has. Please check the product description before
+						purchasing.</p>
+					<p>Pearlica is committed to obtaining BIS (Bureau of Indian Standards) hallmarking certification. Until
+						this is in place, we guarantee the 925 sterling silver purity of all products and stand behind quality
+						through the warranties in this policy. “BIS hallmarking in progress” will be updated on all materials
+						once certification is complete.</p>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">2. Understanding plating — what every customer should know</h2>
+					<p>Plating is a thin decorative layer of metal (rose gold or rhodium) applied over the 925 silver base. It
+						is the industry-standard method used across jewellery brands worldwide. Being informed about how plating
+						works helps you enjoy your jewellery longer and set the right expectations.</p>
+					<h3 class="h6 mt-3 mb-2">How plating behaves over time</h3>
+					<ul>
+						<li>Plating will gradually fade or thin over time with regular use. This is normal and expected — it is not a defect.</li>
+						<li>The silver base underneath is never affected. Only the top decorative layer changes.</li>
+						<li>High-friction areas (inner ring bands, bracelet clasps, chain links) may show wear sooner than other parts.</li>
+						<li>Colour may shift subtly as plating thins — rose gold may take on a slightly cooler tone; rhodium may show the silver beneath.</li>
+					</ul>
+					<h3 class="h6 mt-3 mb-2">Rose gold plating vs rhodium plating</h3>
+					<ul>
+						<li>Rhodium is harder and more durable than rose gold plating. Quality rhodium plating can last 12–24 months with proper care.</li>
+						<li>Rose gold plating is slightly thinner and softer. It may show wear at friction points after 6–12 months depending on how it is worn.</li>
+						<li>Both finishes benefit significantly from following the care instructions in this policy and on our <a href="<?php echo htmlspecialchars($base_path, ENT_QUOTES, 'UTF-8'); ?>policies/care-guide">Jewellery care guide</a>.</li>
+					</ul>
+					<h3 class="h6 mt-3 mb-2">What accelerates plating wear</h3>
+					<ul>
+						<li>Exposure to water, sweat, perfume, lotion, hairspray, or cleaning chemicals</li>
+						<li>Sleeping, swimming, bathing, or exercising while wearing jewellery</li>
+						<li>Storing jewellery without its pouch (scratching and rubbing between pieces)</li>
+						<li>Skin that is naturally more acidic or oily may experience faster wear</li>
+						<li>Applying perfume or lotion after wearing jewellery (always apply before, let it dry, then wear)</li>
+					</ul>
+					<p>Following the care instructions in Section 5 will significantly extend the life of your plating.</p>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">3. Pearlica 6-month plating warranty</h2>
+					<p>All rose gold plated and rhodium plated Pearlica jewellery comes with a <strong>6-month plating warranty</strong> from the date of delivery. This warranty is part of the Pearlica Care Promise.</p>
+					<h3 class="h6 mt-3 mb-2">What is covered</h3>
+					<ul>
+						<li>Plating that peels, bubbles, or flakes off within 6 months of delivery — where due to a manufacturing defect and not misuse</li>
+						<li>Uneven, patchy, or inconsistent plating visible at the time of delivery</li>
+						<li>Significant colour inconsistency that does not match the product listing images</li>
+						<li>Plating that fades unusually fast (within 1–2 months) under normal everyday use without exposure to water or chemicals</li>
+					</ul>
+					<h3 class="h6 mt-3 mb-2">What is not covered</h3>
+					<ul>
+						<li>Natural gradual fading or thinning from regular everyday use over time</li>
+						<li>Plating wear caused by exposure to water, sweat, perfume, lotion, hairspray, or cleaning chemicals</li>
+						<li>Damage from swimming, bathing, exercising, or sleeping while wearing the jewellery</li>
+						<li>Scratches, dents, or physical damage from mishandling or improper storage</li>
+						<li>Items repaired, modified, or resized by anyone other than Pearlica</li>
+						<li>Items purchased during clearance sales or special promotional offers</li>
+						<li>Earrings (plating warranty does not apply — hygiene policy)</li>
+					</ul>
+					<h3 class="h6 mt-3 mb-2">How to claim the plating warranty</h3>
+					<ul>
+						<li>Contact us at <a href="mailto:contact@pearlica.in">contact@pearlica.in</a> within 6 months of your delivery date</li>
+						<li>Share your order ID, clear photographs or a short video showing the issue</li>
+						<li>Briefly describe when the issue appeared and how the item was used and stored</li>
+						<li>Our team will assess your claim within 3–5 working days</li>
+						<li>If approved: replacement of the item or store credit — your choice</li>
+					</ul>
+					<p>Warranty resolution is <strong>replacement or store credit only</strong>. Cash refunds are not provided under the warranty. The warranty period does not restart from the replacement date.</p>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">4. Pearlica anti-tarnish guarantee</h2>
+					<p>All Pearlica jewellery — rose gold plated and rhodium plated — comes with a <strong>6-month anti-tarnish guarantee</strong> from the date of delivery.</p>
+					<p><strong>What tarnish is:</strong> Tarnish is a natural reaction where silver reacts with sulphur compounds in the air, causing darkening. It is not a defect. Plating delays tarnishing; once plating wears thin, tarnish may appear.</p>
+					<p>Our anti-tarnish guarantee covers the jewellery’s performance under <strong>proper care</strong> — not misuse or neglect.</p>
+					<h3 class="h6 mt-3 mb-2">What the guarantee covers</h3>
+					<ul>
+						<li>Premature or excessive tarnishing within 6 months of delivery, where the piece has been stored and cared for as instructed in Section 5</li>
+						<li>Tarnishing or discolouration visible at the time of delivery — resolved at no cost</li>
+					</ul>
+					<h3 class="h6 mt-3 mb-2">What the guarantee does not cover</h3>
+					<ul>
+						<li>Tarnishing caused by exposure to water, sweat, perfume, chemicals, or cleaning agents</li>
+						<li>Items not stored in the provided sealed pouch when not in use</li>
+						<li>Natural tarnishing after plating has worn away from regular use</li>
+						<li>Discolouration caused by skin reactions or natural skin oils</li>
+					</ul>
+					<h3 class="h6 mt-3 mb-2">How to claim the anti-tarnish guarantee</h3>
+					<ul>
+						<li>Contact us at <a href="mailto:contact@pearlica.in">contact@pearlica.in</a> within 6 months of delivery</li>
+						<li>Share your order ID and clear photographs of the tarnishing</li>
+						<li>Confirm how the item was stored and used since delivery</li>
+						<li>If approved: we will clean, re-plate, or replace the item — our team will advise the best resolution</li>
+					</ul>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">5. Care instructions — how to keep your jewellery looking its best</h2>
+					<p>Following these instructions protects your plating, extends jewellery life, and keeps your warranty and guarantee valid. For more detail, see our <a href="<?php echo htmlspecialchars($base_path, ENT_QUOTES, 'UTF-8'); ?>policies/care-guide">Jewellery care guide</a>.</p>
+					<h3 class="h6 mt-3 mb-2">Daily care</h3>
+					<ul>
+						<li>Wipe gently with a soft, dry cloth after every use</li>
+						<li>Always put jewellery on last — after perfume, lotion, hairspray, or makeup</li>
+						<li>Remove all jewellery before washing hands, bathing, swimming, or any water activity</li>
+						<li>Remove jewellery before exercising, cooking, or activities involving sweat or heat</li>
+						<li>Avoid prolonged contact with sweat — remove and wipe clean after long wear</li>
+					</ul>
+					<h3 class="h6 mt-3 mb-2">Storage</h3>
+					<ul>
+						<li>Store each piece separately in its sealed anti-tarnish pouch</li>
+						<li>Keep in a cool, dry place away from humidity, sunlight, and extreme temperature</li>
+						<li>Do not store jewellery in the bathroom or near windows where moisture is present</li>
+					</ul>
+					<h3 class="h6 mt-3 mb-2">Cleaning</h3>
+					<ul>
+						<li>Clean gently with a soft dry cloth only — no abrasive materials</li>
+						<li>Do not use chemical jewellery cleaners, toothpaste, or baking soda on plated jewellery</li>
+						<li>Do not use ultrasonic or steam cleaners — these damage plating</li>
+					</ul>
+					<p>Failure to follow these care instructions may void the plating warranty and anti-tarnish guarantee. When evaluating claims, our team may ask about storage and usage conditions.</p>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">6. General warranty terms</h2>
+					<ul>
+						<li>The warranty and guarantee period begins from the date of delivery, not the date of purchase</li>
+						<li>Both the plating warranty and anti-tarnish guarantee are valid for 6 months from delivery</li>
+						<li>The warranty is non-transferable and applies only to the original purchaser</li>
+						<li>Pearlica reserves the right to inspect returned items before approving any claim</li>
+						<li>If a replacement is issued, the warranty period does not restart from the replacement date</li>
+						<li>Resolution under the warranty is replacement or store credit only — never a cash refund</li>
+						<li>Pearlica’s decision on warranty claims is final after evaluation</li>
+						<li>Claims must be raised within the 6-month period</li>
+						<li>Warranty does not apply to items purchased during clearance sales or special promotions</li>
+						<li>Earrings are excluded from the plating warranty due to hygiene policy restrictions</li>
+					</ul>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">7. BIS hallmarking</h2>
+					<p>Pearlica is committed to obtaining BIS (Bureau of Indian Standards) hallmarking certification for its 925 sterling silver jewellery. This certification is currently in progress.</p>
+					<p><strong>Until hallmarking is in place:</strong></p>
+					<ul>
+						<li>All products are guaranteed to use a certified 925 sterling silver base (92.5% pure silver)</li>
+						<li>The BIS logo and any licence number will <strong>not</strong> be displayed on any product, card, or website page until official certification is complete</li>
+						<li>Once certified, all materials including the Certificate of Authenticity card and website will be updated with the official BIS hallmark number</li>
+					</ul>
+					<p>Do not use the BIS logo or any BIS licence number on printed material, packaging, or the website until official certification is received. Using it without certification is illegal under the BIS Act, 2016.</p>
+
+					<h2 class="h5 text-uppercase mt-4 mb-2">Need assistance?</h2>
+					<p>For any warranty or care-related queries, please contact our support team:<br>
+						Email: <a href="mailto:contact@pearlica.in">contact@pearlica.in</a><br>
+						Phone: <a href="tel:+919699518449">+91 9699518449</a><br>
+						Hours: Monday to Saturday, 10:00 AM – 6:00 PM</p>
+					<p>Please keep your order ID and product photographs ready when raising a warranty claim.</p>
+
+					<?php include __DIR__ . '/includes/related-policies.php'; ?>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<?php include __DIR__ . '/../components/footer.php'; ?>
+
+	<script src="<?php echo htmlspecialchars($base_path, ENT_QUOTES, 'UTF-8'); ?>assets/js/jquery.min.js"></script>
+	<script src="<?php echo htmlspecialchars($base_path, ENT_QUOTES, 'UTF-8'); ?>assets/js/plugins.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+		integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+		crossorigin="anonymous"></script>
+	<?php include __DIR__ . '/../components/swiper_bundle_script.php'; ?>
+	<script src="<?php echo htmlspecialchars($base_path, ENT_QUOTES, 'UTF-8'); ?>assets/js/script.min.js"></script>
+</body>
+
+</html>

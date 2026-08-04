@@ -1,0 +1,16 @@
+.DS_Store
+
+migrations/*
+# Ignore uploaded media; keep folder placeholders
+uploads/products/*
+!uploads/products/.gitkeep
+uploads/collections/*
+!uploads/collections/.gitkeep
+uploads/banners/*
+!uploads/banners/.gitkeep
+# Admin-saved Razorpay test/live mode (runtime; legacy)
+storage/razorpay.mode
+
+# Blogs: Ignore everything in blogs except index.php
+blogs/*
+!blogs/index.php
