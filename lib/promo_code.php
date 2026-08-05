@@ -21,6 +21,53 @@ function promo_code_find_by_code(PDO $pdo, string $code): ?array
 }
 
 /**
+ * Normalize admin datetime-local input (Y-m-d\TH:i) to MySQL datetime string.
+ * Values are treated as store-local wall time (STORE_LAUNCH_TIMEZONE).
+ */
+function promo_code_normalize_datetime(?string $value): ?string
+{
+	$value = trim((string) $value);
+	if ($value === '') {
+		return null;
+	}
+	$value = str_replace('T', ' ', $value);
+	if (preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/', $value)) {
+		$value .= ':00';
+	}
+	return $value;
+}
+
+/**
+ * Current store-local time for promo window checks (matches admin datetime-local / IST).
+ */
+function promo_code_now(): DateTimeImmutable
+{
+	$tzName = defined('STORE_LAUNCH_TIMEZONE') ? STORE_LAUNCH_TIMEZONE : 'Asia/Kolkata';
+	return new DateTimeImmutable('now', new DateTimeZone($tzName));
+}
+
+/**
+ * Parse a stored promo datetime as store-local wall clock.
+ */
+function promo_code_parse_datetime(string $value): ?DateTimeImmutable
+{
+	$normalized = promo_code_normalize_datetime($value);
+	if ($normalized === null) {
+		return null;
+	}
+	$tz = new DateTimeZone(defined('STORE_LAUNCH_TIMEZONE') ? STORE_LAUNCH_TIMEZONE : 'Asia/Kolkata');
+	$dt = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $normalized, $tz);
+	if ($dt instanceof DateTimeImmutable) {
+		return $dt;
+	}
+	try {
+		return new DateTimeImmutable($normalized, $tz);
+	} catch (Exception $e) {
+		return null;
+	}
+}
+
+/**
  * Validate promo for a given subtotal (paise). Returns [ 'valid' => bool, 'discount_paise' => int, 'message' => string ].
  */
 function promo_code_validate(PDO $pdo, string $code, int $subtotal_paise): array
@@ -30,12 +77,18 @@ function promo_code_validate(PDO $pdo, string $code, int $subtotal_paise): array
 		return ['valid' => false, 'discount_paise' => 0, 'message' => 'Invalid or inactive code.'];
 	}
 
-	$now = date('Y-m-d H:i:s');
-	if ($promo['valid_from'] !== null && $promo['valid_from'] !== '' && (string) $promo['valid_from'] > $now) {
-		return ['valid' => false, 'discount_paise' => 0, 'message' => 'This code is not yet valid.'];
+	$now = promo_code_now();
+	if ($promo['valid_from'] !== null && $promo['valid_from'] !== '') {
+		$from = promo_code_parse_datetime((string) $promo['valid_from']);
+		if ($from !== null && $now < $from) {
+			return ['valid' => false, 'discount_paise' => 0, 'message' => 'This code is not yet valid.'];
+		}
 	}
-	if ($promo['valid_until'] !== null && $promo['valid_until'] !== '' && (string) $promo['valid_until'] < $now) {
-		return ['valid' => false, 'discount_paise' => 0, 'message' => 'This code has expired.'];
+	if ($promo['valid_until'] !== null && $promo['valid_until'] !== '') {
+		$until = promo_code_parse_datetime((string) $promo['valid_until']);
+		if ($until !== null && $now > $until) {
+			return ['valid' => false, 'discount_paise' => 0, 'message' => 'This code has expired.'];
+		}
 	}
 
 	$min = (int) ($promo['min_order_paise'] ?? 0);
@@ -103,8 +156,8 @@ function promo_code_create(PDO $pdo, array $data): int
 		(string) ($data['discount_type'] ?? 'percent'),
 		(float) ($data['discount_value'] ?? 0),
 		(int) ($data['min_order_paise'] ?? 0),
-		$data['valid_from'] ?? null,
-		$data['valid_until'] ?? null,
+		promo_code_normalize_datetime(isset($data['valid_from']) ? (string) $data['valid_from'] : null),
+		promo_code_normalize_datetime(isset($data['valid_until']) ? (string) $data['valid_until'] : null),
 		isset($data['usage_limit']) && $data['usage_limit'] !== '' ? (int) $data['usage_limit'] : null,
 		!empty($data['is_active']) ? 1 : 0,
 	]);
@@ -120,8 +173,8 @@ function promo_code_update(PDO $pdo, int $id, array $data): void
 		(string) ($data['discount_type'] ?? 'percent'),
 		(float) ($data['discount_value'] ?? 0),
 		(int) ($data['min_order_paise'] ?? 0),
-		$data['valid_from'] ?? null,
-		$data['valid_until'] ?? null,
+		promo_code_normalize_datetime(isset($data['valid_from']) ? (string) $data['valid_from'] : null),
+		promo_code_normalize_datetime(isset($data['valid_until']) ? (string) $data['valid_until'] : null),
 		isset($data['usage_limit']) && $data['usage_limit'] !== '' ? (int) $data['usage_limit'] : null,
 		!empty($data['is_active']) ? 1 : 0,
 		$id,
