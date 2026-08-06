@@ -143,6 +143,7 @@ $hero_banners = [];
 $mid_banners = [];
 try {
 	if ($pdo) {
+		homepage_banner_ensure_schema($pdo);
 		$hero_banners = homepage_banner_list_active($pdo, 'hero');
 		$mid_banners = homepage_banner_list_active($pdo, 'mid');
 	}
@@ -150,7 +151,17 @@ try {
 	$hero_banners = [];
 	$mid_banners = [];
 }
-if ($hero_banners === []) {
+if ($hero_banners !== []) {
+	foreach ($hero_banners as $i => $hb) {
+		$rel = (string) ($hb['image_url'] ?? '');
+		$hero_banners[$i]['src'] = homepage_banner_public_src($rel, $banners_upload_base);
+		$hero_banners[$i]['alt_text'] = trim((string) ($hb['alt_text'] ?? '')) !== ''
+			? (string) $hb['alt_text']
+			: 'Pearlica homepage banner';
+		$link = homepage_banner_safe_href($hb['link_url'] ?? null, '');
+		$hero_banners[$i]['link_url'] = $link !== '' ? $link : null;
+	}
+} else {
 	$hero_banners = [
 		[
 			'image_url' => '',
@@ -165,55 +176,18 @@ if ($hero_banners === []) {
 			'link_url' => null,
 		],
 	];
-} else {
-	$hero_ready = [];
-	foreach ($hero_banners as $hb) {
-		$rel = (string) ($hb['image_url'] ?? '');
-		if (!homepage_banner_file_exists($rel)) {
-			continue;
-		}
-		$hb['src'] = homepage_banner_public_src($rel, $banners_upload_base);
-		$hb['alt_text'] = trim((string) ($hb['alt_text'] ?? '')) !== ''
-			? (string) $hb['alt_text']
-			: 'Pearlica homepage banner';
-		$hb['link_url'] = homepage_banner_safe_href($hb['link_url'] ?? null, '');
-		if ($hb['link_url'] === '') {
-			$hb['link_url'] = null;
-		}
-		$hero_ready[] = $hb;
-	}
-	if ($hero_ready === []) {
-		$hero_banners = [
-			[
-				'image_url' => '',
-				'src' => $base_path . 'assets/images/banner_0.png',
-				'alt_text' => 'Pearlica launch offer banner — upto 50% off',
-				'link_url' => null,
-			],
-			[
-				'image_url' => '',
-				'src' => $base_path . 'assets/images/banner_1.png',
-				'alt_text' => 'Pearlica pearl jewelry banner — elegant 925 silver collection',
-				'link_url' => null,
-			],
-		];
-	} else {
-		$hero_banners = $hero_ready;
-	}
 }
 $mid_banner = null;
 if ($mid_banners !== []) {
 	$mb = $mid_banners[0];
 	$mid_rel = (string) ($mb['image_url'] ?? '');
-	if (homepage_banner_file_exists($mid_rel)) {
-		$mid_banner = [
-			'src' => homepage_banner_public_src($mid_rel, $banners_upload_base),
-			'alt_text' => trim((string) ($mb['alt_text'] ?? '')) !== ''
-				? (string) $mb['alt_text']
-				: 'Pearlica collection — shop silver jewellery',
-			'link_url' => homepage_banner_safe_href($mb['link_url'] ?? null, $base_path . 'products'),
-		];
-	}
+	$mid_banner = [
+		'src' => homepage_banner_public_src($mid_rel, $banners_upload_base),
+		'alt_text' => trim((string) ($mb['alt_text'] ?? '')) !== ''
+			? (string) $mb['alt_text']
+			: 'Pearlica collection — shop silver jewellery',
+		'link_url' => homepage_banner_safe_href($mb['link_url'] ?? null, $base_path . 'products'),
+	];
 }
 if ($mid_banner === null) {
 	$mid_banner = [
