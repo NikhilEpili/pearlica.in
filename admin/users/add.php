@@ -39,6 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		'products' => !empty($perms_input['products']),
 		'orders' => !empty($perms_input['orders']),
 		'banners' => !empty($perms_input['banners']),
+		'faqs' => !empty($perms_input['faqs']),
+		'policies' => !empty($perms_input['policies']),
 	]);
 	flash_set('success', 'User created.');
 	redirect(admin_url('users/'));
@@ -110,6 +112,16 @@ $error = flash_get('error');
 					<input class="form-check-input" type="checkbox" id="perm_banners" name="permissions[banners]" value="1"
 						<?= !isset($permissions_post['banners']) || !empty($permissions_post['banners']) ? 'checked' : '' ?>>
 					<label class="form-check-label" for="perm_banners">Homepage banners</label>
+				</div>
+				<div class="form-check">
+					<input class="form-check-input" type="checkbox" id="perm_faqs" name="permissions[faqs]" value="1"
+						<?= !isset($permissions_post['faqs']) || !empty($permissions_post['faqs']) ? 'checked' : '' ?>>
+					<label class="form-check-label" for="perm_faqs">FAQs</label>
+				</div>
+				<div class="form-check">
+					<input class="form-check-input" type="checkbox" id="perm_policies" name="permissions[policies]" value="1"
+						<?= !isset($permissions_post['policies']) || !empty($permissions_post['policies']) ? 'checked' : '' ?>>
+					<label class="form-check-label" for="perm_policies">Policies</label>
 				</div>
 				<small class="text-muted d-block mt-1">Super admins always have full access, regardless of these settings.</small>
 			</div>

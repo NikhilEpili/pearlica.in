@@ -16,6 +16,7 @@
 		if (drawer) {
 			drawer.classList.add('is-open');
 			drawer.setAttribute('aria-hidden', 'false');
+			document.body.classList.add('cart-drawer-open');
 			document.body.style.overflow = 'hidden';
 		}
 	}
@@ -24,6 +25,7 @@
 		if (drawer) {
 			drawer.classList.remove('is-open');
 			drawer.setAttribute('aria-hidden', 'true');
+			document.body.classList.remove('cart-drawer-open');
 			document.body.style.overflow = '';
 		}
 	}
@@ -54,9 +56,16 @@
 			openDrawer();
 			return;
 		}
-		if (e.target === overlay || e.target.closest('.cart-drawer-close-btn') || e.target.classList.contains('cart-drawer-close')) {
+		var continueBtn = e.target.closest('.cart-drawer-close, a.cart-drawer-continue');
+		if (e.target === overlay || e.target.closest('.cart-drawer-close-btn') || continueBtn) {
 			e.preventDefault();
 			closeDrawer();
+			if (continueBtn && continueBtn.tagName === 'A') {
+				var href = continueBtn.getAttribute('href');
+				if (href && href !== '#' && href !== '') {
+					window.location.href = href;
+				}
+			}
 			return;
 		}
 		var removeLink = e.target.closest('.cart-drawer-remove[data-remove]');

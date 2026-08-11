@@ -12,10 +12,17 @@ $base_path = store_base_path_from_request();
 $feed_url = defined('BLOG_FEED_JSON_URL') ? (string) BLOG_FEED_JSON_URL : 'https://www.pearlica.in/blogs/rss';
 $feed = pearlica_blog_feed_load($feed_url);
 
-$meta_title_full = 'Blog — Pearlica';
-$meta_description = $feed['site_description'] !== ''
-	? $feed['site_description']
-	: 'Stories, styling ideas, and updates from Pearlica — premium 925 sterling silver jewellery.';
+$blogs_heading = 'Journal';
+$blogs_meta_description = 'Stories, styling ideas, care tips, and studio updates from Pearlica — premium 925 sterling silver jewellery.';
+$feed_desc = trim((string) ($feed['site_description'] ?? ''));
+// Feed often returns the brand name alone; only use it when it looks like a real description.
+$feed_desc_len = function_exists('mb_strlen') ? mb_strlen($feed_desc, 'UTF-8') : strlen($feed_desc);
+if ($feed_desc !== '' && strcasecmp($feed_desc, 'Pearlica') !== 0 && $feed_desc_len >= 40) {
+	$blogs_meta_description = $feed_desc;
+}
+
+$meta_title_full = 'Journal — Pearlica Blog | 925 Silver Jewellery';
+$meta_description = $blogs_meta_description;
 $page_head_extra = '<link rel="stylesheet" href="' . htmlspecialchars($base_path, ENT_QUOTES, 'UTF-8') . 'assets/css/blogs-index.css">';
 ?>
 <!DOCTYPE html>
@@ -28,8 +35,8 @@ $page_head_extra = '<link rel="stylesheet" href="' . htmlspecialchars($base_path
 
 	<main class="blogs-index-main">
 		<section class="blogs-hero">
-			<p class="blogs-hero-label">Journal</p>
-			<h1 class="blogs-hero-title"><?php echo htmlspecialchars($feed['site_title'], ENT_QUOTES, 'UTF-8'); ?></h1>
+			<p class="blogs-hero-label">Blog</p>
+			<h1 class="blogs-hero-title"><?php echo htmlspecialchars($blogs_heading, ENT_QUOTES, 'UTF-8'); ?></h1>
 			<p class="blogs-hero-subtitle">Ideas, care tips, and behind-the-scenes from our studio.</p>
 		</section>
 

@@ -5,7 +5,8 @@
 .cart-drawer {
 	position: fixed;
 	inset: 0;
-	z-index: 1050;
+	/* Above mobile bottom dock (1050) so Continue Shopping / Checkout stay tappable */
+	z-index: 1060;
 	visibility: hidden;
 	pointer-events: none;
 }
@@ -98,7 +99,7 @@
 .mobile-search-drawer {
 	position: fixed;
 	inset: 0;
-	z-index: 1050;
+	z-index: 1060;
 	visibility: hidden;
 	pointer-events: none;
 }
@@ -338,6 +339,7 @@
 /* Summary — no border, spacing only */
 .cart-drawer-summary {
 	padding-top: 24px;
+	padding-bottom: env(safe-area-inset-bottom, 0px);
 	margin-top: auto;
 	flex-shrink: 0;
 }
@@ -437,6 +439,14 @@
 .cart-drawer-btn-ghost:hover {
 	color: #000;
 	opacity: 0.8;
+}
+
+/* Hide phone dock while cart (or search/more) drawer is open — same overlap bug as Filters */
+body.cart-drawer-open .mobile-bottom-dock,
+body:has(.mobile-search-drawer.is-open) .mobile-bottom-dock,
+body:has(.mobile-more-drawer.is-open) .mobile-bottom-dock {
+	visibility: hidden !important;
+	pointer-events: none !important;
 }
 
 .cart-drawer-panel .checkout-order-card .cart-qty-input:focus,

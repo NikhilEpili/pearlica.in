@@ -29,7 +29,7 @@ body.homepage .index-picks {
 	transform: none;
 }
 
-/* ---------- 0. Hero banners (stable ratio; never wider than viewport) ---------- */
+/* ---------- 0. Hero banners (image-driven ratio; reliable on PC + mobile) ---------- */
 .index-hero-banners {
 	background: var(--off-white);
 	overflow: hidden;
@@ -43,33 +43,34 @@ body.homepage .index-picks {
 	max-width: 100%;
 }
 
-/* Lock frame so mixed upload aspect ratios don’t jump / spill layout */
 .index-hero-banners .carousel-inner {
 	position: relative;
 	overflow: hidden;
-	aspect-ratio: 1280 / 600;
 }
 
+/* Active slide content sets height; transitioning slides fill the same frame */
 .index-hero-banners .carousel-item {
 	position: relative;
 	width: 100%;
-	height: 100%;
 	max-width: 100%;
+	height: auto;
 }
 
-/* Bootstrap positions non-active slides absolutely during transitions — keep them in the frame */
 .index-hero-banners .carousel-item-next,
 .index-hero-banners .carousel-item-prev,
 .index-hero-banners .carousel-item.active.carousel-item-start,
 .index-hero-banners .carousel-item.active.carousel-item-end {
+	position: absolute;
+	inset: 0;
+	width: 100%;
 	height: 100%;
 }
 
-.index-hero-banners .carousel-item > a {
+.index-hero-banners .carousel-item > a.index-hero-banner-link,
+.index-hero-banners .carousel-item > .index-hero-banner-img {
 	display: block;
 	position: relative;
 	width: 100%;
-	height: 100%;
 	max-width: 100%;
 	overflow: hidden;
 }
@@ -77,13 +78,26 @@ body.homepage .index-picks {
 .index-hero-banners .index-hero-banner-img {
 	box-sizing: border-box;
 	display: block;
-	position: absolute;
-	inset: 0;
-	max-width: 100% !important;
+	position: relative;
+	inset: auto;
 	width: 100% !important;
-	height: 100% !important;
+	max-width: 100% !important;
+	height: auto !important;
+	aspect-ratio: 1280 / 600;
 	object-fit: cover;
 	object-position: center center;
+}
+
+/* Absolute slides during Bootstrap transition still crop correctly */
+.index-hero-banners .carousel-item-next .index-hero-banner-img,
+.index-hero-banners .carousel-item-prev .index-hero-banner-img,
+.index-hero-banners .carousel-item.active.carousel-item-start .index-hero-banner-img,
+.index-hero-banners .carousel-item.active.carousel-item-end .index-hero-banner-img {
+	position: absolute;
+	inset: 0;
+	width: 100% !important;
+	height: 100% !important;
+	aspect-ratio: auto;
 }
 
 .index-hero-banners .carousel-control-prev,
@@ -129,9 +143,9 @@ body.homepage .index-picks {
 }
 
 @media (max-width: 767px) {
-	.index-hero-banners .carousel-inner {
-		/* Taller crop on phones so banners stay readable without horizontal scroll */
-		aspect-ratio: 4 / 3;
+	/* Keep closer to native 1280×600 so wide creative isn’t over-cropped */
+	.index-hero-banners .index-hero-banner-img {
+		aspect-ratio: 16 / 9;
 	}
 
 	.index-hero-banners .carousel-control-prev,
@@ -144,6 +158,10 @@ body.homepage .index-picks {
 	.index-hero-banners .carousel-control-next {
 		left: auto;
 		right: 8px;
+	}
+
+	.index-hero-banners .carousel-indicators {
+		margin-bottom: 8px;
 	}
 }
 
@@ -160,24 +178,24 @@ body.homepage .index-picks {
 	width: 100%;
 	max-width: 100%;
 	overflow: hidden;
-	aspect-ratio: 1280 / 600;
 	text-decoration: none;
 	color: inherit;
 }
 .index-mid-banner-img {
 	box-sizing: border-box;
 	display: block;
-	position: absolute;
-	inset: 0;
-	max-width: 100% !important;
+	position: relative;
+	inset: auto;
 	width: 100% !important;
-	height: 100% !important;
+	max-width: 100% !important;
+	height: auto !important;
+	aspect-ratio: 1280 / 600;
 	object-fit: cover;
 	object-position: center center;
 }
 @media (max-width: 767px) {
-	.index-mid-banner-link {
-		aspect-ratio: 4 / 3;
+	.index-mid-banner-img {
+		aspect-ratio: 16 / 9;
 	}
 }
 

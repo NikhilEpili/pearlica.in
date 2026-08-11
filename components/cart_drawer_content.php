@@ -15,7 +15,7 @@ $drawer_total = isset($cart_total) ? (float) $cart_total : 0;
 	<?php if (empty($drawer_items)): ?>
 		<div class="cart-drawer-empty">
 			<p class="cart-drawer-empty-text">Your cart is empty.</p>
-			<button type="button" class="cart-drawer-btn-ghost cart-drawer-close">Continue Shopping</button>
+			<a href="<?php echo h($drawer_base); ?>products" class="cart-drawer-btn-ghost cart-drawer-close cart-drawer-continue">Continue Shopping</a>
 		</div>
 	<?php else: ?>
 		<div class="checkout-order-card cart-drawer-order-card">
@@ -84,7 +84,7 @@ $drawer_total = isset($cart_total) ? (float) $cart_total : 0;
 				<span class="cart-drawer-summary-amount" id="cart-total-amount">₹<?php echo number_format($drawer_total, 0); ?></span>
 			</div>
 			<a href="<?php echo h($drawer_base); ?>checkout" class="cart-drawer-btn-primary">Checkout</a>
-			<button type="button" class="cart-drawer-btn-ghost cart-drawer-close">Continue Shopping</button>
+			<a href="<?php echo h($drawer_base); ?>products" class="cart-drawer-btn-ghost cart-drawer-close cart-drawer-continue">Continue Shopping</a>
 		</div>
 	<?php endif; ?>
 </div>

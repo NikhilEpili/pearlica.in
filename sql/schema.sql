@@ -29,6 +29,8 @@ CREATE TABLE `admin_user_permissions` (
   `can_products` TINYINT DEFAULT 1,
   `can_orders` TINYINT DEFAULT 1,
   `can_banners` TINYINT DEFAULT 1,
+  `can_faqs` TINYINT DEFAULT 1,
+  `can_policies` TINYINT DEFAULT 1,
   FOREIGN KEY (`user_id`) REFERENCES `admin_users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -331,6 +333,39 @@ CREATE TABLE `homepage_banners` (
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   INDEX `idx_homepage_banners_list` (`placement`, `is_active`, `sort_order`, `deleted_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 21. faqs (About page)
+DROP TABLE IF EXISTS `faqs`;
+CREATE TABLE `faqs` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `question` VARCHAR(512) NOT NULL,
+  `answer` TEXT NOT NULL,
+  `answer_html` TEXT NULL DEFAULT NULL,
+  `sort_order` INT NOT NULL DEFAULT 0,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  INDEX `idx_faqs_list` (`is_active`, `sort_order`, `deleted_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 22. site_policies (legal / care pages)
+DROP TABLE IF EXISTS `site_policies`;
+CREATE TABLE `site_policies` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `slug` VARCHAR(64) NOT NULL,
+  `title` VARCHAR(255) NOT NULL,
+  `lead_text` VARCHAR(255) NOT NULL DEFAULT '',
+  `effective_note` VARCHAR(255) NOT NULL DEFAULT '',
+  `meta_title` VARCHAR(255) NOT NULL DEFAULT '',
+  `meta_description` VARCHAR(512) NOT NULL DEFAULT '',
+  `body_html` MEDIUMTEXT NOT NULL,
+  `sort_order` INT NOT NULL DEFAULT 0,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `uq_site_policies_slug` (`slug`),
+  INDEX `idx_site_policies_sort` (`sort_order`, `slug`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

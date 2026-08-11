@@ -366,27 +366,17 @@ $product_share_url = (defined('SITE_PUBLIC_URL') && (string) SITE_PUBLIC_URL !==
 								<span class="product-sku-value"><?php echo h($product_sku_display); ?></span>
 							</p>
 						<?php endif; ?>
-						<?php if ($review_logged_in): ?>
-							<div class="product-rating-summary fade-up fade-up-delay-4" data-fade-up>
-								<div class="product-stars"
-									aria-label="<?php echo $rating_cnt > 0 ? h(number_format($rating_avg, 1)) . ' out of 5' : 'No reviews yet'; ?>">
-									<?php for ($si = 1; $si <= 5; $si++): ?>
-										<span
-											class="product-star <?php echo $rating_avg >= $si - 0.25 ? 'is-on' : ''; ?>">★</span>
-									<?php endfor; ?>
-								</div>
-								<span
-									class="product-rating-meta"><?php echo $rating_cnt > 0 ? h(number_format($rating_avg, 1)) . ' · ' . (int) $rating_cnt . ' verified review' . ($rating_cnt === 1 ? '' : 's') : 'No reviews yet'; ?></span>
+						<div class="product-rating-summary fade-up fade-up-delay-4" data-fade-up>
+							<div class="product-stars"
+								aria-label="<?php echo $rating_cnt > 0 ? h(number_format($rating_avg, 1)) . ' out of 5' : 'No reviews yet'; ?>">
+								<?php for ($si = 1; $si <= 5; $si++): ?>
+									<span
+										class="product-star <?php echo $rating_avg >= $si - 0.25 ? 'is-on' : ''; ?>">★</span>
+								<?php endfor; ?>
 							</div>
-						<?php else: ?>
-
-							<p class="fade-up fade-up-delay-4 text-muted small my-3" data-fade-up>
-								<a
-									href="<?php echo h($base_path); ?>login?return_url=<?php echo rawurlencode($review_return_url); ?>">Sign
-									in</a>
-								to see customer ratings and reviews.
-							</p>
-						<?php endif; ?>
+							<span
+								class="product-rating-meta"><?php echo $rating_cnt > 0 ? h(number_format($rating_avg, 1)) . ' · ' . (int) $rating_cnt . ' verified review' . ($rating_cnt === 1 ? '' : 's') : 'No reviews yet'; ?></span>
+						</div>
 
 						<?php if (!empty($spec_grid)): ?>
 							<div class="product-specs-grid fade-up fade-up-delay-5" data-fade-up>
@@ -411,7 +401,7 @@ $product_share_url = (defined('SITE_PUBLIC_URL') && (string) SITE_PUBLIC_URL !==
 							</div>
 							<div class="product-trust-badge" role="listitem">
 								<span class="material-symbols-outlined product-trust-ms" aria-hidden="true">sync</span>
-								<span>Easy 7 Days Return</span>
+								<span>7 Day Easy Exchange</span>
 							</div>
 							<div class="product-trust-badge" role="listitem">
 								<span class="material-symbols-outlined product-trust-ms"
@@ -598,94 +588,91 @@ $product_share_url = (defined('SITE_PUBLIC_URL') && (string) SITE_PUBLIC_URL !==
 						</p>
 					<?php endif; ?>
 
-					<?php if (!$review_logged_in): ?>
-						<p class="text-muted small mb-3">Reviews from verified buyers are shown to signed-in customers.</p>
-						<a href="<?php echo h($base_path); ?>login?return_url=<?php echo rawurlencode($review_return_url); ?>"
-							class="btn btn-outline-dark rounded-0 btn-sm text-uppercase letter-spacing-1">Sign in to view
-							reviews</a>
-					<?php else: ?>
-						<div class="product-reviews-summary-row">
-							<div class="product-reviews-avg">
-								<span
-									class="product-reviews-avg-num"><?php echo $rating_cnt > 0 ? h(number_format($rating_avg, 1)) : '—'; ?></span>
-								<div class="product-stars product-stars--lg" aria-hidden="true">
-									<?php for ($si = 1; $si <= 5; $si++): ?>
-										<span
-											class="product-star <?php echo $rating_avg >= $si - 0.25 ? 'is-on' : ''; ?>">★</span>
-									<?php endfor; ?>
-								</div>
-								<span class="product-reviews-count text-muted small"><?php echo (int) $rating_cnt; ?>
-									verified review<?php echo $rating_cnt === 1 ? '' : 's'; ?></span>
+					<div class="product-reviews-summary-row">
+						<div class="product-reviews-avg">
+							<span
+								class="product-reviews-avg-num"><?php echo $rating_cnt > 0 ? h(number_format($rating_avg, 1)) : '—'; ?></span>
+							<div class="product-stars product-stars--lg" aria-hidden="true">
+								<?php for ($si = 1; $si <= 5; $si++): ?>
+									<span
+										class="product-star <?php echo $rating_avg >= $si - 0.25 ? 'is-on' : ''; ?>">★</span>
+								<?php endfor; ?>
 							</div>
-							<div class="product-review-aside">
-								<?php if ($review_show_form): ?>
-									<form method="post" action="<?php echo h($base_path); ?>product-review-submit"
-										class="product-review-form" id="product-review-form" novalidate>
-										<input type="hidden" name="product_id" value="<?php echo (int) $product['id']; ?>">
-										<input type="hidden" name="slug" value="<?php echo h($product['slug']); ?>">
-										<input type="hidden" name="csrf_token" value="<?php echo h($product_review_csrf); ?>">
-										<p class="product-review-form-label">Your rating</p>
-										<p class="product-review-rating-error text-danger small mb-2 d-none"
-											id="review-rating-error" tabindex="-1" role="alert">Tap the stars to choose a rating
-											(1–5).</p>
-										<div class="product-review-stars-picker" data-review-star-picker>
-											<input type="hidden" name="rating" id="review-rating-input" value=""
-												autocomplete="off">
-											<div class="product-review-stars-track" role="radiogroup" aria-label="Star rating">
-												<?php for ($ri = 1; $ri <= 5; $ri++): ?>
-													<button type="button" role="radio" class="product-review-star-btn"
-														data-star-value="<?php echo $ri; ?>"
-														aria-label="<?php echo $ri; ?> out of 5 stars" aria-checked="false">
-														<span class="material-symbols-outlined product-review-star-glyph"
-															aria-hidden="true">star</span>
-													</button>
-												<?php endfor; ?>
-											</div>
-										</div>
-										<p class="product-review-verified-note text-muted small mb-2">Posting as
-											<strong><?php echo h($review_display_name !== '' ? $review_display_name : 'Customer'); ?></strong>
-											(verified purchase).
-										</p>
-										<label class="product-review-form-label" for="review-body">Review (optional)</label>
-										<textarea class="form-control form-control-sm mb-3" id="review-body"
-											name="body" rows="3" maxlength="5000"
-											placeholder="Share your experience with this piece"></textarea>
-										<button type="submit"
-											class="btn btn-dark rounded-0 btn-sm text-uppercase letter-spacing-1">Submit
-											review</button>
-									</form>
-								<?php elseif ($review_user_has_reviewed): ?>
-									<p class="text-muted small mb-0">You have already shared a review for this product. Thank
-										you.</p>
-								<?php elseif (!$review_has_purchased): ?>
-									<p class="text-muted small mb-0">After you purchase this item, you can leave a rating and
-										review here.</p>
-								<?php endif; ?>
-							</div>
+							<span class="product-reviews-count text-muted small"><?php echo (int) $rating_cnt; ?>
+								verified review<?php echo $rating_cnt === 1 ? '' : 's'; ?></span>
 						</div>
-						<?php if (!empty($review_list)): ?>
-							<ul class="product-reviews-list list-unstyled mb-0">
-								<?php foreach ($review_list as $rev): ?>
-									<li class="product-review-item">
-										<div class="product-review-item-stars">
-											<?php for ($si = 1; $si <= 5; $si++): ?>
-												<span
-													class="product-star <?php echo (int) ($rev['rating'] ?? 0) >= $si ? 'is-on' : ''; ?>">★</span>
+						<div class="product-review-aside">
+							<?php if (!$review_logged_in): ?>
+								<p class="text-muted small mb-2">Anyone can read reviews. Sign in to leave one after purchasing this product.</p>
+								<a href="<?php echo h($base_path); ?>login?return_url=<?php echo rawurlencode($review_return_url); ?>"
+									class="btn btn-outline-dark rounded-0 btn-sm text-uppercase letter-spacing-1">Sign in to write a review</a>
+							<?php elseif ($review_show_form): ?>
+								<form method="post" action="<?php echo h($base_path); ?>product-review-submit"
+									class="product-review-form" id="product-review-form" novalidate>
+									<input type="hidden" name="product_id" value="<?php echo (int) $product['id']; ?>">
+									<input type="hidden" name="slug" value="<?php echo h($product['slug']); ?>">
+									<input type="hidden" name="csrf_token" value="<?php echo h($product_review_csrf); ?>">
+									<p class="product-review-form-label">Your rating</p>
+									<p class="product-review-rating-error text-danger small mb-2 d-none"
+										id="review-rating-error" tabindex="-1" role="alert">Tap the stars to choose a rating
+										(1–5).</p>
+									<div class="product-review-stars-picker" data-review-star-picker>
+										<input type="hidden" name="rating" id="review-rating-input" value=""
+											autocomplete="off">
+										<div class="product-review-stars-track" role="radiogroup" aria-label="Star rating">
+											<?php for ($ri = 1; $ri <= 5; $ri++): ?>
+												<button type="button" role="radio" class="product-review-star-btn"
+													data-star-value="<?php echo $ri; ?>"
+													aria-label="<?php echo $ri; ?> out of 5 stars" aria-checked="false">
+													<span class="material-symbols-outlined product-review-star-glyph"
+														aria-hidden="true">star</span>
+												</button>
 											<?php endfor; ?>
 										</div>
-										<p class="product-review-item-meta text-muted small mb-1">
-											<?php echo h($rev['author_name'] ?? 'Customer'); ?> ·
-											<?php echo h(date('M j, Y', strtotime((string) ($rev['created_at'] ?? 'now')))); ?>
-										</p>
-										<?php if (trim((string) ($rev['body'] ?? '')) !== ''): ?>
-											<p class="product-review-item-body mb-0"><?php echo nl2br(h($rev['body'])); ?></p>
-										<?php endif; ?>
-									</li>
-								<?php endforeach; ?>
-							</ul>
-						<?php elseif ($rating_cnt === 0): ?>
-							<p class="text-muted small mb-0">No reviews yet. Verified buyers will appear here first.</p>
-						<?php endif; ?>
+									</div>
+									<p class="product-review-verified-note text-muted small mb-2">Posting as
+										<strong><?php echo h($review_display_name !== '' ? $review_display_name : 'Customer'); ?></strong>
+										(verified purchase).
+									</p>
+									<label class="product-review-form-label" for="review-body">Review (optional)</label>
+									<textarea class="form-control form-control-sm mb-3" id="review-body"
+										name="body" rows="3" maxlength="5000"
+										placeholder="Share your experience with this piece"></textarea>
+									<button type="submit"
+										class="btn btn-dark rounded-0 btn-sm text-uppercase letter-spacing-1">Submit
+										review</button>
+								</form>
+							<?php elseif ($review_user_has_reviewed): ?>
+								<p class="text-muted small mb-0">You have already shared a review for this product. Thank
+									you.</p>
+							<?php elseif (!$review_has_purchased): ?>
+								<p class="text-muted small mb-0">After you purchase this item, you can leave a rating and
+									review here.</p>
+							<?php endif; ?>
+						</div>
+					</div>
+					<?php if (!empty($review_list)): ?>
+						<ul class="product-reviews-list list-unstyled mb-0">
+							<?php foreach ($review_list as $rev): ?>
+								<li class="product-review-item">
+									<div class="product-review-item-stars">
+										<?php for ($si = 1; $si <= 5; $si++): ?>
+											<span
+												class="product-star <?php echo (int) ($rev['rating'] ?? 0) >= $si ? 'is-on' : ''; ?>">★</span>
+										<?php endfor; ?>
+									</div>
+									<p class="product-review-item-meta text-muted small mb-1">
+										<?php echo h($rev['author_name'] ?? 'Customer'); ?> ·
+										<?php echo h(date('M j, Y', strtotime((string) ($rev['created_at'] ?? 'now')))); ?>
+									</p>
+									<?php if (trim((string) ($rev['body'] ?? '')) !== ''): ?>
+										<p class="product-review-item-body mb-0"><?php echo nl2br(h($rev['body'])); ?></p>
+									<?php endif; ?>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+					<?php elseif ($rating_cnt === 0): ?>
+						<p class="text-muted small mb-0">No reviews yet. Verified buyers will appear here first.</p>
 					<?php endif; ?>
 				</div>
 

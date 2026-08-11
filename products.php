@@ -93,14 +93,6 @@ usort($subfilter_parent_ids, static function (int $a, int $b) use ($store_parent
 	return $name_a <=> $name_b;
 });
 
-$skip_in_main_category_list = [];
-foreach ($subfilter_parent_ids as $parent_id) {
-	$child_rows = $store_children_by_parent[$parent_id] ?? [];
-	foreach ($child_rows as $child_row) {
-		$skip_in_main_category_list[(int) ($child_row['id'] ?? 0)] = true;
-	}
-}
-
 $listing_heading = 'All Products';
 $cat_ids = $filter_state['cat'] ?? [];
 if (!empty($cat_ids) && is_array($cat_ids)) {
@@ -250,32 +242,8 @@ if ($listing_heading !== 'All Products') {
 									</div>
 								</div>
 								<?php endforeach; ?>
-								<div class="products-filter-grid__cell">
+								<div class="products-filter-grid__cell products-filter-grid__full">
 									<div class="products-filter-divider products-filter-divider--in-grid"></div>
-									<div class="products-filter-group">
-										<button type="button" class="products-filter-head" aria-expanded="true" data-filter="category">
-											<span>Category</span>
-											<span class="products-filter-toggle">−</span>
-										</button>
-										<div class="products-filter-body" id="filter-category">
-											<?php foreach ($categories as $cat): ?>
-												<?php
-												$cid = (int) $cat['id'];
-												if ((int) $cat['product_count'] <= 0 || isset($skip_in_main_category_list[$cid])) {
-													continue;
-												}
-												?>
-													<label class="products-filter-check">
-														<input type="checkbox" name="cat[]" value="<?php echo $cid; ?>"
-															<?php echo in_array($cid, $filter_state['cat'], true) ? 'checked' : ''; ?>>
-														<span class="products-filter-checkbox"></span>
-														<span class="products-filter-check-label"><?php echo h($cat['name']); ?></span>
-													</label>
-											<?php endforeach; ?>
-										</div>
-									</div>
-								</div>
-								<div class="products-filter-grid__cell">
 									<div class="products-filter-group">
 										<button type="button" class="products-filter-head" aria-expanded="true" data-filter="shopfor">
 											<span>Shop for</span>

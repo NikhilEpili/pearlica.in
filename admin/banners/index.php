@@ -32,7 +32,11 @@ $csrf = csrf_token();
 
 function admin_banner_src(array $b, string $uploads_base): string
 {
-	return homepage_banner_public_src((string) ($b['image_url'] ?? ''), $uploads_base);
+	$rel = (string) ($b['image_url'] ?? '');
+	if (function_exists('homepage_banner_public_src_versioned')) {
+		return homepage_banner_public_src_versioned($rel, $uploads_base);
+	}
+	return homepage_banner_public_src($rel, $uploads_base);
 }
 ?>
 <!DOCTYPE html>
@@ -45,6 +49,7 @@ function admin_banner_src(array $b, string $uploads_base): string
 	<p class="text-muted small mb-4">
 		Manage the homepage hero carousel and the mid-page banner. Recommended size about
 		<strong>1280×600</strong> (JPG/PNG/WebP, max 8MB). Drag hero slides to reorder.
+		On phones the storefront uses a 16:9 crop — keep important content toward the center.
 	</p>
 
 	<?php if (!empty($migration_hint)): ?>
@@ -77,9 +82,15 @@ function admin_banner_src(array $b, string $uploads_base): string
 				$id = (int) $b['id'];
 				$src = admin_banner_src($b, $uploads_base);
 				$active = !empty($b['is_active']);
+				$missing = !homepage_banner_file_exists((string) ($b['image_url'] ?? ''));
 				?>
-				<article class="card banner-admin-card mb-3" data-banner-id="<?= $id ?>">
+				<article class="card banner-admin-card mb-3<?= $missing ? ' border-warning' : '' ?>" data-banner-id="<?= $id ?>">
 					<div class="card-body">
+						<?php if ($missing): ?>
+							<div class="alert alert-warning py-2 px-3 small mb-3">
+								Image file missing on this server. Delete this banner and upload again, or the homepage may show a blank slide / fallback.
+							</div>
+						<?php endif; ?>
 						<div class="row g-3 align-items-start">
 							<div class="col-auto banner-admin-handle text-muted" title="Drag to reorder" aria-hidden="true">
 								<i class="fa-solid fa-grip-vertical"></i>
@@ -137,9 +148,15 @@ function admin_banner_src(array $b, string $uploads_base): string
 				$id = (int) $b['id'];
 				$src = admin_banner_src($b, $uploads_base);
 				$active = !empty($b['is_active']);
+				$missing = !homepage_banner_file_exists((string) ($b['image_url'] ?? ''));
 				?>
-				<article class="card banner-admin-card mb-3" data-banner-id="<?= $id ?>">
+				<article class="card banner-admin-card mb-3<?= $missing ? ' border-warning' : '' ?>" data-banner-id="<?= $id ?>">
 					<div class="card-body">
+						<?php if ($missing): ?>
+							<div class="alert alert-warning py-2 px-3 small mb-3">
+								Image file missing on this server. Delete this banner and upload again, or the homepage may show a blank slide / fallback.
+							</div>
+						<?php endif; ?>
 						<div class="row g-3 align-items-start">
 							<div class="col-sm-4 col-md-3">
 								<img src="<?= h($src) ?>" alt="" class="banner-admin-thumb rounded border w-100">

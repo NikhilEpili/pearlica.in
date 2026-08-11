@@ -57,9 +57,31 @@
 		var backdrop = document.getElementById('products-filter-backdrop');
 		if (!section || !drawer || !openBtn) return;
 
+		var scrollY = 0;
+
+		function lockBodyScroll() {
+			scrollY = window.scrollY || window.pageYOffset || 0;
+			document.body.classList.add('products-filter-drawer-open');
+			document.body.style.position = 'fixed';
+			document.body.style.top = '-' + scrollY + 'px';
+			document.body.style.left = '0';
+			document.body.style.right = '0';
+			document.body.style.width = '100%';
+		}
+
+		function unlockBodyScroll() {
+			document.body.classList.remove('products-filter-drawer-open');
+			document.body.style.position = '';
+			document.body.style.top = '';
+			document.body.style.left = '';
+			document.body.style.right = '';
+			document.body.style.width = '';
+			window.scrollTo(0, scrollY);
+		}
+
 		function open() {
 			section.classList.add('is-filter-open');
-			document.body.classList.add('products-filter-drawer-open');
+			lockBodyScroll();
 			drawer.setAttribute('aria-hidden', 'false');
 			openBtn.setAttribute('aria-expanded', 'true');
 			if (backdrop) {
@@ -69,7 +91,7 @@
 		}
 		function close() {
 			section.classList.remove('is-filter-open');
-			document.body.classList.remove('products-filter-drawer-open');
+			unlockBodyScroll();
 			drawer.setAttribute('aria-hidden', 'true');
 			openBtn.setAttribute('aria-expanded', 'false');
 			if (backdrop) {

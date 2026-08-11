@@ -232,16 +232,122 @@ function homepage_banner_public_src(string $rel, string $uploads_base): string
 	return rtrim($uploads_base, '/') . '/' . implode('/', $parts);
 }
 
+/** Absolute filesystem path for a banner rel path, or null. */
+function homepage_banner_disk_path(string $rel): ?string
+{
+	$rel = homepage_banner_safe_rel_path($rel);
+	if ($rel === '' || !defined('BANNER_UPLOAD_PATH') || BANNER_UPLOAD_PATH === '') {
+		return null;
+	}
+	$base = realpath(BANNER_UPLOAD_PATH);
+	if ($base === false) {
+		return null;
+	}
+	$candidate = BANNER_UPLOAD_PATH . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $rel);
+	if (!is_file($candidate)) {
+		return null;
+	}
+	$real = realpath($candidate);
+	if ($real === false) {
+		return null;
+	}
+	$prefix = $base . DIRECTORY_SEPARATOR;
+	if (!str_starts_with($real, $prefix) && $real !== $base) {
+		return null;
+	}
+
+	return $real;
+}
+
 /** True when the banner file exists under BANNER_UPLOAD_PATH. */
 function homepage_banner_file_exists(string $rel): bool
 {
+	return homepage_banner_disk_path($rel) !== null;
+}
+
+/** mtime for cache-busting, or 0 when the file is not local. */
+function homepage_banner_file_mtime(string $rel): int
+{
+	$path = homepage_banner_disk_path($rel);
+	if ($path === null) {
+		return 0;
+	}
+	$mtime = @filemtime($path);
+
+	return $mtime !== false ? (int) $mtime : 0;
+}
+
+/**
+ * Whether a DB banner row should be rendered on the storefront.
+ * - Local/dev: always allow (missing files may 302 to production via .htaccess).
+ * - Production: only when the file is present under BANNER_UPLOAD_PATH (media.php uses the same tree).
+ */
+function homepage_banner_is_displayable(string $rel): bool
+{
 	$rel = homepage_banner_safe_rel_path($rel);
-	if ($rel === '' || !defined('BANNER_UPLOAD_PATH')) {
+	if ($rel === '') {
 		return false;
 	}
-	$full = BANNER_UPLOAD_PATH . '/' . str_replace(['\\', '..'], '', $rel);
+	if (homepage_banner_file_exists($rel)) {
+		return true;
+	}
+	if (defined('BANNER_MEDIA_PUBLIC_BASE') && BANNER_MEDIA_PUBLIC_BASE !== '') {
+		return true;
+	}
+	if (function_exists('pearlica_is_local_dev_host') && pearlica_is_local_dev_host()) {
+		return true;
+	}
 
-	return is_file($full);
+	return false;
+}
+
+/**
+ * Public URL with optional ?v=mtime so browsers/CDNs pick up replaced files.
+ */
+function homepage_banner_public_src_versioned(string $rel, string $uploads_base): string
+{
+	$src = homepage_banner_public_src($rel, $uploads_base);
+	if ($src === '') {
+		return '';
+	}
+	$mtime = homepage_banner_file_mtime($rel);
+	if ($mtime > 0) {
+		$src .= (str_contains($src, '?') ? '&' : '?') . 'v=' . $mtime;
+	}
+
+	return $src;
+}
+
+/**
+ * Hydrate active banner rows for the storefront: skip broken production paths,
+ * build src/alt/link. Returns a reindexed list (may be empty).
+ *
+ * @param list<array<string, mixed>> $rows
+ * @return list<array{image_url: string, src: string, alt_text: string, link_url: ?string}>
+ */
+function homepage_banner_hydrate_for_display(array $rows, string $uploads_base, string $default_alt, string $link_fallback = ''): array
+{
+	$ready = [];
+	foreach ($rows as $row) {
+		$rel = (string) ($row['image_url'] ?? '');
+		if (!homepage_banner_is_displayable($rel)) {
+			continue;
+		}
+		$src = homepage_banner_public_src_versioned($rel, $uploads_base);
+		if ($src === '') {
+			continue;
+		}
+		$alt = trim((string) ($row['alt_text'] ?? ''));
+		$link = homepage_banner_safe_href($row['link_url'] ?? null, $link_fallback);
+		$ready[] = [
+			'image_url' => homepage_banner_safe_rel_path($rel),
+			'src' => $src,
+			'alt_text' => $alt !== '' ? $alt : $default_alt,
+			'link_url' => $link !== '' ? $link : null,
+		];
+	}
+
+	return $ready;
 }
 
 /**

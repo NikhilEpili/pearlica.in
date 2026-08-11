@@ -139,6 +139,8 @@ $view_all_url = 'products?sort=newest';
 
 require_once __DIR__ . '/lib/homepage_banner.php';
 $banners_upload_base = pearlica_uploads_banners_base($base_path ?? '/');
+$hero_fallback_src = $base_path . 'assets/images/banner_0.png';
+$mid_fallback_src = $base_path . 'assets/images/banner_1.png';
 $hero_banners = [];
 $mid_banners = [];
 try {
@@ -151,52 +153,45 @@ try {
 	$hero_banners = [];
 	$mid_banners = [];
 }
-if ($hero_banners !== []) {
-	foreach ($hero_banners as $i => $hb) {
-		$rel = (string) ($hb['image_url'] ?? '');
-		$hero_banners[$i]['src'] = homepage_banner_public_src($rel, $banners_upload_base);
-		$hero_banners[$i]['alt_text'] = trim((string) ($hb['alt_text'] ?? '')) !== ''
-			? (string) $hb['alt_text']
-			: 'Pearlica homepage banner';
-		$link = homepage_banner_safe_href($hb['link_url'] ?? null, '');
-		$hero_banners[$i]['link_url'] = $link !== '' ? $link : null;
-	}
-} else {
+
+// Skip orphan DB rows (active but file gone on production) so we never render blank boxes.
+// Local/dev still allows missing local files (htaccess / BANNER_MEDIA_PUBLIC_BASE → production).
+$hero_banners = homepage_banner_hydrate_for_display(
+	$hero_banners,
+	$banners_upload_base,
+	'Pearlica homepage banner'
+);
+if ($hero_banners === []) {
 	$hero_banners = [
 		[
 			'image_url' => '',
-			'src' => $base_path . 'assets/images/banner_0.png',
+			'src' => $hero_fallback_src,
 			'alt_text' => 'Pearlica launch offer banner — upto 50% off',
 			'link_url' => null,
 		],
 		[
 			'image_url' => '',
-			'src' => $base_path . 'assets/images/banner_1.png',
+			'src' => $mid_fallback_src,
 			'alt_text' => 'Pearlica pearl jewelry banner — elegant 925 silver collection',
 			'link_url' => null,
 		],
 	];
 }
-$mid_banner = null;
-if ($mid_banners !== []) {
-	$mb = $mid_banners[0];
-	$mid_rel = (string) ($mb['image_url'] ?? '');
-	$mid_banner = [
-		'src' => homepage_banner_public_src($mid_rel, $banners_upload_base),
-		'alt_text' => trim((string) ($mb['alt_text'] ?? '')) !== ''
-			? (string) $mb['alt_text']
-			: 'Pearlica collection — shop silver jewellery',
-		'link_url' => homepage_banner_safe_href($mb['link_url'] ?? null, $base_path . 'products'),
-	];
-}
-if ($mid_banner === null) {
-	$mid_banner = [
-		'src' => $base_path . 'assets/images/banner_1.png',
-		'alt_text' => 'Pearlica collection — shop silver jewellery',
-		'link_url' => $base_path . 'products',
-	];
-}
+
+$mid_ready = homepage_banner_hydrate_for_display(
+	$mid_banners,
+	$banners_upload_base,
+	'Pearlica collection — shop silver jewellery',
+	$base_path . 'products'
+);
+$mid_banner = $mid_ready[0] ?? [
+	'src' => $mid_fallback_src,
+	'alt_text' => 'Pearlica collection — shop silver jewellery',
+	'link_url' => $base_path . 'products',
+];
 $mid_banner_href = $mid_banner['link_url'];
+$banner_img_onerror = 'this.onerror=null;this.src=' . json_encode($hero_fallback_src, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ';';
+$mid_img_onerror = 'this.onerror=null;this.src=' . json_encode($mid_fallback_src, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ';';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -225,15 +220,17 @@ $mid_banner_href = $mid_banner['link_url'];
 					?>
 					<div class="carousel-item<?= $hi === 0 ? ' active' : '' ?>">
 						<?php if ($slide_link !== ''): ?>
-							<a href="<?= h($slide_link) ?>" class="d-block">
-								<img class="index-hero-banner-img img-fluid w-100 d-block" src="<?= h($slide_src); ?>"
+							<a href="<?= h($slide_link) ?>" class="d-block index-hero-banner-link">
+								<img class="index-hero-banner-img w-100 d-block" src="<?= h($slide_src); ?>"
 									alt="<?= h($slide_alt) ?>" width="1280" height="600"
-									sizes="100vw" decoding="async"<?= $hi === 0 ? ' fetchpriority="high"' : ' loading="lazy"' ?>>
+									sizes="100vw" decoding="async"
+									onerror="<?= h($banner_img_onerror) ?>"<?= $hi === 0 ? ' fetchpriority="high"' : ' loading="lazy"' ?>>
 							</a>
 						<?php else: ?>
-							<img class="index-hero-banner-img img-fluid w-100 d-block" src="<?= h($slide_src); ?>"
+							<img class="index-hero-banner-img w-100 d-block" src="<?= h($slide_src); ?>"
 								alt="<?= h($slide_alt) ?>" width="1280" height="600"
-								sizes="100vw" decoding="async"<?= $hi === 0 ? ' fetchpriority="high"' : ' loading="lazy"' ?>>
+								sizes="100vw" decoding="async"
+								onerror="<?= h($banner_img_onerror) ?>"<?= $hi === 0 ? ' fetchpriority="high"' : ' loading="lazy"' ?>>
 						<?php endif; ?>
 					</div>
 				<?php endforeach; ?>
@@ -315,8 +312,9 @@ $mid_banner_href = $mid_banner['link_url'];
 
 	<section class="index-mid-banner section-reveal" aria-label="Featured offer">
 		<a href="<?= h($mid_banner_href); ?>" class="index-mid-banner-link">
-			<img class="index-mid-banner-img img-fluid w-100 d-block" src="<?= h($mid_banner['src']); ?>"
-				alt="<?= h($mid_banner['alt_text']); ?>" width="1280" height="600" sizes="100vw" loading="lazy" decoding="async">
+			<img class="index-mid-banner-img w-100 d-block" src="<?= h($mid_banner['src']); ?>"
+				alt="<?= h($mid_banner['alt_text']); ?>" width="1280" height="600" sizes="100vw"
+				loading="lazy" decoding="async" onerror="<?= h($mid_img_onerror) ?>">
 		</a>
 	</section>
 

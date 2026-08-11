@@ -32,6 +32,13 @@ if (!defined('COLLECTION_MEDIA_PUBLIC_BASE')) {
 	define('COLLECTION_MEDIA_PUBLIC_BASE', $__media_fallback);
 	unset($__media_fallback);
 }
+if (!defined('BANNER_MEDIA_PUBLIC_BASE')) {
+	$__media_fallback = pearlica_is_local_dev_host() && !pearlica_upload_dir_has_media(BANNER_UPLOAD_PATH)
+		? 'https://www.pearlica.in/uploads/banners'
+		: '';
+	define('BANNER_MEDIA_PUBLIC_BASE', $__media_fallback);
+	unset($__media_fallback);
+}
 
 // Optional local secrets (server-only, gitignored).
 $__secrets_local = __DIR__ . '/secrets.local.php';

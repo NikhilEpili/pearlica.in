@@ -42,6 +42,18 @@
 			<span class="sidebar-text">Banners</span>
 		</a>
 		<?php endif; ?>
+		<?php if (current_user_can('faqs')): ?>
+		<a href="<?= h(admin_url('faqs/')) ?>" class="admin-sidebar-link" title="FAQs">
+			<span class="sidebar-icon" aria-hidden="true"><i class="fa-solid fa-circle-question"></i></span>
+			<span class="sidebar-text">FAQs</span>
+		</a>
+		<?php endif; ?>
+		<?php if (current_user_can('policies')): ?>
+		<a href="<?= h(admin_url('policies/')) ?>" class="admin-sidebar-link" title="Policies">
+			<span class="sidebar-icon" aria-hidden="true"><i class="fa-solid fa-file-contract"></i></span>
+			<span class="sidebar-text">Policies</span>
+		</a>
+		<?php endif; ?>
 
 		<?php if (current_user_is_super_admin()): ?>
 		<a href="<?= h(admin_url('media-health.php')) ?>" class="admin-sidebar-link" title="Media health">

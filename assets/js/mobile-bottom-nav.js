@@ -38,7 +38,8 @@ document.addEventListener('DOMContentLoaded', function () {
 	function syncBodyLock() {
 		var searchOpen = searchDrawer && searchDrawer.classList.contains('is-open');
 		var moreOpen = moreDrawer && moreDrawer.classList.contains('is-open');
-		document.body.style.overflow = searchOpen || moreOpen ? 'hidden' : '';
+		var cartOpen = document.body.classList.contains('cart-drawer-open');
+		document.body.style.overflow = searchOpen || moreOpen || cartOpen ? 'hidden' : '';
 	}
 
 	function openSearchDrawer(triggerBtn) {
