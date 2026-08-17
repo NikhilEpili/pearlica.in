@@ -7,10 +7,42 @@ function razorpay_settings_file_path(): string
 	return rtrim((string) $base, '/') . '/storage/razorpay.settings.json';
 }
 
+/** Default Razorpay mode when no saved settings exist (local = test, production host = live). */
+function razorpay_default_mode(): string
+{
+	if (defined('RAZORPAY_USE_LIVE')) {
+		return RAZORPAY_USE_LIVE ? 'live' : 'test';
+	}
+	if (function_exists('pearlica_is_local_dev_host') && pearlica_is_local_dev_host()) {
+		return 'test';
+	}
+	return 'live';
+}
+
+/**
+ * Resolve saved mode; never run test keys on the public production store unless explicitly allowed.
+ */
+function razorpay_effective_mode(array $settings): string
+{
+	$saved = strtolower(trim((string) ($settings['mode'] ?? '')));
+	if ($saved !== 'live' && $saved !== 'test') {
+		$saved = razorpay_default_mode();
+	}
+	if (
+		$saved === 'test'
+		&& function_exists('pearlica_is_local_dev_host')
+		&& !pearlica_is_local_dev_host()
+		&& !(defined('RAZORPAY_ALLOW_TEST_ON_PRODUCTION') && RAZORPAY_ALLOW_TEST_ON_PRODUCTION)
+	) {
+		return 'live';
+	}
+	return $saved;
+}
+
 function razorpay_settings_defaults(): array
 {
 	return [
-		'mode' => defined('RAZORPAY_USE_LIVE') && RAZORPAY_USE_LIVE ? 'live' : 'test',
+		'mode' => razorpay_default_mode(),
 		'test_key_id' => defined('RAZORPAY_TEST_KEY_ID') ? (string) RAZORPAY_TEST_KEY_ID : '',
 		'test_key_secret' => defined('RAZORPAY_TEST_KEY_SECRET') ? (string) RAZORPAY_TEST_KEY_SECRET : '',
 		'live_key_id' => defined('RAZORPAY_LIVE_KEY_ID') ? (string) RAZORPAY_LIVE_KEY_ID : '',

@@ -30,6 +30,7 @@ CREATE TABLE `admin_user_permissions` (
   `can_orders` TINYINT DEFAULT 1,
   `can_banners` TINYINT DEFAULT 1,
   `can_faqs` TINYINT DEFAULT 1,
+  `can_reels` TINYINT DEFAULT 1,
   `can_policies` TINYINT DEFAULT 1,
   FOREIGN KEY (`user_id`) REFERENCES `admin_users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -144,6 +145,7 @@ CREATE TABLE `store_users` (
   `email` VARCHAR(255) NULL DEFAULT NULL UNIQUE,
   `full_name` VARCHAR(255) DEFAULT '',
   `phone` VARCHAR(100) NULL DEFAULT NULL,
+  `password_hash` VARCHAR(255) NULL DEFAULT NULL,
   `address` VARCHAR(255) NULL DEFAULT NULL,
   `address_line_2` VARCHAR(255) NULL DEFAULT NULL,
   `city` VARCHAR(255) NULL DEFAULT NULL,
@@ -153,6 +155,24 @@ CREATE TABLE `store_users` (
   `gender` VARCHAR(50) NULL DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `store_user_addresses` (
+  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `store_user_id` INT UNSIGNED NOT NULL,
+  `label` VARCHAR(80) NULL DEFAULT NULL,
+  `full_name` VARCHAR(255) NOT NULL DEFAULT '',
+  `phone` VARCHAR(100) NULL DEFAULT NULL,
+  `address` VARCHAR(255) NOT NULL,
+  `address_line_2` VARCHAR(255) NULL DEFAULT NULL,
+  `city` VARCHAR(120) NOT NULL,
+  `state` VARCHAR(120) NOT NULL,
+  `pincode` VARCHAR(20) NOT NULL,
+  `is_default` TINYINT(1) NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY `idx_store_user_addresses_user` (`store_user_id`),
+  CONSTRAINT `fk_store_user_addresses_user` FOREIGN KEY (`store_user_id`) REFERENCES `store_users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 10. login_otps
@@ -350,7 +370,27 @@ CREATE TABLE `faqs` (
   INDEX `idx_faqs_list` (`is_active`, `sort_order`, `deleted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 22. site_policies (legal / care pages)
+-- 22. instagram_reels (homepage influencer carousel)
+DROP TABLE IF EXISTS `instagram_reels`;
+CREATE TABLE `instagram_reels` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `instagram_url` VARCHAR(512) NULL DEFAULT NULL,
+  `media_type` VARCHAR(8) NOT NULL DEFAULT 'reel',
+  `shortcode` VARCHAR(64) NOT NULL DEFAULT '',
+  `product_id` BIGINT UNSIGNED NULL DEFAULT NULL,
+  `sort_order` INT NOT NULL DEFAULT 0,
+  `published_sort_order` INT NULL DEFAULT NULL,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 0,
+  `video_path` VARCHAR(255) NULL DEFAULT NULL,
+  `poster_path` VARCHAR(255) NULL DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+  INDEX `idx_instagram_reels_list` (`is_active`, `sort_order`, `deleted_at`),
+  FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 23. site_policies (legal / care pages)
 DROP TABLE IF EXISTS `site_policies`;
 CREATE TABLE `site_policies` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,

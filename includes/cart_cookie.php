@@ -41,6 +41,17 @@ function cart_to_cookie(array $cart): void
 	]);
 }
 
+function cart_cookie_clear(): void
+{
+	setcookie(CART_COOKIE_NAME, '', [
+		'expires' => time() - 3600,
+		'path' => '/',
+		'secure' => false,
+		'httponly' => false,
+		'samesite' => 'Lax',
+	]);
+}
+
 function cart_count_from_cookie(): int
 {
 	$cart = cart_from_cookie();

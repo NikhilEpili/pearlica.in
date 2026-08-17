@@ -8,8 +8,10 @@ uploads/**/*.zip
 uploads/**/*.rar
 uploads/**/*.7z
 uploads/**/.DS_Store
-# Admin-saved Razorpay test/live mode (runtime; legacy)
+# Admin-saved Razorpay settings (runtime; contains key secrets)
 storage/razorpay.mode
+storage/razorpay.settings.json
+storage/cache/
 
 # Blogs: Ignore everything in blogs except index.php
 blogs/*

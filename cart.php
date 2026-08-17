@@ -11,12 +11,6 @@ require_once __DIR__ . '/lib/product.php';
 require_once __DIR__ . '/includes/cart_cookie.php';
 require_once __DIR__ . '/includes/store_base_path.php';
 
-ini_set('session.cookie_httponly', '1');
-ini_set('session.use_strict_mode', '1');
-if (session_status() === PHP_SESSION_NONE) {
-	session_start();
-}
-
 $base_path = store_base_path_from_request();
 $cart = cart_from_cookie();
 

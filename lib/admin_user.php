@@ -58,15 +58,16 @@ function admin_user_permissions_get(PDO $pdo, $user_id) {
         'orders' => true,
         'banners' => true,
         'faqs' => true,
+        'reels' => true,
         'policies' => true,
     ];
     try {
-        $stmt = $pdo->prepare('SELECT can_dashboard, can_categories, can_product_groups, can_collections, can_products, can_orders, can_banners, can_faqs, can_policies FROM admin_user_permissions WHERE user_id = ?');
+        $stmt = $pdo->prepare('SELECT can_dashboard, can_categories, can_product_groups, can_collections, can_products, can_orders, can_banners, can_faqs, can_reels, can_policies FROM admin_user_permissions WHERE user_id = ?');
         $stmt->execute([(int) $user_id]);
         $row = $stmt->fetch();
     } catch (Throwable $e) {
         try {
-            $stmt = $pdo->prepare('SELECT can_dashboard, can_categories, can_product_groups, can_collections, can_products, can_orders, can_banners, can_faqs FROM admin_user_permissions WHERE user_id = ?');
+            $stmt = $pdo->prepare('SELECT can_dashboard, can_categories, can_product_groups, can_collections, can_products, can_orders, can_banners, can_faqs, can_policies FROM admin_user_permissions WHERE user_id = ?');
             $stmt->execute([(int) $user_id]);
             $row = $stmt->fetch();
         } catch (Throwable $e2) {
@@ -97,6 +98,7 @@ function admin_user_permissions_get(PDO $pdo, $user_id) {
         'orders' => !empty($row['can_orders']),
         'banners' => array_key_exists('can_banners', $row) ? !empty($row['can_banners']) : true,
         'faqs' => array_key_exists('can_faqs', $row) ? !empty($row['can_faqs']) : true,
+        'reels' => array_key_exists('can_reels', $row) ? !empty($row['can_reels']) : true,
         'policies' => array_key_exists('can_policies', $row) ? !empty($row['can_policies']) : true,
     ];
 }
@@ -115,10 +117,11 @@ function admin_user_permissions_set(PDO $pdo, $user_id, array $perms) {
         'orders' => !empty($perms['orders']),
         'banners' => !empty($perms['banners']),
         'faqs' => !empty($perms['faqs']),
+        'reels' => !empty($perms['reels']),
         'policies' => !empty($perms['policies']),
     ];
     try {
-        $stmt = $pdo->prepare('REPLACE INTO admin_user_permissions (user_id, can_dashboard, can_categories, can_product_groups, can_collections, can_products, can_orders, can_banners, can_faqs, can_policies) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt = $pdo->prepare('REPLACE INTO admin_user_permissions (user_id, can_dashboard, can_categories, can_product_groups, can_collections, can_products, can_orders, can_banners, can_faqs, can_reels, can_policies) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([
             $user_id,
             $flags['dashboard'] ? 1 : 0,
@@ -129,11 +132,12 @@ function admin_user_permissions_set(PDO $pdo, $user_id, array $perms) {
             $flags['orders'] ? 1 : 0,
             $flags['banners'] ? 1 : 0,
             $flags['faqs'] ? 1 : 0,
+            $flags['reels'] ? 1 : 0,
             $flags['policies'] ? 1 : 0,
         ]);
     } catch (Throwable $e) {
         try {
-            $stmt = $pdo->prepare('REPLACE INTO admin_user_permissions (user_id, can_dashboard, can_categories, can_product_groups, can_collections, can_products, can_orders, can_banners, can_faqs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+            $stmt = $pdo->prepare('REPLACE INTO admin_user_permissions (user_id, can_dashboard, can_categories, can_product_groups, can_collections, can_products, can_orders, can_banners, can_faqs, can_policies) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
             $stmt->execute([
                 $user_id,
                 $flags['dashboard'] ? 1 : 0,

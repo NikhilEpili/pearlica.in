@@ -18,12 +18,7 @@ require_once __DIR__ . '/../../includes/cart_cookie.php';
 require_once __DIR__ . '/../../includes/auth_cookie.php';
 require_once __DIR__ . '/../../includes/indian_states.php';
 require_once __DIR__ . '/../../includes/checkout_shipping.php';
-
-ini_set('session.cookie_httponly', '1');
-ini_set('session.use_strict_mode', '1');
-if (session_status() === PHP_SESSION_NONE) {
-	session_start();
-}
+require_once __DIR__ . '/../../lib/store_user_address.php';
 
 ob_end_clean();
 header('Content-Type: application/json; charset=utf-8');
@@ -137,6 +132,20 @@ if ($guest_requested) {
 		echo json_encode(['ok' => false, 'error' => 'User not found']);
 		exit;
 	}
+
+	$address_row = null;
+	$selected_address_id = isset($_SESSION['checkout_address_id']) ? (int) $_SESSION['checkout_address_id'] : 0;
+	if ($selected_address_id > 0) {
+		$address_row = store_user_address_find($pdo, (int) $user_id, $selected_address_id);
+	}
+	if (!$address_row) {
+		$address_row = store_user_address_get_default($pdo, (int) $user_id);
+	}
+	if ($address_row) {
+		store_user_address_sync_profile($pdo, (int) $user_id, $address_row);
+		$user = store_user_find_by_id($pdo, (int) $user_id) ?? $user;
+	}
+
 	$shipping_name = trim((string) ($user['full_name'] ?? ''));
 	$shipping_email = trim((string) ($user['email'] ?? ''));
 	$shipping_phone = trim((string) ($user['phone'] ?? ''));
@@ -156,7 +165,7 @@ if ($guest_requested) {
 	}
 	if ($shipping_address_1 === '' || $shipping_city === '' || $shipping_state === '' || $shipping_pincode === '') {
 		http_response_code(400);
-		echo json_encode(['ok' => false, 'error' => 'Please add your shipping address in Profile before checkout.']);
+		echo json_encode(['ok' => false, 'error' => 'Please choose or add a delivery address before payment.']);
 		exit;
 	}
 	$order_store_user_id = (int) $user_id;

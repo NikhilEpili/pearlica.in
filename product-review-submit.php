@@ -12,12 +12,6 @@ require_once __DIR__ . '/lib/store_user.php';
 require_once __DIR__ . '/includes/auth_cookie.php';
 require_once __DIR__ . '/includes/store_base_path.php';
 
-ini_set('session.cookie_httponly', '1');
-ini_set('session.use_strict_mode', '1');
-if (session_status() === PHP_SESSION_NONE) {
-	session_start();
-}
-
 $base_path = store_base_path_from_request();
 
 function product_review_redirect(string $base_path, string $slug, string $query_key): void

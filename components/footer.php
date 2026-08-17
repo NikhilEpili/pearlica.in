@@ -61,7 +61,9 @@
 		</div>
 	</div>
 </footer>
+<?php include __DIR__ . '/ui_dialogs.php'; ?>
 <?php include __DIR__ . '/cookie_consent_banner.php'; ?>
+<script src="<?php echo htmlspecialchars($footer_base ?? '', ENT_QUOTES, 'UTF-8'); ?>assets/js/ui-dialog.js"></script>
 <script src="<?php echo htmlspecialchars($footer_base ?? '', ENT_QUOTES, 'UTF-8'); ?>assets/js/navbar-search.js"></script>
 <script src="<?php echo htmlspecialchars($footer_base ?? '', ENT_QUOTES, 'UTF-8'); ?>assets/js/mobile-bottom-nav.js"></script>
 <script src="<?php echo htmlspecialchars($footer_base ?? '', ENT_QUOTES, 'UTF-8'); ?>assets/js/nav-dropdowns.js"></script>

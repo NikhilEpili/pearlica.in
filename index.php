@@ -5,6 +5,7 @@ require_once __DIR__ . '/lib/product.php';
 require_once __DIR__ . '/lib/category.php';
 require_once __DIR__ . '/includes/wishlist_cookie.php';
 require_once __DIR__ . '/includes/shop_product_helpers.php';
+require_once __DIR__ . '/lib/instagram_reel.php';
 
 $base_path = '';
 
@@ -35,6 +36,14 @@ if ($new_arrivals_products === [] && $days > 0) {
 
 $wishlist_ids = array_keys(wishlist_from_cookie());
 $wishlist_return = 'index';
+
+$influencer_reels = [];
+try {
+	instagram_reel_ensure_schema($pdo);
+	$influencer_reels = instagram_reel_list_active($pdo);
+} catch (Throwable $e) {
+	$influencer_reels = [];
+}
 
 $index_price_category_tiles = [
 	[
@@ -142,34 +151,34 @@ $banners_upload_base = pearlica_uploads_banners_base($base_path ?? '/');
 $hero_fallback_src = $base_path . 'assets/images/banner_0.png';
 $mid_fallback_src = $base_path . 'assets/images/banner_1.png';
 $hero_banners = [];
-$mid_banners = [];
+$hero_rows = [];
 try {
 	if ($pdo) {
 		homepage_banner_ensure_schema($pdo);
-		$hero_banners = homepage_banner_list_active($pdo, 'hero');
-		$mid_banners = homepage_banner_list_active($pdo, 'mid');
+		$hero_rows = homepage_banner_list_active($pdo, 'hero');
 	}
 } catch (Throwable $e) {
-	$hero_banners = [];
-	$mid_banners = [];
+	$hero_rows = [];
 }
 
-// Skip orphan DB rows (active but file gone on production) so we never render blank boxes.
-// Local/dev still allows missing local files (htaccess / BANNER_MEDIA_PUBLIC_BASE → production).
+// Only use hardcoded fallback assets when no active banners exist in the DB.
+// Do not revert to defaults when admin banners exist but were filtered/skipped.
 $hero_banners = homepage_banner_hydrate_for_display(
-	$hero_banners,
+	$hero_rows,
 	$banners_upload_base,
 	'Pearlica homepage banner'
 );
-if ($hero_banners === []) {
+if ($hero_rows === []) {
 	$hero_banners = [
 		[
+			'id' => 0,
 			'image_url' => '',
 			'src' => $hero_fallback_src,
 			'alt_text' => 'Pearlica launch offer banner — upto 50% off',
 			'link_url' => null,
 		],
 		[
+			'id' => 0,
 			'image_url' => '',
 			'src' => $mid_fallback_src,
 			'alt_text' => 'Pearlica pearl jewelry banner — elegant 925 silver collection',
@@ -178,20 +187,6 @@ if ($hero_banners === []) {
 	];
 }
 
-$mid_ready = homepage_banner_hydrate_for_display(
-	$mid_banners,
-	$banners_upload_base,
-	'Pearlica collection — shop silver jewellery',
-	$base_path . 'products'
-);
-$mid_banner = $mid_ready[0] ?? [
-	'src' => $mid_fallback_src,
-	'alt_text' => 'Pearlica collection — shop silver jewellery',
-	'link_url' => $base_path . 'products',
-];
-$mid_banner_href = $mid_banner['link_url'];
-$banner_img_onerror = 'this.onerror=null;this.src=' . json_encode($hero_fallback_src, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ';';
-$mid_img_onerror = 'this.onerror=null;this.src=' . json_encode($mid_fallback_src, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) . ';';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -207,7 +202,7 @@ $mid_img_onerror = 'this.onerror=null;this.src=' . json_encode($mid_fallback_src
 	<!--
 		Home sequence (below global promo + header from navbar):
 		1) Banner (hero carousel)  2) Shop by price  3) Shop by category
-		4) New arrivals  5) Banner  6) Pearlica Picks (videos)  7) Footer
+		4) New arrivals  5) Influencer reels  6) Pearlica Picks (videos)  7) Footer
 	-->
 	<section class="index-hero-banners" aria-label="Pearlica featured banners">
 		<div id="index-hero-carousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4500" data-bs-pause="false" data-bs-touch="true">
@@ -223,14 +218,12 @@ $mid_img_onerror = 'this.onerror=null;this.src=' . json_encode($mid_fallback_src
 							<a href="<?= h($slide_link) ?>" class="d-block index-hero-banner-link">
 								<img class="index-hero-banner-img w-100 d-block" src="<?= h($slide_src); ?>"
 									alt="<?= h($slide_alt) ?>" width="1280" height="600"
-									sizes="100vw" decoding="async"
-									onerror="<?= h($banner_img_onerror) ?>"<?= $hi === 0 ? ' fetchpriority="high"' : ' loading="lazy"' ?>>
+									sizes="100vw" decoding="async"<?= $hi === 0 ? ' fetchpriority="high"' : ' loading="lazy"' ?>>
 							</a>
 						<?php else: ?>
 							<img class="index-hero-banner-img w-100 d-block" src="<?= h($slide_src); ?>"
 								alt="<?= h($slide_alt) ?>" width="1280" height="600"
-								sizes="100vw" decoding="async"
-								onerror="<?= h($banner_img_onerror) ?>"<?= $hi === 0 ? ' fetchpriority="high"' : ' loading="lazy"' ?>>
+								sizes="100vw" decoding="async"<?= $hi === 0 ? ' fetchpriority="high"' : ' loading="lazy"' ?>>
 						<?php endif; ?>
 					</div>
 				<?php endforeach; ?>
@@ -310,13 +303,7 @@ $mid_img_onerror = 'this.onerror=null;this.src=' . json_encode($mid_fallback_src
 		</div>
 	</section>
 
-	<section class="index-mid-banner section-reveal" aria-label="Featured offer">
-		<a href="<?= h($mid_banner_href); ?>" class="index-mid-banner-link">
-			<img class="index-mid-banner-img w-100 d-block" src="<?= h($mid_banner['src']); ?>"
-				alt="<?= h($mid_banner['alt_text']); ?>" width="1280" height="600" sizes="100vw"
-				loading="lazy" decoding="async" onerror="<?= h($mid_img_onerror) ?>">
-		</a>
-	</section>
+	<?php include __DIR__ . '/components/index_influencer_reels.php'; ?>
 
 	<?php include __DIR__ . '/components/index_pearlica_picks.php'; ?>
 
@@ -331,6 +318,9 @@ $mid_img_onerror = 'this.onerror=null;this.src=' . json_encode($mid_fallback_src
 	<script src="assets/js/script.min.js"></script>
 	<script src="assets/js/wishlist.js"></script>
 	<script src="assets/js/index.js"></script>
+	<?php if (!empty($influencer_reels)): ?>
+	<script src="assets/js/index-influencer-reels.js"></script>
+	<?php endif; ?>
 </body>
 
 </html>

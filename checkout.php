@@ -23,12 +23,6 @@ if (!function_exists('h')) {
 	}
 }
 
-ini_set('session.cookie_httponly', '1');
-ini_set('session.use_strict_mode', '1');
-if (session_status() === PHP_SESSION_NONE) {
-	session_start();
-}
-
 $base_path = store_base_path_from_request();
 $user_id = auth_cookie_user_id();
 $is_guest = $user_id === null;
@@ -137,6 +131,8 @@ $initial_grand_paise = (int) max(0, $merch_net_paise + $delivery_fee_paise);
 $cod_max_paise = (int) max(0, (int) CHECKOUT_COD_MAX_ORDER_RUPEES * 100);
 $cod_eligible_initial = $initial_grand_paise > 0 && $initial_grand_paise <= $cod_max_paise;
 $checkout_possible = $razorpay_ready || $cod_eligible_initial;
+$checkout_registration_complete = !$is_guest && $user && store_user_registration_complete($user);
+$checkout_shipping_complete = !$is_guest && $user && store_user_shipping_complete($user, $pdo);
 
 $page_title = 'Checkout | Pearlica 925 Silver Jewellery';
 ?>
@@ -152,7 +148,9 @@ $page_title = 'Checkout | Pearlica 925 Silver Jewellery';
 	data-shipping-fee-paise="<?php echo (int) CHECKOUT_SHIPPING_FEE_BELOW_MIN_PAISE; ?>"
 	data-cod-max-paise="<?php echo (int) $cod_max_paise; ?>"
 	data-razorpay-ready="<?php echo $razorpay_ready ? '1' : '0'; ?>"
-	data-is-guest="<?php echo $is_guest ? '1' : '0'; ?>">
+	data-is-guest="<?php echo $is_guest ? '1' : '0'; ?>"
+	data-registration-complete="<?php echo $checkout_registration_complete ? '1' : '0'; ?>"
+	data-shipping-complete="<?php echo $checkout_shipping_complete ? '1' : '0'; ?>">
 	<?php include __DIR__ . '/components/navbar.php'; ?>
 
 	<main class="checkout-main">
@@ -280,61 +278,12 @@ $page_title = 'Checkout | Pearlica 925 Silver Jewellery';
 									class="checkout-edit-link">Log in</a>
 							<?php else: ?>
 								<a href="<?php echo h($base_path); ?>profile" class="checkout-edit-link">Edit</a>
+								<a href="<?php echo h($base_path); ?>logout" class="checkout-edit-link ms-2">Sign out</a>
 							<?php endif; ?>
 						</div>
 						<?php if ($is_guest): ?>
-							<p class="small text-secondary mb-3">Guest checkout — enter your delivery details below. No OTP
-								required.</p>
-							<div class="checkout-guest-fields">
-								<div class="mb-2">
-									<label class="form-label small mb-0" for="guest-full-name">Full name</label>
-									<input type="text" id="guest-full-name" class="form-control form-control-sm" required
-										autocomplete="name" maxlength="200">
-								</div>
-								<div class="mb-2">
-									<label class="form-label small mb-0" for="guest-email">Email</label>
-									<input type="email" id="guest-email" class="form-control form-control-sm" required
-										autocomplete="email" maxlength="200">
-								</div>
-								<div class="mb-2">
-									<label class="form-label small mb-0" for="guest-phone">Mobile number</label>
-									<input type="tel" id="guest-phone" class="form-control form-control-sm" required
-										autocomplete="tel" inputmode="tel" maxlength="20" placeholder="10-digit mobile">
-								</div>
-								<div class="mb-2">
-									<label class="form-label small mb-0" for="guest-address">Address line 1</label>
-									<input type="text" id="guest-address" class="form-control form-control-sm" required
-										autocomplete="street-address" maxlength="500">
-								</div>
-								<div class="mb-2">
-									<label class="form-label small mb-0" for="guest-address-line-2">Address line 2
-										(optional)</label>
-									<input type="text" id="guest-address-line-2" class="form-control form-control-sm"
-										autocomplete="address-line2" maxlength="500">
-								</div>
-								<div class="row g-2">
-									<div class="col-md-6">
-										<label class="form-label small mb-0" for="guest-city">City</label>
-										<input type="text" id="guest-city" class="form-control form-control-sm" required
-											autocomplete="address-level2" maxlength="120">
-									</div>
-									<div class="col-md-6">
-										<label class="form-label small mb-0" for="guest-pincode">Pincode</label>
-										<input type="text" id="guest-pincode" class="form-control form-control-sm" required
-											autocomplete="postal-code" inputmode="numeric" maxlength="6" pattern="[0-9]{6}">
-									</div>
-								</div>
-								<div class="mb-0">
-									<label class="form-label small mb-0" for="guest-state">State</label>
-									<select id="guest-state" class="form-select form-select-sm" required
-										autocomplete="address-level1">
-										<option value="">Select state</option>
-										<?php foreach ($checkout_states as $st): ?>
-											<option value="<?php echo h($st); ?>"><?php echo h($st); ?></option>
-										<?php endforeach; ?>
-									</select>
-								</div>
-							</div>
+							<p class="small text-secondary mb-3">Sign in to review delivery details and place your order.</p>
+							<button type="button" class="checkout-btn-primary checkout-signin-trigger" id="checkout-signin-btn">Sign in to continue</button>
 						<?php else: ?>
 							<div class="checkout-recipient-name"><?php echo h($user['full_name'] ?: ($user['email'] ?? '')); ?>
 							</div>
@@ -347,11 +296,9 @@ $page_title = 'Checkout | Pearlica 925 Silver Jewellery';
 								<?php endif; ?>
 							</div>
 							<?php if ($shipping_line !== ''): ?>
-								<div class="checkout-address-block"><?php echo nl2br(h($shipping_line)); ?></div>
+								<div class="checkout-address-block" id="checkout-address-display"><?php echo nl2br(h($shipping_line)); ?></div>
 							<?php else: ?>
-								<div class="checkout-address-block">Add your address in <a
-										href="<?php echo h($base_path); ?>profile" class="checkout-inline-link">Profile</a>.
-								</div>
+								<div class="checkout-address-block" id="checkout-address-display">Your delivery address will be collected before payment.</div>
 							<?php endif; ?>
 						<?php endif; ?>
 					</div>

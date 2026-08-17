@@ -12,11 +12,6 @@ require_once __DIR__ . '/lib/product_review.php';
 require_once __DIR__ . '/includes/auth_cookie.php';
 require_once __DIR__ . '/lib/store_user.php';
 
-ini_set('session.cookie_httponly', '1');
-ini_set('session.use_strict_mode', '1');
-if (session_status() === PHP_SESSION_NONE) {
-	session_start();
-}
 if (empty($_SESSION['product_review_csrf']) || !is_string($_SESSION['product_review_csrf'])) {
 	$_SESSION['product_review_csrf'] = bin2hex(random_bytes(32));
 }

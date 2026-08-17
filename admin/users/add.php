@@ -40,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		'orders' => !empty($perms_input['orders']),
 		'banners' => !empty($perms_input['banners']),
 		'faqs' => !empty($perms_input['faqs']),
+		'reels' => !empty($perms_input['reels']),
 		'policies' => !empty($perms_input['policies']),
 	]);
 	flash_set('success', 'User created.');
@@ -117,6 +118,11 @@ $error = flash_get('error');
 					<input class="form-check-input" type="checkbox" id="perm_faqs" name="permissions[faqs]" value="1"
 						<?= !isset($permissions_post['faqs']) || !empty($permissions_post['faqs']) ? 'checked' : '' ?>>
 					<label class="form-check-label" for="perm_faqs">FAQs</label>
+				</div>
+				<div class="form-check">
+					<input class="form-check-input" type="checkbox" id="perm_reels" name="permissions[reels]" value="1"
+						<?= !isset($permissions_post['reels']) || !empty($permissions_post['reels']) ? 'checked' : '' ?>>
+					<label class="form-check-label" for="perm_reels">Instagram reels</label>
 				</div>
 				<div class="form-check">
 					<input class="form-check-input" type="checkbox" id="perm_policies" name="permissions[policies]" value="1"

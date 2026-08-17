@@ -2,6 +2,22 @@
 document.addEventListener('DOMContentLoaded', function () {
 	var btn = document.getElementById('checkout-place-order');
 	if (!btn) return;
+
+	function uiToast(message, type) {
+		if (window.PearlicaUI && PearlicaUI.toast) {
+			PearlicaUI.toast(message, { type: type || 'info' });
+		} else {
+			window.alert(message);
+		}
+	}
+
+	function uiAlert(message) {
+		if (window.PearlicaUI && PearlicaUI.alert) {
+			return PearlicaUI.alert(message, { type: 'error' });
+		}
+		window.alert(message);
+		return Promise.resolve();
+	}
 	var basePath = (document.body && document.body.getAttribute('data-base-path')) ? document.body.getAttribute('data-base-path') : '';
 	if (basePath && basePath[basePath.length - 1] !== '/') basePath += '/';
 
@@ -13,6 +29,20 @@ document.addEventListener('DOMContentLoaded', function () {
 		var combined = bp + relPath;
 		if (combined.charAt(0) !== '/') combined = '/' + combined;
 		return combined;
+	}
+
+	var signInBtn = document.getElementById('checkout-signin-btn');
+	if (signInBtn) {
+		signInBtn.addEventListener('click', function () {
+			if (window.PearlicaUI && typeof PearlicaUI.openLogin === 'function') {
+				PearlicaUI.openLogin({
+					returnUrl: 'checkout',
+					message: 'Sign in to complete your purchase securely.',
+				});
+			} else {
+				window.location.href = apiUrl('login?return_url=checkout');
+			}
+		});
 	}
 
 	var giftCb = document.getElementById('checkout-gift-packaging');
@@ -275,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		applyBtn.addEventListener('click', function () {
 			var code = (promoInput.value || '').trim();
 			if (!code) {
-				alert('Please enter a promo code');
+				uiToast('Please enter a promo code', 'error');
 				return;
 			}
 			var subtotalPaise = parseInt(document.body.getAttribute('data-subtotal-paise') || '0', 10);
@@ -298,13 +328,13 @@ document.addEventListener('DOMContentLoaded', function () {
 						setPromoUiApplied(true, displayCode, discountPaise / 100);
 						promoInput.value = '';
 						recalcCheckoutTotals();
-						alert(d.message || 'Discount applied');
+						uiToast(d.message || 'Discount applied', 'success');
 					} else {
-						alert(d.error || 'This promo code is not valid');
+						uiToast(d.error || 'This promo code is not valid', 'error');
 					}
 				})
 				.catch(function () {
-					alert('Unable to apply promo code');
+					uiToast('Unable to apply promo code', 'error');
 				})
 				.finally(function () {
 					applyBtn.disabled = false;
@@ -331,11 +361,11 @@ document.addEventListener('DOMContentLoaded', function () {
 						setPromoUiApplied(false);
 						recalcCheckoutTotals();
 					} else {
-						alert(d.error || 'Could not remove promo code');
+						uiToast(d.error || 'Could not remove promo code', 'error');
 					}
 				})
 				.catch(function () {
-					alert('Could not remove promo code');
+					uiToast('Could not remove promo code', 'error');
 				})
 				.finally(function () {
 					removePromoBtn.disabled = false;
@@ -344,138 +374,175 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	btn.addEventListener('click', function () {
-		var method = selectedPaymentMethod();
-		var csrf = btn.getAttribute('data-csrf-token') || '';
+		function formatCheckoutAddress(addr) {
+			if (!addr || typeof addr !== 'object') return '';
+			var line1 = String(addr.address || '').trim();
+			var line2 = String(addr.address_line_2 || '').trim();
+			var cityState = [addr.city, addr.state, addr.pincode].filter(function (part) {
+				return String(part || '').trim() !== '';
+			}).join(', ');
+			return [line1, line2, cityState].filter(function (part) { return part !== ''; }).join('\n');
+		}
 
-		btn.disabled = true;
-		btn.textContent = 'Please wait...';
-
-		if (method === 'cod') {
-			var codPayload = getAppliedPromoPayload(csrf);
-			codPayload.payment_method = 'cod';
-			if (document.body && document.body.getAttribute('data-is-guest') === '1') {
-				var gvc = validateGuestShipping();
-				if (!gvc.ok) {
-					alert(gvc.msg);
-					syncCheckoutPayState();
-					return;
-				}
-				Object.assign(codPayload, getGuestShippingPayload());
+		function updateCheckoutAddressDisplay(d) {
+			var el = document.getElementById('checkout-address-display');
+			if (!el || !d || !d.address) return;
+			var text = formatCheckoutAddress(d.address);
+			if (!text) return;
+			el.textContent = text;
+			el.innerHTML = text.replace(/\n/g, '<br>');
+			if (document.body) {
+				document.body.setAttribute('data-shipping-complete', '1');
 			}
-			postForm('checkout-place-cod', codPayload)
+		}
+
+		function scrollToPaymentSection() {
+			var target = document.querySelector('.checkout-payment-methods') || btn;
+			if (target && typeof target.scrollIntoView === 'function') {
+				target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			}
+		}
+
+		function proceedWithPayment() {
+			var method = selectedPaymentMethod();
+			var csrf = btn.getAttribute('data-csrf-token') || '';
+
+			btn.disabled = true;
+			btn.textContent = 'Please wait...';
+
+			if (method === 'cod') {
+				var codPayload = getAppliedPromoPayload(csrf);
+				codPayload.payment_method = 'cod';
+				postForm('checkout-place-cod', codPayload)
+					.then(function (res) {
+						var d = res && res.data ? res.data : {};
+						if (res && res.ok && d.order_id) {
+							window.location.href = apiUrl('order-success?order_id=' + encodeURIComponent(String(d.order_id)));
+							return;
+						}
+						throw new Error(d.error || 'Unable to place your order');
+					})
+					.catch(function (e) {
+						uiAlert(e.message || 'Unable to place your order');
+					})
+					.finally(function () {
+						syncCheckoutPayState();
+					});
+				return;
+			}
+
+			if (method !== 'razorpay') {
+				uiToast('Please choose a payment option.', 'error');
+				syncCheckoutPayState();
+				return;
+			}
+
+			var razorpayPayload = getAppliedPromoPayload(csrf);
+			Object.assign(razorpayPayload, getGuestShippingPayload());
+			razorpayPayload.payment_method = 'razorpay';
+			postForm('payment/razorpay/create-order', razorpayPayload)
 				.then(function (res) {
 					var d = res && res.data ? res.data : {};
-					if (res && res.ok && d.order_id) {
-						window.location.href = apiUrl('order-success?order_id=' + encodeURIComponent(String(d.order_id)));
-						return;
+					if (!res || !res.ok) {
+						throw new Error(d.error || 'Unable to start payment');
 					}
-					throw new Error(d.error || 'Unable to place your order');
+					var verifyNonce = d.verify_nonce ? String(d.verify_nonce) : '';
+					var oid = String(d.razorpay_order_id || '').trim();
+					var kid = String(d.key_id || '').trim();
+					if (!kid || !oid || oid.indexOf('order_') !== 0) {
+						throw new Error('Unable to start payment');
+					}
+					var pre = d.prefill && typeof d.prefill === 'object' ? d.prefill : {};
+					var prefill = {};
+					if (pre.name && String(pre.name).trim()) prefill.name = String(pre.name).trim();
+					if (pre.email && String(pre.email).trim()) prefill.email = String(pre.email).trim();
+					var cRaw = pre.contact ? String(pre.contact).replace(/\s/g, '') : '';
+					if (/^\+91[6-9]\d{9}$/.test(cRaw)) {
+						prefill.contact = cRaw;
+					}
+					var options = {
+						key: kid,
+						order_id: oid,
+						amount: d.amount,
+						currency: d.currency || 'INR',
+						name: 'Pearlica',
+						description: 'Pearlica order payment',
+						handler: function (response) {
+							btn.disabled = true;
+							btn.textContent = 'Confirming payment…';
+							var vbody = {
+								csrf_token: csrf,
+								razorpay_payment_id: response.razorpay_payment_id || '',
+								razorpay_order_id: response.razorpay_order_id || '',
+								razorpay_signature: response.razorpay_signature || ''
+							};
+							if (verifyNonce) vbody.verify_nonce = verifyNonce;
+							postForm('payment/razorpay/verify', vbody).then(function (ver) {
+								var v = ver && ver.data ? ver.data : {};
+								if (ver && ver.ok && v.order_id) {
+									window.location.href = apiUrl('order-success?order_id=' + encodeURIComponent(v.order_id));
+									return;
+								}
+								throw new Error(v.error || 'Payment verification failed');
+							}).catch(function (e) {
+								uiAlert(e.message || 'Payment verification failed');
+								syncCheckoutPayState();
+							});
+						},
+						modal: {
+							ondismiss: function () {
+								syncCheckoutPayState();
+							}
+						},
+						theme: { color: '#0a0a0a' }
+					};
+					if (Object.keys(prefill).length > 0) {
+						options.prefill = prefill;
+					}
+					function openWhenReady(attempts) {
+						if (typeof Razorpay === 'function') {
+							try {
+								(new Razorpay(options)).open();
+							} catch (err) {
+								uiAlert('Payment could not open. Please refresh the page and try again.');
+							}
+							return;
+						}
+						if (attempts > 80) {
+							uiAlert('Payment could not load. Please refresh the page.');
+							return;
+						}
+						setTimeout(function () { openWhenReady(attempts + 1); }, 40);
+					}
+					openWhenReady(0);
 				})
 				.catch(function (e) {
-					alert(e.message || 'Unable to place your order');
+					uiAlert(e.message || 'Unable to start payment');
 				})
 				.finally(function () {
 					syncCheckoutPayState();
 				});
-			return;
 		}
 
-		if (method !== 'razorpay') {
-			alert('Please choose a payment option.');
-			syncCheckoutPayState();
-			return;
-		}
-
-		var razorpayPayload = getAppliedPromoPayload(csrf);
-		razorpayPayload.payment_method = 'razorpay';
-		if (document.body && document.body.getAttribute('data-is-guest') === '1') {
-			var gv = validateGuestShipping();
-			if (!gv.ok) {
-				alert(gv.msg);
-				syncCheckoutPayState();
-				return;
-			}
-			Object.assign(razorpayPayload, getGuestShippingPayload());
-		}
-		postForm('payment/razorpay/create-order', razorpayPayload)
-			.then(function (res) {
-				var d = res && res.data ? res.data : {};
-				if (!res || !res.ok) {
-					throw new Error(d.error || 'Unable to start payment');
-				}
-				var verifyNonce = d.verify_nonce ? String(d.verify_nonce) : '';
-				var oid = String(d.razorpay_order_id || '').trim();
-				var kid = String(d.key_id || '').trim();
-				if (!kid || !oid || oid.indexOf('order_') !== 0) {
-					throw new Error('Unable to start payment');
-				}
-				var pre = d.prefill && typeof d.prefill === 'object' ? d.prefill : {};
-				var prefill = {};
-				if (pre.name && String(pre.name).trim()) prefill.name = String(pre.name).trim();
-				if (pre.email && String(pre.email).trim()) prefill.email = String(pre.email).trim();
-				// Contact only if strict +91 mobile; bad contact breaks Checkout / UPI token.
-				var cRaw = pre.contact ? String(pre.contact).replace(/\s/g, '') : '';
-				if (/^\+91[6-9]\d{9}$/.test(cRaw)) {
-					prefill.contact = cRaw;
-				}
-				// Orders API: with order_id, do NOT pass amount/currency — Razorpay binds from the order.
-				// Passing client amount + order_id often causes "Invalid Token".
-				var options = {
-					key: kid,
-					order_id: oid,
-					name: 'Pearlica',
-					description: 'Pearlica order payment',
-					handler: function (response) {
-						var vbody = {
-							csrf_token: csrf,
-							razorpay_payment_id: response.razorpay_payment_id || '',
-							razorpay_order_id: response.razorpay_order_id || '',
-							razorpay_signature: response.razorpay_signature || ''
-						};
-						if (verifyNonce) vbody.verify_nonce = verifyNonce;
-						postForm('payment/razorpay/verify', vbody).then(function (ver) {
-							var v = ver && ver.data ? ver.data : {};
-							if (ver && ver.ok && v.order_id) {
-								window.location.href = apiUrl('order-success?order_id=' + encodeURIComponent(v.order_id));
-								return;
-							}
-							throw new Error(v.error || 'Payment verification failed');
-						}).catch(function (e) {
-							alert(e.message || 'Payment verification failed');
-						});
-					},
-					modal: {
-						ondismiss: function () {
-							syncCheckoutPayState();
-						}
-					},
-					theme: { color: '#0a0a0a' }
-				};
-				if (Object.keys(prefill).length > 0) {
-					options.prefill = prefill;
-				}
-				function openWhenReady(attempts) {
-					if (typeof Razorpay === 'function') {
-						try {
-							(new Razorpay(options)).open();
-						} catch (err) {
-							alert('Payment could not open. Please refresh the page and try again.');
-						}
-						return;
-					}
-					if (attempts > 80) {
-						alert('Payment could not load. Please refresh the page.');
-						return;
-					}
-					setTimeout(function () { openWhenReady(attempts + 1); }, 40);
-				}
-				openWhenReady(0);
-			})
-			.catch(function (e) {
-				alert(e.message || 'Unable to start payment');
-			})
-			.finally(function () {
-				syncCheckoutPayState();
+		if (window.PearlicaUI && typeof PearlicaUI.ensureCheckoutReady === 'function') {
+			PearlicaUI.ensureCheckoutReady({
+				returnUrl: 'checkout',
+				dismissable: true,
+				skipAddressIfComplete: true,
+				onReady: function (d) {
+					updateCheckoutAddressDisplay(d);
+					scrollToPaymentSection();
+					proceedWithPayment();
+				},
 			});
+			return;
+		}
+
+		if (document.body && document.body.getAttribute('data-is-guest') === '1') {
+			window.location.href = apiUrl('login?return_url=checkout');
+			return;
+		}
+
+		proceedWithPayment();
 	});
 });

@@ -1,16 +1,28 @@
 <?php
 if (!defined('APP_ENV')) define('APP_ENV', 'production');
 if (!defined('APP_DEBUG')) define('APP_DEBUG', true);
+
+// Never expose PHP warnings/errors in HTTP responses; log server-side instead.
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
+ini_set('log_errors', '1');
+error_reporting(E_ALL);
+
 define('BASE_PATH', dirname(__DIR__));
 define('UPLOAD_PATH', BASE_PATH . '/uploads/products');
 /** Curated collection cover images (3:4 exports live under this tree). */
 define('COLLECTION_UPLOAD_PATH', BASE_PATH . '/uploads/collections');
 /** Homepage hero / mid-page banner images. */
 define('BANNER_UPLOAD_PATH', BASE_PATH . '/uploads/banners');
+/** Homepage influencer reel videos and their poster frames. */
+define('REEL_UPLOAD_PATH', BASE_PATH . '/uploads/reels');
 define('MAX_UPLOAD_SIZE', 5 * 1024 * 1024);
 /** Banners are often larger wide assets; still capped. */
 define('BANNER_MAX_UPLOAD_SIZE', 8 * 1024 * 1024);
+/** Reels are short vertical clips; keep them small enough to autoplay quickly. */
+define('REEL_MAX_VIDEO_SIZE', 32 * 1024 * 1024);
 define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+define('ALLOWED_VIDEO_TYPES', ['video/mp4', 'video/webm', 'video/quicktime']);
 
 require_once BASE_PATH . '/includes/uploads_url.php';
 /**
@@ -37,6 +49,13 @@ if (!defined('BANNER_MEDIA_PUBLIC_BASE')) {
 		? 'https://www.pearlica.in/uploads/banners'
 		: '';
 	define('BANNER_MEDIA_PUBLIC_BASE', $__media_fallback);
+	unset($__media_fallback);
+}
+if (!defined('REEL_MEDIA_PUBLIC_BASE')) {
+	$__media_fallback = pearlica_is_local_dev_host() && !pearlica_upload_dir_has_media(REEL_UPLOAD_PATH)
+		? 'https://www.pearlica.in/uploads/reels'
+		: '';
+	define('REEL_MEDIA_PUBLIC_BASE', $__media_fallback);
 	unset($__media_fallback);
 }
 
@@ -291,3 +310,6 @@ if (!function_exists('pearlica_store_is_live')) {
 		}
 	}
 }
+
+require_once BASE_PATH . '/includes/store_session.php';
+

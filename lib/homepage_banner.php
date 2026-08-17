@@ -59,7 +59,7 @@ function homepage_banner_list_active(PDO $pdo, string $placement): array
 {
 	$placement = homepage_banner_normalize_placement($placement);
 	$stmt = $pdo->prepare(
-		'SELECT id, image_url, alt_text, link_url, placement, sort_order
+		'SELECT id, image_url, alt_text, link_url, placement, sort_order, updated_at
 		 FROM homepage_banners
 		 WHERE deleted_at IS NULL AND is_active = 1 AND placement = ?
 		 ORDER BY sort_order ASC, id ASC'
@@ -129,6 +129,22 @@ function homepage_banner_insert(
 		$is_active ? 1 : 0,
 	]);
 	return (int) $pdo->lastInsertId();
+}
+
+function homepage_banner_update_image(PDO $pdo, int $id, string $image_url): bool
+{
+	$banner = homepage_banner_find_by_id($pdo, $id);
+	if (!$banner) {
+		return false;
+	}
+	$image_url = homepage_banner_safe_rel_path($image_url);
+	if ($image_url === '') {
+		return false;
+	}
+	$stmt = $pdo->prepare(
+		'UPDATE homepage_banners SET image_url = ? WHERE id = ? AND deleted_at IS NULL'
+	);
+	return $stmt->execute([$image_url, $id]);
 }
 
 function homepage_banner_update_meta(
@@ -302,45 +318,62 @@ function homepage_banner_is_displayable(string $rel): bool
 }
 
 /**
- * Public URL with optional ?v=mtime so browsers/CDNs pick up replaced files.
+ * Public URL with ?v=… cache-buster (file mtime, DB updated_at, and banner id).
  */
-function homepage_banner_public_src_versioned(string $rel, string $uploads_base): string
-{
+function homepage_banner_public_src_versioned(
+	string $rel,
+	string $uploads_base,
+	?int $banner_id = null,
+	?string $updated_at = null
+): string {
 	$src = homepage_banner_public_src($rel, $uploads_base);
 	if ($src === '') {
 		return '';
 	}
-	$mtime = homepage_banner_file_mtime($rel);
-	if ($mtime > 0) {
-		$src .= (str_contains($src, '?') ? '&' : '?') . 'v=' . $mtime;
+	$version = homepage_banner_file_mtime($rel);
+	if ($updated_at !== null && $updated_at !== '') {
+		$db_ts = strtotime($updated_at);
+		if ($db_ts !== false && $db_ts > $version) {
+			$version = $db_ts;
+		}
+	}
+	if ($banner_id !== null && $banner_id > 0) {
+		$version = max($version, $banner_id);
+	}
+	if ($version > 0) {
+		$src .= (str_contains($src, '?') ? '&' : '?') . 'v=' . $version;
 	}
 
 	return $src;
 }
 
 /**
- * Hydrate active banner rows for the storefront: skip broken production paths,
- * build src/alt/link. Returns a reindexed list (may be empty).
+ * Hydrate active banner rows for the storefront: build src/alt/link from DB rows.
+ * Trusts active DB rows (do not silently drop them — missing files should not
+ * revert the homepage to hardcoded fallback assets).
  *
  * @param list<array<string, mixed>> $rows
- * @return list<array{image_url: string, src: string, alt_text: string, link_url: ?string}>
+ * @return list<array{id: int, image_url: string, src: string, alt_text: string, link_url: ?string}>
  */
 function homepage_banner_hydrate_for_display(array $rows, string $uploads_base, string $default_alt, string $link_fallback = ''): array
 {
 	$ready = [];
 	foreach ($rows as $row) {
-		$rel = (string) ($row['image_url'] ?? '');
-		if (!homepage_banner_is_displayable($rel)) {
+		$rel = homepage_banner_safe_rel_path((string) ($row['image_url'] ?? ''));
+		if ($rel === '') {
 			continue;
 		}
-		$src = homepage_banner_public_src_versioned($rel, $uploads_base);
+		$id = (int) ($row['id'] ?? 0);
+		$updated_at = isset($row['updated_at']) ? (string) $row['updated_at'] : null;
+		$src = homepage_banner_public_src_versioned($rel, $uploads_base, $id > 0 ? $id : null, $updated_at);
 		if ($src === '') {
 			continue;
 		}
 		$alt = trim((string) ($row['alt_text'] ?? ''));
 		$link = homepage_banner_safe_href($row['link_url'] ?? null, $link_fallback);
 		$ready[] = [
-			'image_url' => homepage_banner_safe_rel_path($rel),
+			'id' => $id,
+			'image_url' => $rel,
 			'src' => $src,
 			'alt_text' => $alt !== '' ? $alt : $default_alt,
 			'link_url' => $link !== '' ? $link : null,

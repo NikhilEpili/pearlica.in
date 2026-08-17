@@ -2,14 +2,18 @@
 /**
  * Razorpay — single file: keys + API + Checkout helpers.
  *
- * Change RAZORPAY_USE_LIVE below (false = test, true = real money).
- * Keys are hardcoded here by request; rotate them in the Razorpay dashboard if exposed.
+ * Mode defaults to live on pearlica.in and test on localhost.
+ * Override in secrets.local.php: define('RAZORPAY_USE_LIVE', false);
  */
 declare(strict_types=1);
 require_once __DIR__ . '/razorpay_settings.php';
 
-/** false = test keys | true = live keys */
-const RAZORPAY_USE_LIVE = false;
+if (!defined('RAZORPAY_USE_LIVE')) {
+	define(
+		'RAZORPAY_USE_LIVE',
+		function_exists('pearlica_is_local_dev_host') ? !pearlica_is_local_dev_host() : false
+	);
+}
 
 const RAZORPAY_TEST_KEY_ID = 'rzp_test_SSfE5gZhpmhihe';
 const RAZORPAY_TEST_KEY_SECRET = 'npmiPf7ACtr8sKwBuNYciVHv';
@@ -23,7 +27,7 @@ const RAZORPAY_WEBHOOK_SECRET = '';
 function razorpay_config(): array
 {
 	$settings = razorpay_settings_load();
-	$live = strtolower((string) ($settings['mode'] ?? 'test')) === 'live';
+	$live = razorpay_effective_mode($settings) === 'live';
 	$key_id = $live ? (string) ($settings['live_key_id'] ?? '') : (string) ($settings['test_key_id'] ?? '');
 	$key_secret = $live ? (string) ($settings['live_key_secret'] ?? '') : (string) ($settings['test_key_secret'] ?? '');
 

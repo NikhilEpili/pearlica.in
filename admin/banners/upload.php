@@ -106,12 +106,20 @@ try {
 
 $banner = homepage_banner_find_by_id($pdo, $id);
 $uploads_base = uploads_banners_base_url();
+$updated_at = null;
+try {
+	$stmt = $pdo->prepare('SELECT updated_at FROM homepage_banners WHERE id = ? LIMIT 1');
+	$stmt->execute([$id]);
+	$updated_at = (string) ($stmt->fetchColumn() ?: '');
+} catch (Throwable $e) {
+	$updated_at = null;
+}
 echo json_encode([
 	'ok' => true,
 	'banner' => [
 		'id' => (int) $id,
 		'image_url' => $rel_path,
-		'src' => homepage_banner_public_src($rel_path, $uploads_base),
+		'src' => homepage_banner_public_src_versioned($rel_path, $uploads_base, (int) $id, $updated_at !== '' ? $updated_at : null),
 		'alt_text' => (string) ($banner['alt_text'] ?? ''),
 		'link_url' => (string) ($banner['link_url'] ?? ''),
 		'placement' => (string) ($banner['placement'] ?? $placement),

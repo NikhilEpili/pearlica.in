@@ -42,6 +42,12 @@
 			<span class="sidebar-text">Banners</span>
 		</a>
 		<?php endif; ?>
+		<?php if (current_user_can('reels')): ?>
+		<a href="<?= h(admin_url('reels/')) ?>" class="admin-sidebar-link" title="Instagram reels">
+			<span class="sidebar-icon" aria-hidden="true"><i class="fa-brands fa-instagram"></i></span>
+			<span class="sidebar-text">Instagram reels</span>
+		</a>
+		<?php endif; ?>
 		<?php if (current_user_can('faqs')): ?>
 		<a href="<?= h(admin_url('faqs/')) ?>" class="admin-sidebar-link" title="FAQs">
 			<span class="sidebar-icon" aria-hidden="true"><i class="fa-solid fa-circle-question"></i></span>

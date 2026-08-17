@@ -39,6 +39,8 @@ $base_path = isset($base_path) ? $base_path : '';
 	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/cart-drawer.css">
 	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/navbar-search.css">
 	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/mobile-bottom-nav.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/login.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/ui-dialog.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 	<link rel="icon" href="<?php echo $base_path; ?>assets/images/favicon.png" type="image/png">
 	<?php if (!empty($page_head_extra)) {

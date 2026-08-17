@@ -22,12 +22,6 @@ if ($user_id === null) {
 	exit;
 }
 
-ini_set('session.cookie_httponly', '1');
-ini_set('session.use_strict_mode', '1');
-if (session_status() === PHP_SESSION_NONE) {
-	session_start();
-}
-
 function profile_csrf_token(): string {
 	if (empty($_SESSION['profile_csrf_token'])) {
 		$_SESSION['profile_csrf_token'] = bin2hex(random_bytes(32));

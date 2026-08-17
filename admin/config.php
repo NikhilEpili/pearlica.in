@@ -6,10 +6,14 @@ if (!defined('APP_DEBUG')) {
 require_once ROOT . '/config/config.php';
 require_once ROOT . '/config/db.php';
 
-ini_set('session.use_strict_mode', '1');
-session_set_cookie_params(['path' => '/', 'httponly' => true, 'samesite' => 'Lax']);
-if (session_status() === PHP_SESSION_NONE) {
-	session_start();
+$pdo = $GLOBALS['pdo'] ?? null;
+if ($pdo instanceof PDO) {
+	require_once ROOT . '/lib/instagram_reel.php';
+	try {
+		instagram_reel_ensure_schema($pdo);
+	} catch (Throwable $e) {
+		error_log('Pearlica instagram_reels schema: ' . $e->getMessage());
+	}
 }
 
 function h($s)
@@ -111,6 +115,52 @@ function validate_csrf()
 {
 	$token = $_POST['csrf_token'] ?? '';
 	return hash_equals($_SESSION['csrf_token'] ?? '', $token);
+}
+
+/** Bytes for a php.ini shorthand size such as "8M" or "2G". */
+function ini_size_to_bytes($value)
+{
+	$value = trim((string) $value);
+	if ($value === '') {
+		return 0;
+	}
+	$number = (int) $value;
+	switch (strtolower(substr($value, -1))) {
+		case 'g':
+			return $number * 1024 * 1024 * 1024;
+		case 'm':
+			return $number * 1024 * 1024;
+		case 'k':
+			return $number * 1024;
+		default:
+			return $number;
+	}
+}
+
+/**
+ * True when the request body was larger than post_max_size. PHP then discards
+ * $_POST and $_FILES entirely, which otherwise surfaces as a bogus CSRF failure.
+ */
+function post_exceeded_max_size()
+{
+	if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+		return false;
+	}
+	if (!empty($_POST) || !empty($_FILES)) {
+		return false;
+	}
+	$length = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
+	$limit = ini_size_to_bytes(ini_get('post_max_size'));
+	return $length > 0 && $limit > 0 && $length > $limit;
+}
+
+/** Human-readable explanation for an oversized upload. */
+function post_max_size_error_message()
+{
+	return 'The upload was larger than this server allows ('
+		. ini_get('post_max_size') . ' total, '
+		. ini_get('upload_max_filesize') . ' per file). '
+		. 'Use a smaller video, or raise upload_max_filesize and post_max_size in PHP settings.';
 }
 
 function slug_from_string($s)
@@ -216,4 +266,15 @@ function uploads_banners_base_url() {
 	$req_uri = $_SERVER['REQUEST_URI'] ?? '/';
 	$base = preg_match('#^(.*?)/admin#', $req_uri, $m) ? $m[1] : '';
 	return rtrim($base, '/') . '/uploads/banners';
+}
+
+/** Public URL prefix for influencer reel videos and posters. */
+function uploads_reels_base_url() {
+	$req_uri = $_SERVER['REQUEST_URI'] ?? '/';
+	$base = preg_match('#^(.*?)/admin#', $req_uri, $m) ? $m[1] : '';
+	if (function_exists('pearlica_uploads_reels_base')) {
+		$site_base = $base === '' ? '/' : rtrim($base, '/') . '/';
+		return pearlica_uploads_reels_base($site_base);
+	}
+	return rtrim($base, '/') . '/uploads/reels';
 }

@@ -1,5 +1,5 @@
 /**
- * Homepage — order: hero banners, shop by price, shop by category, new arrivals, mid banner, Pearlica Picks (40% strip + header are global in navbar)
+ * Homepage — order: hero banners, shop by price, shop by category, new arrivals, influencer reels, Pearlica Picks (40% strip + header are global in navbar)
  * Tight, minimal, black/white/off-white. Editorial face: --font-editorial in tokens.css + head.php.
  */
 
@@ -46,6 +46,8 @@ body.homepage .index-picks {
 .index-hero-banners .carousel-inner {
 	position: relative;
 	overflow: hidden;
+	aspect-ratio: 1280 / 600;
+	min-height: clamp(140px, 42vw, 600px);
 }
 
 /* Active slide content sets height; transitioning slides fill the same frame */
@@ -143,15 +145,14 @@ body.homepage .index-picks {
 }
 
 @media (max-width: 767px) {
-	/* Keep closer to native 1280×600 so wide creative isn’t over-cropped */
-	.index-hero-banners .index-hero-banner-img {
-		aspect-ratio: 16 / 9;
+	.index-hero-banners .carousel-inner {
+		min-height: clamp(120px, 46vw, 420px);
 	}
 
 	.index-hero-banners .carousel-control-prev,
 	.index-hero-banners .carousel-control-next {
-		width: 34px;
-		height: 34px;
+		width: 44px;
+		height: 44px;
 		left: 8px;
 	}
 
@@ -165,7 +166,7 @@ body.homepage .index-picks {
 	}
 }
 
-/* Mid-page full-width banner (after New Arrivals) */
+/* Mid-page full-width banner (after influencer reels) */
 .index-mid-banner {
 	background: var(--off-white);
 	overflow: hidden;
@@ -180,6 +181,8 @@ body.homepage .index-picks {
 	overflow: hidden;
 	text-decoration: none;
 	color: inherit;
+	aspect-ratio: 1280 / 600;
+	min-height: clamp(120px, 42vw, 600px);
 }
 .index-mid-banner-img {
 	box-sizing: border-box;
@@ -194,8 +197,8 @@ body.homepage .index-picks {
 	object-position: center center;
 }
 @media (max-width: 767px) {
-	.index-mid-banner-img {
-		aspect-ratio: 16 / 9;
+	.index-mid-banner-link {
+		min-height: clamp(120px, 46vw, 420px);
 	}
 }
 
@@ -586,6 +589,274 @@ body.homepage .index-picks {
 }
 .index-products a:hover {
 	color: var(--black);
+}
+
+/* ---------- 2b. Influencer reels (circular 5-up carousel) ---------- */
+.index-influencers {
+	background: var(--white);
+	padding: clamp(40px, 5vw, 64px) clamp(16px, 4vw, 56px) clamp(48px, 5vw, 72px);
+	overflow: hidden;
+}
+.index-influencers-title {
+	font-family: var(--font-editorial);
+	font-size: clamp(22px, 3.5vw, 36px);
+	font-weight: 400;
+	color: var(--text-main);
+	margin: 0 0 clamp(28px, 4vw, 44px);
+	text-align: center;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+.index-influencers-carousel {
+	position: relative;
+	max-width: 1240px;
+	margin: 0 auto;
+	padding: 0 clamp(52px, 7vw, 72px);
+}
+.index-influencers-nav {
+	position: absolute;
+	top: 40%;
+	transform: translateY(-50%);
+	z-index: 30;
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	border: 1px solid var(--black);
+	background: var(--white);
+	color: var(--black);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	cursor: pointer;
+	transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.index-influencers-nav:hover {
+	background: var(--off-white);
+	transform: translateY(-50%) scale(1.04);
+}
+.index-influencers-nav:focus-visible {
+	outline: 2px solid var(--black);
+	outline-offset: 2px;
+}
+.index-influencers-nav[hidden] {
+	display: none;
+}
+.index-influencers-prev {
+	left: 0;
+}
+.index-influencers-next {
+	right: 0;
+}
+.index-influencers-stage {
+	overflow-x: hidden;
+	overflow-y: visible;
+	padding: 12px 0 8px;
+}
+.index-influencers-track {
+	position: relative;
+	height: clamp(360px, 58vw, 500px);
+	margin: 0 auto;
+}
+.index-influencers-slide {
+	--slide-distance: 0;
+	--slot-offset: 0;
+	position: absolute;
+	left: 50%;
+	top: 0;
+	width: clamp(168px, 16vw, 228px);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	transform-origin: center top;
+	transition:
+		transform 0.56s cubic-bezier(0.22, 1, 0.36, 1),
+		opacity 0.56s ease,
+		filter 0.56s ease;
+	will-change: transform, opacity;
+	cursor: pointer;
+}
+.index-influencers-slide.is-hidden {
+	pointer-events: none;
+}
+.index-influencers-slide.is-center {
+	cursor: default;
+}
+.index-influencers-reel {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 9 / 16;
+	border-radius: 4px;
+	overflow: hidden;
+	background: #0f0f0f;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+.index-influencers-media {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	background: #0f0f0f;
+}
+.index-influencers-thumb {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	z-index: 1;
+	transition: filter 0.56s ease, opacity 0.56s ease;
+	filter: brightness(calc(1 - (var(--slide-distance) * 0.12)));
+}
+.index-influencers-slide[data-thumb="failed"] .index-influencers-thumb {
+	opacity: 0;
+}
+.index-influencers-video {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	z-index: 2;
+	opacity: 0;
+	transition: opacity 0.4s ease;
+	background: #0f0f0f;
+}
+.index-influencers-slide.is-center .index-influencers-video {
+	opacity: 1;
+}
+.index-influencers-open {
+	position: absolute;
+	right: 8px;
+	bottom: 8px;
+	z-index: 4;
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.45);
+	color: #fff;
+	font-size: 14px;
+	text-decoration: none;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.3s ease, background 0.2s ease;
+}
+.index-influencers-slide.is-center .index-influencers-open {
+	opacity: 1;
+	pointer-events: auto;
+}
+.index-influencers-open:hover {
+	background: rgba(0, 0, 0, 0.7);
+	color: #fff;
+}
+.index-influencers-embed {
+	position: absolute;
+	left: 0;
+	top: 0;
+	transform-origin: 0 0;
+	opacity: 0;
+	visibility: hidden;
+	z-index: 2;
+	pointer-events: none;
+	transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.index-influencers-slide.is-center .index-influencers-embed,
+.index-influencers-slide[data-thumb="failed"] .index-influencers-embed {
+	opacity: 1;
+	visibility: visible;
+}
+.index-influencers-slide.is-center .index-influencers-embed {
+	pointer-events: auto;
+}
+.index-influencers-slide.is-center .index-influencers-thumb {
+	opacity: 0;
+}
+.index-influencers-iframe {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border: 0;
+	background: #0f0f0f;
+}
+.index-influencers-caption {
+	margin-top: 14px;
+	text-align: center;
+	width: 100%;
+	min-width: 0;
+	opacity: calc(1 - (var(--slide-distance) * 0.35));
+	transition: opacity 0.56s ease;
+}
+.index-influencers-slide.is-center .index-influencers-caption {
+	opacity: 1;
+}
+.index-influencers-product-name {
+	font-family: var(--font-body);
+	font-size: 11px;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--text-main);
+	margin: 0 0 4px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.index-influencers-product-name a {
+	color: inherit;
+	text-decoration: none;
+}
+.index-influencers-product-name a:hover {
+	color: var(--black);
+}
+.index-influencers-price {
+	font-family: var(--font-body);
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--text-main);
+	margin: 0;
+}
+.index-influencers-price-original {
+	margin-left: 6px;
+	font-size: 13px;
+	font-weight: 400;
+	color: var(--text-muted);
+	text-decoration: line-through;
+}
+@media (max-width: 767px) {
+	.index-influencers {
+		padding: 40px 12px 48px;
+	}
+	.index-influencers-carousel {
+		padding: 0 44px;
+	}
+	.index-influencers-nav {
+		width: 38px;
+		height: 38px;
+		top: 36%;
+	}
+	.index-influencers-track {
+		height: clamp(320px, 84vw, 420px);
+	}
+	.index-influencers-slide {
+		width: clamp(148px, 42vw, 196px);
+	}
+}
+@media (max-width: 575px) {
+	.index-influencers-title {
+		font-size: 22px;
+		letter-spacing: 0.03em;
+		margin-bottom: 24px;
+	}
+	.index-influencers-product-name {
+		font-size: 10px;
+	}
+	.index-influencers-price {
+		font-size: 13px;
+	}
 }
 
 /* Keep Add-to-Cart strip text readable on hover/focus (override generic link hover) */

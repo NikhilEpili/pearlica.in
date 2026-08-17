@@ -20,12 +20,6 @@ require_once __DIR__ . '/payment/shiprocket/shiprocket_init.php';
 require_once __DIR__ . '/lib/email_notifications.php';
 require_once __DIR__ . '/lib/refrens.php';
 
-ini_set('session.cookie_httponly', '1');
-ini_set('session.use_strict_mode', '1');
-if (session_status() === PHP_SESSION_NONE) {
-	session_start();
-}
-
 ob_end_clean();
 header('Content-Type: application/json; charset=utf-8');
 

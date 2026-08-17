@@ -22,6 +22,7 @@ $settings = razorpay_settings_load();
 $cfg = razorpay_config();
 $key_id_active = (string) ($cfg['key_id'] ?? '');
 $mode = strtoupper((string) ($cfg['mode'] ?? ''));
+$razorpay_prod_host = function_exists('pearlica_is_local_dev_host') && !pearlica_is_local_dev_host();
 $success = flash_get('success');
 $error = flash_get('error');
 
@@ -34,8 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$test_secret_in = trim((string) ($_POST['test_key_secret'] ?? ''));
 	$live_secret_in = trim((string) ($_POST['live_key_secret'] ?? ''));
 	$webhook_secret_in = trim((string) ($_POST['webhook_secret'] ?? ''));
+	$post_mode = (string) ($_POST['mode'] ?? 'test') === 'live' ? 'live' : 'test';
+	if ($razorpay_prod_host) {
+		$post_mode = 'live';
+	}
 	$next = [
-		'mode' => (string) ($_POST['mode'] ?? 'test') === 'live' ? 'live' : 'test',
+		'mode' => $post_mode,
 		'test_key_id' => trim((string) ($_POST['test_key_id'] ?? '')),
 		'test_key_secret' => $test_secret_in !== '' ? $test_secret_in : (string) ($current['test_key_secret'] ?? ''),
 		'live_key_id' => trim((string) ($_POST['live_key_id'] ?? '')),
@@ -77,10 +82,18 @@ $page_title = 'Razorpay';
 				<?= csrf_field() ?>
 				<div class="col-md-3">
 					<label class="form-label">Mode</label>
-					<select class="form-select" name="mode">
-						<option value="test" <?= strtolower((string) ($cfg['mode'] ?? '')) === 'test' ? 'selected' : '' ?>>Test</option>
-						<option value="live" <?= strtolower((string) ($cfg['mode'] ?? '')) === 'live' ? 'selected' : '' ?>>Live</option>
-					</select>
+					<?php if ($razorpay_prod_host): ?>
+						<input type="hidden" name="mode" value="live">
+						<select class="form-select" disabled aria-readonly="true">
+							<option value="live" selected>Live (locked on production)</option>
+						</select>
+						<small class="text-muted">Test mode is only available on localhost.</small>
+					<?php else: ?>
+						<select class="form-select" name="mode">
+							<option value="test" <?= strtolower((string) ($cfg['mode'] ?? '')) === 'test' ? 'selected' : '' ?>>Test</option>
+							<option value="live" <?= strtolower((string) ($cfg['mode'] ?? '')) === 'live' ? 'selected' : '' ?>>Live</option>
+						</select>
+					<?php endif; ?>
 				</div>
 				<div class="col-md-3">
 					<label class="form-label">Currency</label>

@@ -35,7 +35,7 @@ function store_user_create(PDO $pdo, string $email): int
 
 function store_user_update(PDO $pdo, int $id, array $data): void
 {
-	$allowed = ['email', 'full_name', 'phone', 'address', 'address_line_2', 'city', 'state', 'pincode', 'birthday', 'gender'];
+	$allowed = ['email', 'full_name', 'phone', 'address', 'address_line_2', 'city', 'state', 'pincode', 'birthday', 'gender', 'password_hash'];
 	$set = [];
 	$params = [];
 	foreach ($allowed as $k) {
@@ -47,6 +47,9 @@ function store_user_update(PDO $pdo, int $id, array $data): void
 			$v = ($v === '' || $v === null) ? null : $v;
 			$set[] = 'birthday = ?';
 			$params[] = $v;
+		} elseif ($k === 'password_hash') {
+			$set[] = 'password_hash = ?';
+			$params[] = (string) $v;
 		} elseif ($k === 'email') {
 			// Empty → NULL so UNIQUE(email) still allows multiple users without email.
 			$email = trim((string) ($v ?? ''));
@@ -157,6 +160,142 @@ function store_user_ensure_exists_by_phone(PDO $pdo, string $e164_digits): int
 	$stmt->execute(['', $display]);
 
 	return (int) $pdo->lastInsertId();
+}
+
+function store_user_phone_display(string $e164_digits): string
+{
+	$d = preg_replace('/\D+/', '', $e164_digits);
+	if (strlen($d) === 12 && str_starts_with($d, '91')) {
+		return '+91' . substr($d, 2);
+	}
+	if (strlen($d) === 10) {
+		return '+91' . $d;
+	}
+
+	return $d !== '' ? ('+' . $d) : '';
+}
+
+function store_user_phone_taken(PDO $pdo, string $e164_digits, int $except_user_id = 0): bool
+{
+	$user = store_user_find_by_phone_e164($pdo, $e164_digits);
+	if (!$user) {
+		return false;
+	}
+
+	return (int) ($user['id'] ?? 0) !== $except_user_id;
+}
+
+function store_user_has_password(array $user): bool
+{
+	return trim((string) ($user['password_hash'] ?? '')) !== '';
+}
+
+function store_user_verify_password(array $user, string $password): bool
+{
+	$hash = (string) ($user['password_hash'] ?? '');
+	if ($hash === '' || $password === '') {
+		return false;
+	}
+
+	return password_verify($password, $hash);
+}
+
+function store_user_set_password(PDO $pdo, int $user_id, string $password): void
+{
+	store_user_update($pdo, $user_id, [
+		'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+	]);
+}
+
+/**
+ * @param array{full_name:string,email:string,phone_display:string,birthday:?string,gender:string} $profile
+ */
+function store_user_create_registered(PDO $pdo, array $profile, string $password): int
+{
+	$stmt = $pdo->prepare(
+		'INSERT INTO store_users (email, full_name, phone, birthday, gender, password_hash)
+		 VALUES (?, ?, ?, ?, ?, ?)'
+	);
+	$stmt->execute([
+		trim((string) ($profile['email'] ?? '')),
+		trim((string) ($profile['full_name'] ?? '')),
+		trim((string) ($profile['phone_display'] ?? '')),
+		$profile['birthday'] ?? null,
+		trim((string) ($profile['gender'] ?? '')),
+		password_hash($password, PASSWORD_DEFAULT),
+	]);
+
+	return (int) $pdo->lastInsertId();
+}
+
+/**
+ * Profile fields required after OTP login (address collected separately at checkout).
+ */
+function store_user_registration_complete(array $user): bool
+{
+	$name = trim((string) ($user['full_name'] ?? ''));
+	$email = trim((string) ($user['email'] ?? ''));
+	$birthday = trim((string) ($user['birthday'] ?? ''));
+	$gender = strtolower(trim((string) ($user['gender'] ?? '')));
+	if ($name === '') {
+		return false;
+	}
+	if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+		return false;
+	}
+	if ($birthday === '') {
+		return false;
+	}
+	if (!in_array($gender, ['female', 'male', 'other'], true)) {
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * Shipping address required before placing an order.
+ */
+function store_user_shipping_complete(array $user, ?PDO $pdo = null): bool
+{
+	if ($pdo instanceof PDO) {
+		if (!function_exists('store_user_has_saved_address')) {
+			require_once __DIR__ . '/store_user_address.php';
+		}
+		if (store_user_has_saved_address($pdo, (int) ($user['id'] ?? 0))) {
+			return true;
+		}
+	}
+	$address = trim((string) ($user['address'] ?? ''));
+	$city = trim((string) ($user['city'] ?? ''));
+	$state = trim((string) ($user['state'] ?? ''));
+	$pincode = preg_replace('/\D+/', '', (string) ($user['pincode'] ?? ''));
+	if ($address === '' || $city === '' || $state === '') {
+		return false;
+	}
+
+	return strlen($pincode) === 6;
+}
+
+/**
+ * Safe profile payload for modal forms / client prefill.
+ */
+function store_user_profile_for_client(array $user, ?PDO $pdo = null): array
+{
+	return [
+		'full_name' => (string) ($user['full_name'] ?? ''),
+		'email' => trim((string) ($user['email'] ?? '')),
+		'phone' => (string) ($user['phone'] ?? ''),
+		'birthday' => (string) ($user['birthday'] ?? ''),
+		'gender' => (string) ($user['gender'] ?? ''),
+		'address' => (string) ($user['address'] ?? ''),
+		'address_line_2' => (string) ($user['address_line_2'] ?? ''),
+		'city' => (string) ($user['city'] ?? ''),
+		'state' => (string) ($user['state'] ?? ''),
+		'pincode' => (string) ($user['pincode'] ?? ''),
+		'registration_complete' => store_user_registration_complete($user),
+		'shipping_complete' => store_user_shipping_complete($user, $pdo),
+	];
 }
 
 define('OTP_EXPIRY_MINUTES', 10);
