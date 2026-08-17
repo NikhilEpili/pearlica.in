@@ -198,7 +198,7 @@ $page_title = 'My Profile | Pearlica 925 Silver Jewellery';
 <!DOCTYPE html>
 <html lang="en">
 <?php include __DIR__ . '/components/head.php'; ?>
-<link rel="stylesheet" href="<?php echo h($base_path); ?>assets/css/profile.css">
+<link rel="stylesheet" href="<?php echo h(asset_url('assets/css/profile.css', $base_path)); ?>">
 <body class="profile-page">
 	<?php include __DIR__ . '/components/navbar.php'; ?>
 	<main class="profile-main">
@@ -291,8 +291,8 @@ $page_title = 'My Profile | Pearlica 925 Silver Jewellery';
 		</div>
 	</main>
 	<?php include __DIR__ . '/components/footer.php'; ?>
-	<script src="<?php echo h($base_path); ?>assets/js/jquery.min.js"></script>
+	<script src="<?php echo h(asset_url('assets/js/jquery.min.js', $base_path)); ?>"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-	<script src="<?php echo h($base_path); ?>assets/js/profile.js"></script>
+	<script src="<?php echo h(asset_url('assets/js/profile.js', $base_path)); ?>"></script>
 </body>
 </html>

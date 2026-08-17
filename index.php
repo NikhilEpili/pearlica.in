@@ -192,8 +192,8 @@ if ($hero_rows === []) {
 <html lang="en">
 
 <?php include 'components/head.php'; ?>
-<link rel="stylesheet" href="assets/css/products.css">
-<link rel="stylesheet" href="assets/css/index.css">
+<link rel="stylesheet" href="<?php echo asset_url('assets/css/products.css'); ?>">
+<link rel="stylesheet" href="<?php echo asset_url('assets/css/index.css'); ?>">
 
 <body class="homepage">
 
@@ -309,17 +309,17 @@ if ($hero_rows === []) {
 
 	<?php include 'components/footer.php'; ?>
 
-	<script src="assets/js/jquery.min.js"></script>
-	<script src="assets/js/plugins.js"></script>
+	<script src="<?php echo asset_url('assets/js/jquery.min.js'); ?>"></script>
+	<script src="<?php echo asset_url('assets/js/plugins.js'); ?>"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
 		integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
 		crossorigin="anonymous"></script>
 	<?php include __DIR__ . '/components/swiper_bundle_script.php'; ?>
-	<script src="assets/js/script.min.js"></script>
-	<script src="assets/js/wishlist.js"></script>
-	<script src="assets/js/index.js"></script>
+	<script src="<?php echo asset_url('assets/js/script.min.js'); ?>"></script>
+	<script src="<?php echo asset_url('assets/js/wishlist.js'); ?>"></script>
+	<script src="<?php echo asset_url('assets/js/index.js'); ?>"></script>
 	<?php if (!empty($influencer_reels)): ?>
-	<script src="assets/js/index-influencer-reels.js"></script>
+	<script src="<?php echo asset_url('assets/js/index-influencer-reels.js'); ?>"></script>
 	<?php endif; ?>
 </body>
 

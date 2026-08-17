@@ -133,7 +133,7 @@ contact_csrf_token();
 <!DOCTYPE html>
 <html lang="en">
 <?php include __DIR__ . '/components/head.php'; ?>
-<link rel="stylesheet" href="<?php echo h($base_path); ?>assets/css/contact.css">
+<link rel="stylesheet" href="<?php echo h(asset_url('assets/css/contact.css', $base_path)); ?>">
 
 <body class="homepage contact-page">
 	<?php include __DIR__ . '/components/navbar.php'; ?>
@@ -268,7 +268,7 @@ contact_csrf_token();
 
 	<?php include __DIR__ . '/components/footer.php'; ?>
 
-	<script src="<?php echo h($base_path); ?>assets/js/jquery.min.js"></script>
+	<script src="<?php echo h(asset_url('assets/js/jquery.min.js', $base_path)); ?>"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
 		crossorigin="anonymous"></script>
 </body>

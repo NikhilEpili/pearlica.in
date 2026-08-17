@@ -1,5 +1,6 @@
 <?php
 $base_path = isset($base_path) ? $base_path : '';
+require_once __DIR__ . '/../includes/asset_url.php';
 ?>
 
 <head>
@@ -30,21 +31,21 @@ $base_path = isset($base_path) ? $base_path : '';
 		rel="stylesheet">
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
 		integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
-	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/tokens.css">
-	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/design-system.css">
-	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/vendor.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo asset_url('assets/css/tokens.css', $base_path); ?>">
+	<link rel="stylesheet" type="text/css" href="<?php echo asset_url('assets/css/design-system.css', $base_path); ?>">
+	<link rel="stylesheet" type="text/css" href="<?php echo asset_url('assets/css/vendor.css', $base_path); ?>">
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css">
-	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/style.css">
-	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/checkout.css">
-	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/cart-drawer.css">
-	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/navbar-search.css">
-	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/mobile-bottom-nav.css">
-	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/login.css">
-	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/ui-dialog.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo asset_url('assets/css/style.css', $base_path); ?>">
+	<link rel="stylesheet" type="text/css" href="<?php echo asset_url('assets/css/checkout.css', $base_path); ?>">
+	<link rel="stylesheet" type="text/css" href="<?php echo asset_url('assets/css/cart-drawer.css', $base_path); ?>">
+	<link rel="stylesheet" type="text/css" href="<?php echo asset_url('assets/css/navbar-search.css', $base_path); ?>">
+	<link rel="stylesheet" type="text/css" href="<?php echo asset_url('assets/css/mobile-bottom-nav.css', $base_path); ?>">
+	<link rel="stylesheet" type="text/css" href="<?php echo asset_url('assets/css/login.css', $base_path); ?>">
+	<link rel="stylesheet" type="text/css" href="<?php echo asset_url('assets/css/ui-dialog.css', $base_path); ?>">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 	<link rel="icon" href="<?php echo $base_path; ?>assets/images/favicon.png" type="image/png">
 	<?php if (!empty($page_head_extra)) {
 		echo $page_head_extra;
 	} ?>
-	<link rel="stylesheet" type="text/css" href="<?php echo $base_path; ?>assets/css/pearlica-contrast.css">
+	<link rel="stylesheet" type="text/css" href="<?php echo asset_url('assets/css/pearlica-contrast.css', $base_path); ?>">
 </head>

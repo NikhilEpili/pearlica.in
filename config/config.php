@@ -25,6 +25,7 @@ define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/we
 define('ALLOWED_VIDEO_TYPES', ['video/mp4', 'video/webm', 'video/quicktime']);
 
 require_once BASE_PATH . '/includes/uploads_url.php';
+require_once BASE_PATH . '/includes/asset_url.php';
 /**
  * Absolute public base for product/collection media when the local uploads tree
  * is empty (images are gitignored). Local/dev only — never on pearlica.in.

@@ -63,13 +63,17 @@
 </footer>
 <?php include __DIR__ . '/ui_dialogs.php'; ?>
 <?php include __DIR__ . '/cookie_consent_banner.php'; ?>
-<script src="<?php echo htmlspecialchars($footer_base ?? '', ENT_QUOTES, 'UTF-8'); ?>assets/js/ui-dialog.js"></script>
-<script src="<?php echo htmlspecialchars($footer_base ?? '', ENT_QUOTES, 'UTF-8'); ?>assets/js/navbar-search.js"></script>
-<script src="<?php echo htmlspecialchars($footer_base ?? '', ENT_QUOTES, 'UTF-8'); ?>assets/js/mobile-bottom-nav.js"></script>
-<script src="<?php echo htmlspecialchars($footer_base ?? '', ENT_QUOTES, 'UTF-8'); ?>assets/js/nav-dropdowns.js"></script>
-<script src="<?php echo htmlspecialchars($footer_base ?? '', ENT_QUOTES, 'UTF-8'); ?>assets/js/cookie-consent.js"></script>
-<script src="<?php echo htmlspecialchars($footer_base ?? '', ENT_QUOTES, 'UTF-8'); ?>assets/js/cart.js"></script>
-<script src="<?php echo htmlspecialchars($footer_base ?? '', ENT_QUOTES, 'UTF-8'); ?>assets/js/cart-drawer.js"></script>
+<?php
+require_once __DIR__ . '/../includes/asset_url.php';
+$footer_asset_base = htmlspecialchars($footer_base ?? '', ENT_QUOTES, 'UTF-8');
+?>
+<script src="<?php echo asset_url('assets/js/ui-dialog.js', $footer_asset_base); ?>"></script>
+<script src="<?php echo asset_url('assets/js/navbar-search.js', $footer_asset_base); ?>"></script>
+<script src="<?php echo asset_url('assets/js/mobile-bottom-nav.js', $footer_asset_base); ?>"></script>
+<script src="<?php echo asset_url('assets/js/nav-dropdowns.js', $footer_asset_base); ?>"></script>
+<script src="<?php echo asset_url('assets/js/cookie-consent.js', $footer_asset_base); ?>"></script>
+<script src="<?php echo asset_url('assets/js/cart.js', $footer_asset_base); ?>"></script>
+<script src="<?php echo asset_url('assets/js/cart-drawer.js', $footer_asset_base); ?>"></script>
 <script>
 	(function () {
 		var originalTitle = document.title;

@@ -418,11 +418,11 @@ $page_title = 'Checkout | Pearlica 925 Silver Jewellery';
 		</section>
 	</main>
 	<?php include __DIR__ . '/components/footer.php'; ?>
-	<script src="<?php echo h($base_path); ?>assets/js/jquery.min.js"></script>
+	<script src="<?php echo h(asset_url('assets/js/jquery.min.js', $base_path)); ?>"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
 		crossorigin="anonymous"></script>
 	<script src="https://checkout.razorpay.com/v1/checkout.js?v=1"></script>
-	<script src="<?php echo h($base_path); ?>assets/js/payment/checkout-payment.js"></script>
+	<script src="<?php echo h(asset_url('assets/js/payment/checkout-payment.js', $base_path)); ?>"></script>
 </body>
 
 </html>
