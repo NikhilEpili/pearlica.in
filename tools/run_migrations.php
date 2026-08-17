@@ -73,6 +73,8 @@ $failed = 0;
 echo "== Schema helpers ==" . PHP_EOL;
 
 $helpers = [
+	'store_users' => [__DIR__ . '/../lib/store_user.php', 'store_user_ensure_schema'],
+	'store_user_addresses' => [__DIR__ . '/../lib/store_user_address.php', 'store_user_address_ensure_schema'],
 	'homepage_banners' => [__DIR__ . '/../lib/homepage_banner.php', 'homepage_banner_ensure_schema'],
 	'faqs' => [__DIR__ . '/../lib/faq.php', 'faq_ensure_schema'],
 	'site_policies' => [__DIR__ . '/../lib/site_policy.php', 'site_policy_ensure_schema'],
@@ -184,6 +186,26 @@ foreach (['products', 'collections', 'banners', 'reels'] as $folder) {
 	}
 	echo (is_writable($path) ? 'OK   ' : 'WARN ') . 'uploads/' . $folder
 		. (is_writable($path) ? '' : ' is not writable') . PHP_EOL;
+}
+
+echo PHP_EOL . '== store_users columns ==' . PHP_EOL;
+try {
+	$cols = $pdo->query('SHOW COLUMNS FROM store_users');
+	if ($cols) {
+		foreach ($cols as $col) {
+			$default = $col['Default'] === null ? 'NULL' : (string) $col['Default'];
+			echo sprintf(
+				"%-18s %-24s null=%-3s default=%s\n",
+				$col['Field'],
+				$col['Type'],
+				$col['Null'],
+				$default
+			);
+		}
+	}
+} catch (Throwable $e) {
+	echo 'FAIL describe store_users: ' . $e->getMessage() . PHP_EOL;
+	$failed++;
 }
 
 echo PHP_EOL . 'Done. applied=' . $applied . ' skipped=' . $skipped . ' failed=' . $failed . PHP_EOL;

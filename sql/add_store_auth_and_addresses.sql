@@ -1,8 +1,13 @@
 -- Storefront password login + saved delivery addresses.
--- Run once on existing databases.
+-- Run once on existing databases. Also applied by tools/run_migrations.php
+-- and lib/store_user.php (store_user_ensure_schema).
 
 ALTER TABLE `store_users`
   ADD COLUMN `password_hash` VARCHAR(255) NULL DEFAULT NULL AFTER `phone`;
+
+-- MariaDB STRICT rejects INSERT when TEXT is NOT NULL with no default.
+ALTER TABLE `store_users`
+  MODIFY `address` TEXT NULL;
 
 CREATE TABLE IF NOT EXISTS `store_user_addresses` (
   `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -18,6 +23,5 @@ CREATE TABLE IF NOT EXISTS `store_user_addresses` (
   `is_default` TINYINT(1) NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  KEY `idx_store_user_addresses_user` (`store_user_id`),
-  CONSTRAINT `fk_store_user_addresses_user` FOREIGN KEY (`store_user_id`) REFERENCES `store_users` (`id`) ON DELETE CASCADE
+  KEY `idx_store_user_addresses_user` (`store_user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

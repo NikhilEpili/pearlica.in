@@ -159,7 +159,7 @@ CREATE TABLE `store_users` (
 
 CREATE TABLE IF NOT EXISTS `store_user_addresses` (
   `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  `store_user_id` INT UNSIGNED NOT NULL,
+  `store_user_id` INT NOT NULL,
   `label` VARCHAR(80) NULL DEFAULT NULL,
   `full_name` VARCHAR(255) NOT NULL DEFAULT '',
   `phone` VARCHAR(100) NULL DEFAULT NULL,

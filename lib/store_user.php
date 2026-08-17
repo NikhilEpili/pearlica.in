@@ -4,6 +4,92 @@
  */
 declare(strict_types=1);
 
+/**
+ * Idempotent: create store_users if missing and add columns the app inserts on register.
+ * Hostinger/MariaDB in STRICT mode rejects INSERTs that omit NOT NULL columns with no default
+ * (production `address` is TEXT NOT NULL). Safe to call on every auth request.
+ */
+function store_user_ensure_schema(PDO $pdo): void
+{
+	static $done = false;
+	if ($done) {
+		return;
+	}
+
+	$pdo->exec(
+		'CREATE TABLE IF NOT EXISTS `store_users` (
+		  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+		  `email` VARCHAR(255) NULL DEFAULT NULL,
+		  `full_name` VARCHAR(255) NOT NULL DEFAULT \'\',
+		  `phone` VARCHAR(100) NULL DEFAULT NULL,
+		  `password_hash` VARCHAR(255) NULL DEFAULT NULL,
+		  `address` TEXT NULL,
+		  `address_line_2` VARCHAR(255) NULL DEFAULT NULL,
+		  `city` VARCHAR(255) NULL DEFAULT NULL,
+		  `state` VARCHAR(255) NULL DEFAULT NULL,
+		  `pincode` VARCHAR(20) NULL DEFAULT NULL,
+		  `birthday` DATE NULL DEFAULT NULL,
+		  `gender` VARCHAR(50) NULL DEFAULT NULL,
+		  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+		  UNIQUE KEY `uk_email` (`email`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+	);
+
+	$existing = [];
+	$stmt = $pdo->query(
+		"SELECT COLUMN_NAME, IS_NULLABLE, COLUMN_TYPE, COLUMN_DEFAULT
+		 FROM information_schema.COLUMNS
+		 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'store_users'"
+	);
+	if ($stmt) {
+		foreach ($stmt as $row) {
+			$existing[strtolower((string) $row['COLUMN_NAME'])] = $row;
+		}
+	}
+
+	$add = [
+		'password_hash' => 'VARCHAR(255) NULL DEFAULT NULL',
+		'address' => 'TEXT NULL',
+		'address_line_2' => 'VARCHAR(255) NULL DEFAULT NULL',
+		'city' => 'VARCHAR(255) NULL DEFAULT NULL',
+		'state' => 'VARCHAR(255) NULL DEFAULT NULL',
+		'pincode' => 'VARCHAR(20) NULL DEFAULT NULL',
+		'birthday' => 'DATE NULL DEFAULT NULL',
+		'gender' => 'VARCHAR(50) NULL DEFAULT NULL',
+		'phone' => 'VARCHAR(100) NULL DEFAULT NULL',
+		'full_name' => 'VARCHAR(255) NOT NULL DEFAULT \'\'',
+		'email' => 'VARCHAR(255) NULL DEFAULT NULL',
+	];
+	foreach ($add as $column => $definition) {
+		if (!isset($existing[$column])) {
+			try {
+				$pdo->exec('ALTER TABLE `store_users` ADD COLUMN `' . $column . '` ' . $definition);
+			} catch (Throwable $e) {
+				error_log('Pearlica store_users add ' . $column . ': ' . $e->getMessage());
+			}
+		}
+	}
+
+	// TEXT NOT NULL with no default breaks account creation on MariaDB STRICT.
+	$address = $existing['address'] ?? null;
+	if (is_array($address) && strtoupper((string) $address['IS_NULLABLE']) === 'NO') {
+		try {
+			$pdo->exec('ALTER TABLE `store_users` MODIFY `address` TEXT NULL');
+		} catch (Throwable $e) {
+			error_log('Pearlica store_users modify address: ' . $e->getMessage());
+		}
+	}
+
+	try {
+		$pdo->exec("UPDATE `store_users` SET `email` = NULL WHERE `email` = ''");
+	} catch (Throwable $e) {
+		error_log('Pearlica store_users empty email cleanup: ' . $e->getMessage());
+	}
+
+	$done = true;
+}
+
 function store_user_find_by_id(PDO $pdo, int $id): ?array
 {
 	$stmt = $pdo->prepare('SELECT * FROM store_users WHERE id = ? LIMIT 1');
@@ -28,8 +114,13 @@ function store_user_find_by_email(PDO $pdo, string $email): ?array
 
 function store_user_create(PDO $pdo, string $email): int
 {
-	$stmt = $pdo->prepare('INSERT INTO store_users (email, full_name) VALUES (?, ?)');
-	$stmt->execute([$email, '']);
+	store_user_ensure_schema($pdo);
+	$email = trim($email);
+	$stmt = $pdo->prepare(
+		'INSERT INTO store_users (email, full_name, phone, address, address_line_2, city, state, pincode)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+	);
+	$stmt->execute([$email === '' ? null : $email, '', '', '', '', '', '', '']);
 	return (int) $pdo->lastInsertId();
 }
 
@@ -156,8 +247,12 @@ function store_user_ensure_exists_by_phone(PDO $pdo, string $e164_digits): int
 		$ten = $e164_digits;
 	}
 	$display = $ten !== '' ? '+91' . $ten : '';
-	$stmt = $pdo->prepare('INSERT INTO store_users (email, full_name, phone) VALUES (NULL, ?, ?)');
-	$stmt->execute(['', $display]);
+	store_user_ensure_schema($pdo);
+	$stmt = $pdo->prepare(
+		'INSERT INTO store_users (email, full_name, phone, address, address_line_2, city, state, pincode)
+		 VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)'
+	);
+	$stmt->execute(['', $display, '', '', '', '', '']);
 
 	return (int) $pdo->lastInsertId();
 }
@@ -212,17 +307,24 @@ function store_user_set_password(PDO $pdo, int $user_id, string $password): void
  */
 function store_user_create_registered(PDO $pdo, array $profile, string $password): int
 {
+	store_user_ensure_schema($pdo);
+	$email = trim((string) ($profile['email'] ?? ''));
 	$stmt = $pdo->prepare(
-		'INSERT INTO store_users (email, full_name, phone, birthday, gender, password_hash)
-		 VALUES (?, ?, ?, ?, ?, ?)'
+		'INSERT INTO store_users (email, full_name, phone, birthday, gender, password_hash, address, address_line_2, city, state, pincode)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
 	);
 	$stmt->execute([
-		trim((string) ($profile['email'] ?? '')),
+		$email === '' ? null : $email,
 		trim((string) ($profile['full_name'] ?? '')),
 		trim((string) ($profile['phone_display'] ?? '')),
 		$profile['birthday'] ?? null,
 		trim((string) ($profile['gender'] ?? '')),
 		password_hash($password, PASSWORD_DEFAULT),
+		'',
+		'',
+		'',
+		'',
+		'',
 	]);
 
 	return (int) $pdo->lastInsertId();

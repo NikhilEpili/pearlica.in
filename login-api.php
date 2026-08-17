@@ -69,6 +69,16 @@ if ($return_url !== '' && strpos($return_url, '://') !== false) {
 $base_path = store_base_path_from_request();
 $guest_actions = ['login', 'register_send_otp', 'register_verify', 'forgot_send_otp', 'forgot_reset'];
 
+if ($pdo instanceof PDO) {
+	try {
+		store_user_ensure_schema($pdo);
+		require_once __DIR__ . '/lib/store_user_address.php';
+		store_user_address_ensure_schema($pdo);
+	} catch (Throwable $e) {
+		error_log('Pearlica login-api schema: ' . $e->getMessage());
+	}
+}
+
 if (auth_cookie_user_id() !== null && in_array($action, $guest_actions, true)) {
 	login_api_json(['ok' => true, 'already_logged_in' => true]);
 }
@@ -144,6 +154,7 @@ if ($action === 'register_verify') {
 		login_api_json(['ok' => false, 'error' => 'This mobile number is already registered.', 'step' => 'register']);
 	}
 	try {
+		store_user_ensure_schema($pdo);
 		$user_id = store_user_create_registered($pdo, [
 			'full_name' => (string) ($pending['full_name'] ?? ''),
 			'email' => (string) ($pending['email'] ?? ''),
@@ -152,7 +163,14 @@ if ($action === 'register_verify') {
 			'gender' => (string) ($pending['gender'] ?? ''),
 		], (string) ($pending['password'] ?? ''));
 	} catch (Throwable $e) {
-		login_api_json(['ok' => false, 'error' => 'Could not create your account. Please try again.']);
+		error_log('Pearlica register create: ' . $e->getMessage());
+		$duplicate = stripos($e->getMessage(), 'Duplicate') !== false;
+		login_api_json([
+			'ok' => false,
+			'error' => $duplicate
+				? 'An account with this email already exists. Please sign in instead.'
+				: 'Could not create your account. Please try again.',
+		]);
 	}
 	unset($_SESSION['pending_register']);
 	session_regenerate_id(true);

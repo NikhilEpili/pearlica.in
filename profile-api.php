@@ -45,6 +45,14 @@ if (!login_validate_csrf()) {
 }
 
 $pdo = $GLOBALS['pdo'];
+if ($pdo instanceof PDO) {
+	try {
+		store_user_ensure_schema($pdo);
+		store_user_address_ensure_schema($pdo);
+	} catch (Throwable $e) {
+		error_log('Pearlica profile-api schema: ' . $e->getMessage());
+	}
+}
 $user = store_user_find_by_id($pdo, (int) $user_id);
 if (!$user) {
 	auth_cookie_clear();

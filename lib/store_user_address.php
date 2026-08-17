@@ -6,6 +6,73 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/store_user.php';
 
+function store_user_id_column_sql_type(PDO $pdo): string
+{
+	$col = $pdo->query("SHOW COLUMNS FROM `store_users` LIKE 'id'")->fetch();
+	$type = strtolower((string) ($col['Type'] ?? 'int'));
+	return str_contains($type, 'unsigned') ? 'INT UNSIGNED' : 'INT';
+}
+
+function store_user_address_ensure_schema(PDO $pdo): void
+{
+	static $done = false;
+	if ($done) {
+		return;
+	}
+
+	store_user_ensure_schema($pdo);
+	$id_type = store_user_id_column_sql_type($pdo);
+	$sql = 'CREATE TABLE IF NOT EXISTS `store_user_addresses` (
+		  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+		  `store_user_id` ' . $id_type . ' NOT NULL,
+		  `label` VARCHAR(80) NULL DEFAULT NULL,
+		  `full_name` VARCHAR(255) NOT NULL DEFAULT \'\',
+		  `phone` VARCHAR(100) NULL DEFAULT NULL,
+		  `address` VARCHAR(255) NOT NULL,
+		  `address_line_2` VARCHAR(255) NULL DEFAULT NULL,
+		  `city` VARCHAR(120) NOT NULL,
+		  `state` VARCHAR(120) NOT NULL,
+		  `pincode` VARCHAR(20) NOT NULL,
+		  `is_default` TINYINT(1) NOT NULL DEFAULT 0,
+		  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+		  KEY `idx_store_user_addresses_user` (`store_user_id`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci';
+
+	try {
+		$pdo->exec($sql);
+	} catch (Throwable $e) {
+		error_log('Pearlica store_user_addresses create: ' . $e->getMessage());
+	}
+
+	$exists = $pdo->query("SHOW TABLES LIKE 'store_user_addresses'");
+	if (!$exists || !$exists->fetch()) {
+		$done = true;
+		return;
+	}
+
+	$fk = $pdo->query(
+		"SELECT CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS
+		 WHERE TABLE_SCHEMA = DATABASE()
+		   AND TABLE_NAME = 'store_user_addresses'
+		   AND CONSTRAINT_TYPE = 'FOREIGN KEY'
+		   AND CONSTRAINT_NAME = 'fk_store_user_addresses_user'"
+	);
+	if ($fk && !$fk->fetch()) {
+		try {
+			$pdo->exec(
+				'ALTER TABLE `store_user_addresses`
+				 ADD CONSTRAINT `fk_store_user_addresses_user`
+				 FOREIGN KEY (`store_user_id`) REFERENCES `store_users` (`id`) ON DELETE CASCADE'
+			);
+		} catch (Throwable $e) {
+			error_log('Pearlica store_user_addresses fk: ' . $e->getMessage());
+		}
+	}
+
+	$done = true;
+}
+
 function store_user_addresses_available(PDO $pdo): bool
 {
 	static $available = null;
@@ -13,6 +80,7 @@ function store_user_addresses_available(PDO $pdo): bool
 		return $available;
 	}
 	try {
+		store_user_address_ensure_schema($pdo);
 		$pdo->query('SELECT 1 FROM store_user_addresses LIMIT 1');
 		$available = true;
 	} catch (PDOException $e) {
