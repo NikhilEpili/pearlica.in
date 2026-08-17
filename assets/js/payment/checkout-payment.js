@@ -31,17 +31,69 @@ document.addEventListener('DOMContentLoaded', function () {
 		return combined;
 	}
 
+	function isGuest() {
+		return !document.body || document.body.getAttribute('data-logged-in') !== '1';
+	}
+
+	function escapeHtml(value) {
+		return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+			return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+		});
+	}
+
+	/** Replace the guest "sign in" panel with the signed-in summary, no page reload. */
+	function renderSignedInDelivery(profile) {
+		var body = document.getElementById('checkout-delivery-body');
+		if (!body || !profile) return;
+		var name = String(profile.full_name || profile.email || '').trim();
+		var contact = [profile.phone, profile.email].filter(function (part) {
+			return String(part || '').trim() !== '';
+		}).map(function (part) {
+			return '<span>' + escapeHtml(part) + '</span>';
+		}).join('');
+		var address = [
+			profile.address,
+			profile.address_line_2,
+			[profile.city, profile.state, profile.pincode].filter(function (part) {
+				return String(part || '').trim() !== '';
+			}).join(', '),
+		].filter(function (part) {
+			return String(part || '').trim() !== '';
+		}).map(escapeHtml).join('<br>');
+		body.innerHTML =
+			'<div class="checkout-recipient-name">' + escapeHtml(name) + '</div>' +
+			'<div class="checkout-contact-info">' + contact + '</div>' +
+			'<div class="checkout-address-block" id="checkout-address-display">' +
+			(address || 'Your delivery address will be collected before payment.') +
+			'</div>';
+		var actions = document.getElementById('checkout-delivery-actions');
+		if (actions) {
+			actions.innerHTML =
+				'<a href="' + escapeHtml(apiUrl('profile')) + '" class="checkout-edit-link">Edit</a>' +
+				'<a href="' + escapeHtml(apiUrl('logout')) + '" class="checkout-edit-link ms-2">Sign out</a>';
+		}
+	}
+
+	/** Open the sign-in modal and run `resume` once the shopper is authenticated. */
+	function requireSignIn(message, resume) {
+		if (window.PearlicaUI && typeof PearlicaUI.openLogin === 'function') {
+			PearlicaUI.openLogin({
+				returnUrl: 'checkout',
+				message: message || 'Sign in to complete your purchase securely.',
+				onAuthenticated: function (auth) {
+					if (auth && auth.profile) renderSignedInDelivery(auth.profile);
+					if (typeof resume === 'function') resume(auth);
+				},
+			});
+			return;
+		}
+		window.location.href = apiUrl('login?return_url=checkout');
+	}
+
 	var signInBtn = document.getElementById('checkout-signin-btn');
 	if (signInBtn) {
 		signInBtn.addEventListener('click', function () {
-			if (window.PearlicaUI && typeof PearlicaUI.openLogin === 'function') {
-				PearlicaUI.openLogin({
-					returnUrl: 'checkout',
-					message: 'Sign in to complete your purchase securely.',
-				});
-			} else {
-				window.location.href = apiUrl('login?return_url=checkout');
-			}
+			requireSignIn('Sign in to complete your purchase securely.');
 		});
 	}
 
@@ -218,47 +270,6 @@ document.addEventListener('DOMContentLoaded', function () {
 			});
 	}
 
-	function getGuestShippingPayload() {
-		if (!document.body || document.body.getAttribute('data-is-guest') !== '1') {
-			return {};
-		}
-		function val(id) {
-			var el = document.getElementById(id);
-			return el && el.value ? String(el.value).trim() : '';
-		}
-		return {
-			guest_checkout: '1',
-			shipping_name: val('guest-full-name'),
-			shipping_email: val('guest-email'),
-			shipping_phone: val('guest-phone'),
-			shipping_address: val('guest-address'),
-			shipping_address_line_2: val('guest-address-line-2'),
-			shipping_city: val('guest-city'),
-			shipping_state: val('guest-state'),
-			shipping_pincode: val('guest-pincode'),
-		};
-	}
-
-	function validateGuestShipping() {
-		var p = getGuestShippingPayload();
-		if (!p.shipping_name) return { ok: false, msg: 'Please enter your full name.' };
-		if (!p.shipping_email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.shipping_email)) {
-			return { ok: false, msg: 'Please enter a valid email address.' };
-		}
-		var ph = p.shipping_phone.replace(/\D/g, '');
-		if (ph.length === 12 && ph.indexOf('91') === 0) ph = ph.slice(2);
-		if (!/^[6-9]\d{9}$/.test(ph)) {
-			return { ok: false, msg: 'Please enter a valid 10-digit Indian mobile number.' };
-		}
-		if (!p.shipping_address) return { ok: false, msg: 'Please enter address line 1.' };
-		if (!p.shipping_city) return { ok: false, msg: 'Please enter city.' };
-		if (!p.shipping_state) return { ok: false, msg: 'Please select state.' };
-		if (!/^\d{6}$/.test(p.shipping_pincode)) {
-			return { ok: false, msg: 'Please enter a valid 6-digit pincode.' };
-		}
-		return { ok: true };
-	}
-
 	function getAppliedPromoPayload(csrf) {
 		var payload = { csrf_token: csrf };
 		var promoCode = document.getElementById('checkout-applied-promo-code');
@@ -420,6 +431,11 @@ document.addEventListener('DOMContentLoaded', function () {
 							window.location.href = apiUrl('order-success?order_id=' + encodeURIComponent(String(d.order_id)));
 							return;
 						}
+						if (res && res.status === 401) {
+							syncCheckoutPayState();
+							requireSignIn(d.error || 'Please sign in to place your order.', startCheckout);
+							return;
+						}
 						throw new Error(d.error || 'Unable to place your order');
 					})
 					.catch(function (e) {
@@ -438,11 +454,15 @@ document.addEventListener('DOMContentLoaded', function () {
 			}
 
 			var razorpayPayload = getAppliedPromoPayload(csrf);
-			Object.assign(razorpayPayload, getGuestShippingPayload());
 			razorpayPayload.payment_method = 'razorpay';
 			postForm('payment/razorpay/create-order', razorpayPayload)
 				.then(function (res) {
 					var d = res && res.data ? res.data : {};
+					if (res && res.status === 401) {
+						syncCheckoutPayState();
+						requireSignIn(d.error || 'Please sign in to continue to payment.', startCheckout);
+						return;
+					}
 					if (!res || !res.ok) {
 						throw new Error(d.error || 'Unable to start payment');
 					}
@@ -524,25 +544,35 @@ document.addEventListener('DOMContentLoaded', function () {
 				});
 		}
 
-		if (window.PearlicaUI && typeof PearlicaUI.ensureCheckoutReady === 'function') {
-			PearlicaUI.ensureCheckoutReady({
-				returnUrl: 'checkout',
-				dismissable: true,
-				skipAddressIfComplete: true,
-				onReady: function (d) {
-					updateCheckoutAddressDisplay(d);
-					scrollToPaymentSection();
-					proceedWithPayment();
-				},
-			});
-			return;
+		/**
+		 * Gate every order attempt: sign in first, then confirm the delivery address,
+		 * and only then hand off to COD or Razorpay.
+		 */
+		function startCheckout() {
+			if (window.PearlicaUI && typeof PearlicaUI.ensureCheckoutReady === 'function') {
+				PearlicaUI.ensureCheckoutReady({
+					returnUrl: 'checkout',
+					dismissable: true,
+					onAuthenticated: function (auth) {
+						if (auth && auth.profile) renderSignedInDelivery(auth.profile);
+					},
+					onReady: function (d) {
+						updateCheckoutAddressDisplay(d);
+						scrollToPaymentSection();
+						proceedWithPayment();
+					},
+				});
+				return;
+			}
+
+			if (isGuest()) {
+				window.location.href = apiUrl('login?return_url=checkout');
+				return;
+			}
+
+			proceedWithPayment();
 		}
 
-		if (document.body && document.body.getAttribute('data-is-guest') === '1') {
-			window.location.href = apiUrl('login?return_url=checkout');
-			return;
-		}
-
-		proceedWithPayment();
+		startCheckout();
 	});
 });

@@ -7,6 +7,7 @@
 	var toastContainer, alertModal, loginModal, addressModal;
 	var alertResolve = null;
 	var loginReturnUrl = 'profile';
+	var loginOnAuthenticated = null;
 	var addressOnSaved = null;
 	var addressDismissable = true;
 	var otpTimer = null;
@@ -55,6 +56,7 @@
 	function setLoggedInUI(loggedIn) {
 		if (document.body) {
 			document.body.setAttribute('data-logged-in', loggedIn ? '1' : '0');
+			document.body.setAttribute('data-is-guest', loggedIn ? '0' : '1');
 		}
 		['pearlica-auth-signout-wrap', 'pearlica-address-signout-wrap'].forEach(function (id) {
 			var el = document.getElementById(id);
@@ -166,7 +168,8 @@
 		fd.append('return_url', loginReturnUrl);
 		Object.keys(data || {}).forEach(function (k) { fd.append(k, data[k]); });
 		return fetch(apiUrl('login-api'), { method: 'POST', body: fd, credentials: 'same-origin' })
-			.then(function (r) { return r.json().catch(function () { return { ok: false, error: 'Unexpected response.' }; }); });
+			.then(function (r) { return r.json().catch(function () { return { ok: false, error: 'Unexpected response.' }; }); })
+			.catch(function () { return { ok: false, error: 'Network error. Check your connection and try again.' }; });
 	}
 
 	function postProfile(action, data) {
@@ -175,7 +178,8 @@
 		fd.append('action', action);
 		Object.keys(data || {}).forEach(function (k) { fd.append(k, data[k]); });
 		return fetch(apiUrl('profile-api'), { method: 'POST', body: fd, credentials: 'same-origin' })
-			.then(function (r) { return r.json().catch(function () { return { ok: false, error: 'Unexpected response.' }; }); });
+			.then(function (r) { return r.json().catch(function () { return { ok: false, error: 'Unexpected response.' }; }); })
+			.catch(function () { return { ok: false, error: 'Network error. Check your connection and try again.' }; });
 	}
 
 	function startCountdown(expiresAt, labelId, wrapId) {
@@ -206,7 +210,13 @@
 		applyAuthResponse(d);
 		setLoggedInUI(true);
 		toast(d.message || 'Signed in successfully.', { type: 'success' });
+		var resume = loginOnAuthenticated;
+		loginOnAuthenticated = null;
 		closeLogin();
+		if (resume) {
+			resume(d);
+			return;
+		}
 		if (loginReturnUrl === 'checkout' && !d.shipping_complete) {
 			openAddress({
 				message: 'Add or choose a delivery address before payment.',
@@ -373,13 +383,20 @@
 	function openLogin(opts) {
 		opts = opts || {};
 		loginReturnUrl = opts.returnUrl || 'profile';
+		loginOnAuthenticated = typeof opts.onAuthenticated === 'function' ? opts.onAuthenticated : null;
 		if (!loginModal) loginModal = document.getElementById('pearlica-login-modal');
 		if (!loginModal) {
 			window.location.href = apiUrl('login?return_url=' + encodeURIComponent(loginReturnUrl));
 			return Promise.resolve(false);
 		}
 		if (isLoggedIn()) {
-			if (opts.returnUrl) window.location.href = apiUrl(opts.returnUrl);
+			var resume = loginOnAuthenticated;
+			loginOnAuthenticated = null;
+			if (resume) {
+				resume(null);
+			} else if (opts.returnUrl) {
+				window.location.href = apiUrl(opts.returnUrl);
+			}
 			return Promise.resolve(true);
 		}
 		showAuthStep('login');
@@ -404,6 +421,13 @@
 		if (!loginModal) loginModal = document.getElementById('pearlica-login-modal');
 		closeModal(loginModal);
 		showAuthStep('login');
+		loginOnAuthenticated = null;
+	}
+
+	function escapeHtml(value) {
+		return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+			return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+		});
 	}
 
 	function renderSavedAddresses() {
@@ -423,10 +447,10 @@
 			btn.type = 'button';
 			btn.className = 'pearlica-saved-address-card' + (selectedAddressId === addr.id ? ' is-selected' : '');
 			btn.innerHTML =
-				'<div class="pearlica-saved-address-card__label">' + (addr.label || 'Address') + (addr.is_default ? ' · Default' : '') + '</div>' +
+				'<div class="pearlica-saved-address-card__label">' + escapeHtml(addr.label || 'Address') + (addr.is_default ? ' · Default' : '') + '</div>' +
 				'<div class="pearlica-saved-address-card__line">' +
-				addr.address + (addr.address_line_2 ? ', ' + addr.address_line_2 : '') + '<br>' +
-				addr.city + ', ' + addr.state + ' ' + addr.pincode +
+				escapeHtml(addr.address) + (addr.address_line_2 ? ', ' + escapeHtml(addr.address_line_2) : '') + '<br>' +
+				escapeHtml(addr.city) + ', ' + escapeHtml(addr.state) + ' ' + escapeHtml(addr.pincode) +
 				'</div>';
 			btn.addEventListener('click', function () {
 				selectedAddressId = addr.id;
@@ -438,13 +462,24 @@
 						var onSaved = addressOnSaved;
 						closeAddress();
 						if (onSaved) onSaved(d);
-					} else {
+					} else if (!addressSessionExpired(d)) {
 						showAddressError((d && d.error) || 'Could not select address.');
 					}
 				});
 			});
 			list.appendChild(btn);
 		});
+	}
+
+	function resetAddressForm() {
+		['pearlica-addr-label', 'pearlica-addr-line1', 'pearlica-addr-line2', 'pearlica-addr-city', 'pearlica-addr-pincode'].forEach(function (id) {
+			var el = document.getElementById(id);
+			if (el) el.value = '';
+		});
+		var state = document.getElementById('pearlica-addr-state');
+		if (state) state.value = '';
+		var saveCb = document.getElementById('pearlica-addr-save');
+		if (saveCb) saveCb.checked = true;
 	}
 
 	function openAddress(opts) {
@@ -458,6 +493,8 @@
 		showAddressError('');
 		selectedAddressId = 0;
 		savedAddresses = [];
+		resetAddressForm();
+		renderSavedAddresses();
 		var form = document.getElementById('pearlica-address-form');
 		if (form) form.hidden = false;
 		openModal(addressModal);
@@ -473,6 +510,25 @@
 		return Promise.resolve(true);
 	}
 
+	/** Session dropped mid-checkout: bounce back to sign in and replay the address step. */
+	function addressSessionExpired(d) {
+		if (!d || d.ok || !/sign in|session expired/i.test(String(d.error || ''))) return false;
+		var resume = addressOnSaved;
+		closeAddress();
+		setLoggedInUI(false);
+		openLogin({
+			returnUrl: 'checkout',
+			message: 'Your session expired. Please sign in again to place your order.',
+			onAuthenticated: function () {
+				openAddress({
+					message: 'Confirm where we should deliver this order.',
+					onSaved: resume,
+				});
+			},
+		});
+		return true;
+	}
+
 	function closeAddress() {
 		if (!addressModal) addressModal = document.getElementById('pearlica-address-modal');
 		closeModal(addressModal);
@@ -482,24 +538,38 @@
 
 	function ensureCheckoutReady(opts) {
 		opts = opts || {};
-		if (!isLoggedIn()) {
+		var returnUrl = opts.returnUrl || 'checkout';
+
+		function requireSignIn(message) {
 			return openLogin({
-				returnUrl: 'checkout',
-				message: 'Sign in or create an account to complete your purchase.',
+				returnUrl: returnUrl,
+				message: message || 'Sign in or create an account to complete your purchase.',
+				onAuthenticated: function (auth) {
+					if (typeof opts.onAuthenticated === 'function') opts.onAuthenticated(auth);
+					ensureCheckoutReady(opts);
+				},
 			});
 		}
+
+		if (!isLoggedIn()) {
+			return requireSignIn();
+		}
 		return refreshProfileStatus().then(function (status) {
-			if (status && !status.registration_complete) {
+			if (!status || !status.ok) {
+				setLoggedInUI(false);
+				return requireSignIn('Your session expired. Please sign in again to place your order.');
+			}
+			if (!status.registration_complete) {
 				toast('Please complete your profile (name, email, date of birth, gender) before checkout.', { type: 'error' });
 				window.location.href = apiUrl('profile');
 				return false;
 			}
-			if (status && status.shipping_complete && opts.skipAddressIfComplete) {
+			if (status.shipping_complete && opts.skipAddressIfComplete) {
 				if (typeof opts.onReady === 'function') opts.onReady(status);
 				return true;
 			}
 			return openAddress({
-				message: 'Choose a saved address or add a new one before payment.',
+				message: 'Confirm where we should deliver this order.',
 				dismissable: opts.dismissable !== false,
 				onSaved: opts.onReady,
 			});
@@ -641,7 +711,9 @@
 						}
 						return;
 					}
-					showAddressError((d && d.error) || 'Could not save address.');
+					if (!addressSessionExpired(d)) {
+						showAddressError((d && d.error) || 'Could not save address.');
+					}
 				});
 			});
 		}

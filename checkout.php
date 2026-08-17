@@ -273,34 +273,38 @@ $page_title = 'Checkout | Pearlica 925 Silver Jewellery';
 						<div class="checkout-delivery-header">
 							<span class="checkout-section-label checkout-delivery-heading-label">Delivery
 								details</span>
+							<span class="checkout-delivery-header-actions" id="checkout-delivery-actions">
+								<?php if ($is_guest): ?>
+									<a href="<?php echo h($base_path); ?>login?return_url=<?php echo rawurlencode('checkout'); ?>"
+										class="checkout-edit-link">Log in</a>
+								<?php else: ?>
+									<a href="<?php echo h($base_path); ?>profile" class="checkout-edit-link">Edit</a>
+									<a href="<?php echo h($base_path); ?>logout" class="checkout-edit-link ms-2">Sign out</a>
+								<?php endif; ?>
+							</span>
+						</div>
+						<div id="checkout-delivery-body">
 							<?php if ($is_guest): ?>
-								<a href="<?php echo h($base_path); ?>login?return_url=<?php echo rawurlencode('checkout'); ?>"
-									class="checkout-edit-link">Log in</a>
+								<p class="small text-secondary mb-3">Sign in to review delivery details and place your order.</p>
+								<button type="button" class="checkout-btn-primary checkout-signin-trigger" id="checkout-signin-btn">Sign in to continue</button>
 							<?php else: ?>
-								<a href="<?php echo h($base_path); ?>profile" class="checkout-edit-link">Edit</a>
-								<a href="<?php echo h($base_path); ?>logout" class="checkout-edit-link ms-2">Sign out</a>
+								<div class="checkout-recipient-name"><?php echo h($user['full_name'] ?: ($user['email'] ?? '')); ?>
+								</div>
+								<div class="checkout-contact-info">
+									<?php if (trim($user['phone'] ?? '') !== ''): ?>
+										<span><?php echo h($user['phone']); ?></span>
+									<?php endif; ?>
+									<?php if (trim((string) ($user['email'] ?? '')) !== ''): ?>
+										<span><?php echo h((string) $user['email']); ?></span>
+									<?php endif; ?>
+								</div>
+								<?php if ($shipping_line !== ''): ?>
+									<div class="checkout-address-block" id="checkout-address-display"><?php echo nl2br(h($shipping_line)); ?></div>
+								<?php else: ?>
+									<div class="checkout-address-block" id="checkout-address-display">Your delivery address will be collected before payment.</div>
+								<?php endif; ?>
 							<?php endif; ?>
 						</div>
-						<?php if ($is_guest): ?>
-							<p class="small text-secondary mb-3">Sign in to review delivery details and place your order.</p>
-							<button type="button" class="checkout-btn-primary checkout-signin-trigger" id="checkout-signin-btn">Sign in to continue</button>
-						<?php else: ?>
-							<div class="checkout-recipient-name"><?php echo h($user['full_name'] ?: ($user['email'] ?? '')); ?>
-							</div>
-							<div class="checkout-contact-info">
-								<?php if (trim($user['phone'] ?? '') !== ''): ?>
-									<span><?php echo h($user['phone']); ?></span>
-								<?php endif; ?>
-								<?php if (trim((string) ($user['email'] ?? '')) !== ''): ?>
-									<span><?php echo h((string) $user['email']); ?></span>
-								<?php endif; ?>
-							</div>
-							<?php if ($shipping_line !== ''): ?>
-								<div class="checkout-address-block" id="checkout-address-display"><?php echo nl2br(h($shipping_line)); ?></div>
-							<?php else: ?>
-								<div class="checkout-address-block" id="checkout-address-display">Your delivery address will be collected before payment.</div>
-							<?php endif; ?>
-						<?php endif; ?>
 					</div>
 
 					<div class="checkout-total-card">

@@ -30,10 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $user_id = auth_cookie_user_id();
-$guest_requested = isset($_POST['guest_checkout']) && (string) $_POST['guest_checkout'] === '1';
-if ($user_id !== null) {
-	$guest_requested = false;
-}
 
 $csrf = (string) ($_POST['csrf_token'] ?? '');
 if ($csrf === '' || !hash_equals($_SESSION['checkout_csrf_token'] ?? '', $csrf)) {
@@ -42,9 +38,9 @@ if ($csrf === '' || !hash_equals($_SESSION['checkout_csrf_token'] ?? '', $csrf))
 	exit;
 }
 
-if ($user_id === null && !$guest_requested) {
+if ($user_id === null) {
 	http_response_code(401);
-	echo json_encode(['ok' => false, 'error' => 'Unauthorized']);
+	echo json_encode(['ok' => false, 'error' => 'Please sign in to continue to payment.']);
 	exit;
 }
 
@@ -69,107 +65,50 @@ if (empty($cart)) {
 	echo json_encode(['ok' => false, 'error' => 'Cart is empty']);
 	exit;
 }
-$order_store_user_id = null;
-
-if ($guest_requested) {
-	$states = indian_states_list();
-	$shipping_name = trim((string) ($_POST['shipping_name'] ?? ''));
-	$shipping_email = trim((string) ($_POST['shipping_email'] ?? ''));
-	$shipping_phone_raw = trim((string) ($_POST['shipping_phone'] ?? ''));
-	$shipping_address_1 = trim((string) ($_POST['shipping_address'] ?? ''));
-	$shipping_address_2 = trim((string) ($_POST['shipping_address_line_2'] ?? ''));
-	$shipping_city = trim((string) ($_POST['shipping_city'] ?? ''));
-	$shipping_state = trim((string) ($_POST['shipping_state'] ?? ''));
-	$shipping_pincode = trim((string) ($_POST['shipping_pincode'] ?? ''));
-
-	if ($shipping_name === '' || mb_strlen($shipping_name) > 200) {
-		http_response_code(400);
-		echo json_encode(['ok' => false, 'error' => 'Please enter your full name.']);
-		exit;
-	}
-	if ($shipping_email === '' || !filter_var($shipping_email, FILTER_VALIDATE_EMAIL)) {
-		http_response_code(400);
-		echo json_encode(['ok' => false, 'error' => 'Please enter a valid email address.']);
-		exit;
-	}
-	$e164 = store_user_phone_e164_digits($shipping_phone_raw);
-	if ($e164 === null) {
-		http_response_code(400);
-		echo json_encode(['ok' => false, 'error' => 'Please enter a valid Indian mobile number.']);
-		exit;
-	}
-	$shipping_phone = '+91' . substr($e164, 2);
-	if ($shipping_address_1 === '' || mb_strlen($shipping_address_1) > 500) {
-		http_response_code(400);
-		echo json_encode(['ok' => false, 'error' => 'Please enter address line 1.']);
-		exit;
-	}
-	if (mb_strlen($shipping_address_2) > 500) {
-		http_response_code(400);
-		echo json_encode(['ok' => false, 'error' => 'Address line 2 is too long.']);
-		exit;
-	}
-	if ($shipping_city === '' || mb_strlen($shipping_city) > 120) {
-		http_response_code(400);
-		echo json_encode(['ok' => false, 'error' => 'Please enter city.']);
-		exit;
-	}
-	if (!in_array($shipping_state, $states, true)) {
-		http_response_code(400);
-		echo json_encode(['ok' => false, 'error' => 'Please select a valid state.']);
-		exit;
-	}
-	if (!preg_match('/^\d{6}$/', $shipping_pincode)) {
-		http_response_code(400);
-		echo json_encode(['ok' => false, 'error' => 'Please enter a valid 6-digit pincode.']);
-		exit;
-	}
-	$order_store_user_id = null;
-} else {
-	$user = store_user_find_by_id($pdo, (int) $user_id);
-	if (!$user) {
-		http_response_code(400);
-		echo json_encode(['ok' => false, 'error' => 'User not found']);
-		exit;
-	}
-
-	$address_row = null;
-	$selected_address_id = isset($_SESSION['checkout_address_id']) ? (int) $_SESSION['checkout_address_id'] : 0;
-	if ($selected_address_id > 0) {
-		$address_row = store_user_address_find($pdo, (int) $user_id, $selected_address_id);
-	}
-	if (!$address_row) {
-		$address_row = store_user_address_get_default($pdo, (int) $user_id);
-	}
-	if ($address_row) {
-		store_user_address_sync_profile($pdo, (int) $user_id, $address_row);
-		$user = store_user_find_by_id($pdo, (int) $user_id) ?? $user;
-	}
-
-	$shipping_name = trim((string) ($user['full_name'] ?? ''));
-	$shipping_email = trim((string) ($user['email'] ?? ''));
-	$shipping_phone = trim((string) ($user['phone'] ?? ''));
-	$shipping_address_1 = trim((string) ($user['address'] ?? ''));
-	$shipping_address_2 = trim((string) ($user['address_line_2'] ?? ''));
-	$shipping_city = trim((string) ($user['city'] ?? ''));
-	$shipping_state = trim((string) ($user['state'] ?? ''));
-	$shipping_pincode = trim((string) ($user['pincode'] ?? ''));
-
-	if ($shipping_email !== '' && !filter_var($shipping_email, FILTER_VALIDATE_EMAIL)) {
-		http_response_code(400);
-		echo json_encode(['ok' => false, 'error' => 'Invalid email on your profile.']);
-		exit;
-	}
-	if ($shipping_name === '') {
-		$shipping_name = $shipping_email !== '' ? $shipping_email : 'Customer';
-	}
-	if ($shipping_address_1 === '' || $shipping_city === '' || $shipping_state === '' || $shipping_pincode === '') {
-		http_response_code(400);
-		echo json_encode(['ok' => false, 'error' => 'Please choose or add a delivery address before payment.']);
-		exit;
-	}
-	$order_store_user_id = (int) $user_id;
+$user = store_user_find_by_id($pdo, (int) $user_id);
+if (!$user) {
+	http_response_code(401);
+	echo json_encode(['ok' => false, 'error' => 'Session expired. Please sign in again.']);
+	exit;
 }
+
+// Prefer the address the shopper confirmed at checkout, else their default one.
+$address_row = null;
+$selected_address_id = isset($_SESSION['checkout_address_id']) ? (int) $_SESSION['checkout_address_id'] : 0;
+if ($selected_address_id > 0) {
+	$address_row = store_user_address_find($pdo, (int) $user_id, $selected_address_id);
+}
+if (!$address_row) {
+	$address_row = store_user_address_get_default($pdo, (int) $user_id);
+}
+if ($address_row) {
+	store_user_address_sync_profile($pdo, (int) $user_id, $address_row);
+	$user = store_user_find_by_id($pdo, (int) $user_id) ?? $user;
+}
+
+$shipping_name = trim((string) ($user['full_name'] ?? ''));
+$shipping_email = trim((string) ($user['email'] ?? ''));
+$shipping_phone = trim((string) ($user['phone'] ?? ''));
+$shipping_address_1 = trim((string) ($user['address'] ?? ''));
+$shipping_address_2 = trim((string) ($user['address_line_2'] ?? ''));
+$shipping_city = trim((string) ($user['city'] ?? ''));
+$shipping_state = trim((string) ($user['state'] ?? ''));
+$shipping_pincode = trim((string) ($user['pincode'] ?? ''));
+
+if ($shipping_email !== '' && !filter_var($shipping_email, FILTER_VALIDATE_EMAIL)) {
+	http_response_code(400);
+	echo json_encode(['ok' => false, 'error' => 'Invalid email on your profile.']);
+	exit;
+}
+if ($shipping_name === '') {
+	$shipping_name = $shipping_email !== '' ? $shipping_email : 'Customer';
+}
+if ($shipping_address_1 === '' || $shipping_city === '' || $shipping_state === '' || $shipping_pincode === '') {
+	http_response_code(400);
+	echo json_encode(['ok' => false, 'error' => 'Please choose or add a delivery address before payment.']);
+	exit;
+}
+$order_store_user_id = (int) $user_id;
 
 $shipping_address = $shipping_address_1 . ($shipping_address_2 !== '' ? ("\n" . $shipping_address_2) : '');
 
@@ -342,11 +281,8 @@ try {
 	}
 	http_response_code(500);
 	$msg = 'Unable to start payment. Please try again.';
-	$em = $e->getMessage();
-	if ($guest_requested && strpos($em, 'store_user_id') !== false && strpos($em, 'cannot be null') !== false) {
-		$msg = 'Guest checkout needs a one-time database update: run sql/guest_checkout_telesign.sql (ALTER orders.store_user_id to allow NULL), then try again.';
-	} elseif (defined('APP_DEBUG') && APP_DEBUG) {
-		$msg = $msg . ' ' . $em;
+	if (defined('APP_DEBUG') && APP_DEBUG) {
+		$msg = $msg . ' ' . $e->getMessage();
 	}
 	echo json_encode(['ok' => false, 'error' => $msg]);
 }

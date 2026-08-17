@@ -440,6 +440,12 @@
 	margin-bottom: var(--space-md);
 	gap: var(--space-sm);
 }
+.checkout-delivery-header-actions {
+	display: inline-flex;
+	align-items: baseline;
+	flex-shrink: 0;
+	white-space: nowrap;
+}
 .checkout-edit-link {
 	font-family: var(--font-body);
 	font-size: var(--font-size-label);
