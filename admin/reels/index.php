@@ -40,7 +40,7 @@ $reels_base = uploads_reels_base_url();
 <main class="container-fluid p-4 admin-content">
 	<h1 class="page-title">Instagram reels</h1>
 	<p class="text-muted small mb-4">
-		Manage the reels shown in the homepage <strong>Your Favourite Influencers</strong> carousel (below New Arrivals).
+		Manage the reels shown in the homepage <strong>Pearlica Picks</strong> carousel.
 		<strong>Upload an MP4 and a poster image</strong> for each reel — uploaded videos autoplay muted in the carousel,
 		while Instagram embeds cannot autoplay and need a click. Optionally link a product to show its name and price under the reel.
 		Adding, editing, deleting, and reordering are unrestricted. They affect the homepage only when you press

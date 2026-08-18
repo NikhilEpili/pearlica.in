@@ -1,7 +1,8 @@
 <?php
 /**
- * Homepage — "Your Favourite Influencers" reel carousel.
+ * Homepage — influencer reel carousel (rendered inside Pearlica Picks).
  * Expects: $influencer_reels (list from instagram_reel_list_active), $base_path.
+ * Sets $index_influencer_reels_rendered when markup is output.
  */
 declare(strict_types=1);
 
@@ -31,13 +32,13 @@ if ($slide_count % 2 === 0) {
 }
 
 $max_side_radius = $slide_count === 1 ? 0 : ($slide_count === 3 ? 1 : 2);
+$index_influencer_reels_rendered = true;
 ?>
-<section
-	class="index-influencers section-reveal"
-	aria-label="Your Favourite Influencers"
+<div
+	class="index-influencers"
+	aria-label="Short clips"
 	data-reel-count="<?= (int) $slide_count ?>"
 	data-max-radius="<?= (int) $max_side_radius ?>">
-	<h2 class="index-influencers-title">Your Favourite Influencers</h2>
 	<div class="index-influencers-carousel">
 		<button type="button" class="index-influencers-nav index-influencers-prev" aria-label="Previous reel"<?= $slide_count < 2 ? ' hidden' : '' ?>>
 			<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
@@ -131,4 +132,4 @@ $max_side_radius = $slide_count === 1 ? 0 : ($slide_count === 3 ? 1 : 2);
 			</svg>
 		</button>
 	</div>
-</section>
+</div>

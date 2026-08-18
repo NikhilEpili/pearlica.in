@@ -1,5 +1,5 @@
 /**
- * Homepage — "Your Favourite Influencers" circular reel carousel.
+ * Homepage — Pearlica Picks circular reel carousel.
  *
  * Slides are reel 1..N in admin sort order. centerIndex 0 means reel 1 is centred.
  * With 5 reels the initial left-to-right order is 4, 5, 1, 2, 3.

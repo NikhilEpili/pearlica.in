@@ -153,11 +153,39 @@ function product_search_token_variants(string $token): array
 }
 
 /**
+ * SQL expression of product copy used for storefront colour (finish) filters.
+ * Colour lives in name/description copy; metal_type/purity are the base metal (usually 925 silver).
+ */
+function product_store_color_copy_sql(): string
+{
+    return "LOWER(CONCAT_WS(' ',
+        COALESCE(p.name, ''),
+        COALESCE(p.slug, ''),
+        COALESCE(p.description, ''),
+        COALESCE(p.specification, ''),
+        COALESCE(p.additional_information, ''),
+        COALESCE(p.meta_title, ''),
+        COALESCE(p.meta_description, ''),
+        COALESCE(p.meta_keywords, '')
+    ))";
+}
+
+/**
+ * Rose-gold plating phrases (avoids matching floral “rose” on its own).
+ *
+ * @return list<string>
+ */
+function product_store_rose_gold_like_patterns(): array
+{
+    return ['%rose gold%', '%rose-gold%', '%rosegold%'];
+}
+
+/**
  * Storefront product listing with filters.
  *
  * @param array $filters Keys: category_ids (int[]), gender (men|women), min_price, max_price (float|null),
  *                       silver_925 (bool), on_sale (bool), in_stock (bool, ignored; storefront always requires stock), search (string), sort (string),
- *                       metal_colors (string[]) storefront finish: silver, rose_gold (OR when multiple),
+ *                       metal_colors (string[]) storefront finish from name/description: silver, rose_gold (OR when multiple),
  *                       random_order (bool) when true, shuffle with a stable seed (random_seed) so pagination does not repeat products,
  *                       random_seed (int) seed for deterministic browse shuffle (required when random_order is true),
  *                       added_within_days (int) when >0, only products with p.created_at in the last N days
@@ -262,20 +290,26 @@ function product_list_store(PDO $pdo, int $page, int $per_page, array $filters =
         $metal_colors = array_values(array_unique($metal_colors));
     }
     if ($metal_colors !== []) {
-        $mt_expr = 'LOWER(TRIM(COALESCE(p.metal_type, \'\')))';
-        $nm_expr = 'LOWER(CONCAT(COALESCE(p.metal_type, \'\'), \' \', COALESCE(p.name, \'\')))';
+        $copy_expr = product_store_color_copy_sql();
+        $rose_patterns = product_store_rose_gold_like_patterns();
+        $rose_sql = '(' . implode(' OR ', array_fill(0, count($rose_patterns), $copy_expr . ' LIKE ?')) . ')';
         $color_parts = [];
         foreach ($metal_colors as $mc) {
             if ($mc === 'rose_gold') {
-                $color_parts[] = '(' . $nm_expr . ' LIKE ? OR ' . $nm_expr . ' LIKE ?)';
-                $params[] = '%rose%';
-                $params[] = '%rose gold%';
+                $color_parts[] = $rose_sql;
+                foreach ($rose_patterns as $pat) {
+                    $params[] = $pat;
+                }
             } elseif ($mc === 'silver') {
-                $color_parts[] = '(' . $nm_expr . ' NOT LIKE ? AND (' . $mt_expr . ' LIKE ? OR ' . $mt_expr . ' LIKE ? OR LOWER(TRIM(COALESCE(p.purity, \'\'))) LIKE ?))';
-                $params[] = '%rose%';
+                // Silver-toned finish: copy mentions silver/sterling/rhodium, and is not rose-gold plated.
+                $not_rose = implode(' AND ', array_fill(0, count($rose_patterns), $copy_expr . ' NOT LIKE ?'));
+                $color_parts[] = '(' . $not_rose . ' AND (' . $copy_expr . ' LIKE ? OR ' . $copy_expr . ' LIKE ? OR ' . $copy_expr . ' LIKE ?))';
+                foreach ($rose_patterns as $pat) {
+                    $params[] = $pat;
+                }
                 $params[] = '%silver%';
                 $params[] = '%sterling%';
-                $params[] = '%925%';
+                $params[] = '%rhodium%';
             }
         }
         if ($color_parts !== []) {

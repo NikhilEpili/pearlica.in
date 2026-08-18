@@ -1,6 +1,6 @@
 <?php
 /**
- * Shared auth modal brand panel.
+ * Shared auth modal brand panel — centred logo + wordmark.
  * Expects: $ui_login_logo
  */
 if (!function_exists('h')) {
@@ -11,15 +11,12 @@ if (!function_exists('h')) {
 }
 ?>
 <div class="login-card-brand">
-	<div class="login-brand-top">
+	<div class="login-brand-lockup">
 		<img class="login-logo" src="<?php echo h($ui_login_logo); ?>"
-			onerror="this.style.display='none';this.nextElementSibling.style.display='block';"
+			onerror="this.style.display='none';var f=this.nextElementSibling;if(f){f.hidden=false;}"
 			alt="Pearlica">
-		<p class="login-logo-fallback" style="display:none;">Pearlica</p>
+		<p class="login-logo-fallback" hidden>Pearlica</p>
+		<span class="login-brand-rule" aria-hidden="true"></span>
 		<p class="login-tagline">925 Silver Jewellery</p>
-	</div>
-	<div class="login-brand-bottom">
-		<p class="login-welcome">Welcome to Pearlica</p>
-		<p class="login-welcome-sub">Happy Shopping!</p>
 	</div>
 </div>

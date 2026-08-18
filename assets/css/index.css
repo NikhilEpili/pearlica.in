@@ -1,5 +1,5 @@
 /**
- * Homepage — order: hero banners, shop by price, shop by category, new arrivals, influencer reels, Pearlica Picks (40% strip + header are global in navbar)
+ * Homepage — order: hero banners, shop by price, shop by category, new arrivals, mid banner, Pearlica Picks (40% strip + header are global in navbar)
  * Tight, minimal, black/white/off-white. Editorial face: --font-editorial in tokens.css + head.php.
  */
 
@@ -31,7 +31,7 @@ body.homepage .index-picks {
 
 /* ---------- 0. Hero banners (image-driven ratio; reliable on PC + mobile) ---------- */
 .index-hero-banners {
-	background: var(--off-white);
+	background: #111;
 	overflow: hidden;
 	max-width: 100%;
 	width: 100%;
@@ -48,16 +48,12 @@ body.homepage .index-picks {
 	overflow: hidden;
 	aspect-ratio: 1280 / 600;
 	min-height: clamp(140px, 42vw, 600px);
+	background: #111;
 }
 
-/* Active slide content sets height; transitioning slides fill the same frame */
-.index-hero-banners .carousel-item {
-	position: relative;
-	width: 100%;
-	max-width: 100%;
-	height: auto;
-}
-
+/* Stack every slide in the same frame so the current banner stays visible
+   under the next one — no off-white gap during Bootstrap transitions. */
+.index-hero-banners .carousel-item,
 .index-hero-banners .carousel-item-next,
 .index-hero-banners .carousel-item-prev,
 .index-hero-banners .carousel-item.active.carousel-item-start,
@@ -66,13 +62,43 @@ body.homepage .index-picks {
 	inset: 0;
 	width: 100%;
 	height: 100%;
+	margin-right: 0;
+	float: none;
+	transform: none;
+}
+
+.index-hero-banners .carousel-item.active {
+	position: absolute;
+	z-index: 1;
+}
+
+.index-hero-banners .carousel.carousel-fade .carousel-item {
+	opacity: 0;
+	transition: opacity 0.7s ease-in-out;
+}
+
+.index-hero-banners .carousel.carousel-fade .carousel-item.active,
+.index-hero-banners .carousel.carousel-fade .carousel-item-next.carousel-item-start,
+.index-hero-banners .carousel.carousel-fade .carousel-item-prev.carousel-item-end {
+	opacity: 1;
+	z-index: 2;
+}
+
+/* Keep the outgoing slide fully opaque until the incoming one is on top. */
+.index-hero-banners .carousel.carousel-fade .active.carousel-item-start,
+.index-hero-banners .carousel.carousel-fade .active.carousel-item-end {
+	opacity: 1;
+	z-index: 1;
+	transition: opacity 0s linear 0.7s;
 }
 
 .index-hero-banners .carousel-item > a.index-hero-banner-link,
 .index-hero-banners .carousel-item > .index-hero-banner-img {
 	display: block;
-	position: relative;
+	position: absolute;
+	inset: 0;
 	width: 100%;
+	height: 100%;
 	max-width: 100%;
 	overflow: hidden;
 }
@@ -80,26 +106,13 @@ body.homepage .index-picks {
 .index-hero-banners .index-hero-banner-img {
 	box-sizing: border-box;
 	display: block;
-	position: relative;
-	inset: auto;
-	width: 100% !important;
-	max-width: 100% !important;
-	height: auto !important;
-	aspect-ratio: 1280 / 600;
-	object-fit: cover;
-	object-position: center center;
-}
-
-/* Absolute slides during Bootstrap transition still crop correctly */
-.index-hero-banners .carousel-item-next .index-hero-banner-img,
-.index-hero-banners .carousel-item-prev .index-hero-banner-img,
-.index-hero-banners .carousel-item.active.carousel-item-start .index-hero-banner-img,
-.index-hero-banners .carousel-item.active.carousel-item-end .index-hero-banner-img {
 	position: absolute;
 	inset: 0;
 	width: 100% !important;
+	max-width: 100% !important;
 	height: 100% !important;
-	aspect-ratio: auto;
+	object-fit: cover;
+	object-position: center center;
 }
 
 .index-hero-banners .carousel-control-prev,
@@ -115,7 +128,7 @@ body.homepage .index-picks {
 	left: 12px;
 	right: auto;
 	opacity: 0.9;
-	z-index: 2;
+	z-index: 5;
 }
 
 .index-hero-banners .carousel-control-next {
@@ -132,7 +145,7 @@ body.homepage .index-picks {
 
 .index-hero-banners .carousel-indicators {
 	margin-bottom: 12px;
-	z-index: 2;
+	z-index: 5;
 }
 
 .index-hero-banners .carousel-indicators button {
@@ -166,7 +179,7 @@ body.homepage .index-picks {
 	}
 }
 
-/* Mid-page full-width banner (after influencer reels) */
+/* Mid-page full-width banner (below New Arrivals) */
 .index-mid-banner {
 	background: var(--off-white);
 	overflow: hidden;
@@ -260,6 +273,9 @@ body.homepage .index-picks {
 .index-picks-fallback {
 	text-align: center;
 	padding: 1rem 0 0.5rem;
+}
+.index-picks-fallback--after-reels {
+	padding-top: 0.5rem;
 }
 .index-picks-fallback-text {
 	font-family: var(--font-body);
@@ -591,21 +607,11 @@ body.homepage .index-picks {
 	color: var(--black);
 }
 
-/* ---------- 2b. Influencer reels (circular 5-up carousel) ---------- */
+/* ---------- 2b. Influencer reels (circular 5-up carousel, inside Pearlica Picks) ---------- */
 .index-influencers {
-	background: var(--white);
-	padding: clamp(40px, 5vw, 64px) clamp(16px, 4vw, 56px) clamp(48px, 5vw, 72px);
+	background: transparent;
+	padding: 0 clamp(16px, 4vw, 56px);
 	overflow: hidden;
-}
-.index-influencers-title {
-	font-family: var(--font-editorial);
-	font-size: clamp(22px, 3.5vw, 36px);
-	font-weight: 400;
-	color: var(--text-main);
-	margin: 0 0 clamp(28px, 4vw, 44px);
-	text-align: center;
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
 }
 .index-influencers-carousel {
 	position: relative;
@@ -651,11 +657,11 @@ body.homepage .index-picks {
 .index-influencers-stage {
 	overflow-x: hidden;
 	overflow-y: visible;
-	padding: 12px 0 8px;
+	padding: 4px 0 0;
 }
 .index-influencers-track {
 	position: relative;
-	height: clamp(360px, 58vw, 500px);
+	height: calc(clamp(168px, 16vw, 228px) * 16 / 9 + 58px);
 	margin: 0 auto;
 }
 .index-influencers-slide {
@@ -828,7 +834,7 @@ body.homepage .index-picks {
 }
 @media (max-width: 767px) {
 	.index-influencers {
-		padding: 40px 12px 48px;
+		padding: 0 12px;
 	}
 	.index-influencers-carousel {
 		padding: 0 44px;
@@ -839,18 +845,13 @@ body.homepage .index-picks {
 		top: 36%;
 	}
 	.index-influencers-track {
-		height: clamp(320px, 84vw, 420px);
+		height: calc(clamp(148px, 42vw, 196px) * 16 / 9 + 54px);
 	}
 	.index-influencers-slide {
 		width: clamp(148px, 42vw, 196px);
 	}
 }
 @media (max-width: 575px) {
-	.index-influencers-title {
-		font-size: 22px;
-		letter-spacing: 0.03em;
-		margin-bottom: 24px;
-	}
 	.index-influencers-product-name {
 		font-size: 10px;
 	}

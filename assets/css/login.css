@@ -65,7 +65,7 @@
 	width: 100%;
 	max-width: 860px;
 	min-height: 420px;
-	border-radius: 16px;
+	border-radius: 24px;
 	overflow: hidden;
 	box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
 	animation: loginFadeUp 0.55s ease-out forwards;
@@ -86,72 +86,89 @@
 .login-card-brand {
 	flex: 0 0 42%;
 	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
+	align-items: center;
+	justify-content: center;
 	padding: var(--space-3xl) var(--space-2xl);
 	background: var(--pearlica-palette-black);
 	color: var(--color-text-on-inverse);
 	position: relative;
+	overflow: hidden;
+	isolation: isolate;
+	border-radius: 24px 0 0 24px;
 }
 
-.login-brand-top {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	gap: var(--space-sm);
+.login-card-brand::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	background:
+		radial-gradient(ellipse 70% 55% at 50% 46%, rgba(255, 255, 255, 0.09) 0%, transparent 62%),
+		linear-gradient(165deg, #161616 0%, #0a0a0a 55%, #050505 100%);
+	pointer-events: none;
 }
 
-.login-logo {
-	max-width: 160px;
-	height: auto;
-	display: block;
-}
-
-.login-logo-fallback {
-	font-family: var(--font-editorial);
-	font-size: var(--font-size-lg);
-	font-weight: 400;
-	letter-spacing: 0.22em;
-	text-transform: uppercase;
-	color: var(--white);
-	margin: 0;
-}
-
-.login-tagline {
-	margin: 0;
-	font-family: var(--font-body);
-	font-size: var(--font-size-2xs);
-	letter-spacing: 0.08em;
-	color: var(--color-text-on-inverse-muted);
-}
-
-.login-brand-bottom {
-	flex: 1;
+.login-brand-lockup {
+	position: relative;
+	z-index: 1;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	text-align: center;
-	gap: var(--space-sm);
+	gap: 0;
+	max-width: 240px;
+	width: 100%;
 }
 
-.login-welcome {
-	margin: 0;
+.login-logo {
+	display: block;
+	width: min(200px, 100%);
+	max-width: 200px;
+	height: auto;
+	margin: 0 auto;
+	object-fit: contain;
+	filter:
+		drop-shadow(0 0 8px rgba(255, 255, 255, 0.55))
+		drop-shadow(0 0 22px rgba(255, 255, 255, 0.32));
+}
+
+.login-logo-fallback {
 	font-family: var(--font-editorial);
-	font-size: clamp(1.65rem, 3.2vw, 2.35rem);
+	font-size: clamp(1.5rem, 3vw, 2rem);
 	font-weight: 400;
-	line-height: var(--line-height-tight);
+	letter-spacing: 0.28em;
+	text-transform: uppercase;
 	color: var(--white);
-	text-align: center;
+	margin: 0;
+	text-shadow:
+		0 0 8px rgba(255, 255, 255, 0.7),
+		0 0 20px rgba(255, 255, 255, 0.35);
 }
 
-.login-welcome-sub {
+.login-logo-fallback[hidden] {
+	display: none !important;
+}
+
+.login-brand-rule {
+	display: block;
+	width: 40px;
+	height: 1px;
+	margin: 22px auto 14px;
+	background: rgba(255, 255, 255, 0.55);
+	box-shadow: 0 0 10px rgba(255, 255, 255, 0.45);
+}
+
+.login-tagline {
 	margin: 0;
 	font-family: var(--font-body);
-	font-size: var(--font-size-xs);
-	letter-spacing: 0.14em;
+	font-size: 0.6875rem;
+	letter-spacing: 0.22em;
 	text-transform: uppercase;
-	color: var(--color-text-on-inverse-soft);
+	color: #fff;
+	text-shadow:
+		0 0 8px rgba(255, 255, 255, 0.75),
+		0 0 18px rgba(255, 255, 255, 0.4);
 }
 
 /* ----- Form panel ----- */
@@ -162,13 +179,15 @@
 	justify-content: center;
 	padding: var(--space-3xl) var(--space-3xl);
 	background: var(--white);
+	border-radius: 0 24px 24px 0;
 }
 
 .login-form-title {
 	margin: 0 0 var(--space-xs);
 	font-family: var(--font-body);
-	font-size: var(--font-size-sm);
+	font-size: 1.125rem;
 	font-weight: var(--font-weight-medium);
+	letter-spacing: 0.04em;
 	color: var(--color-text-default);
 }
 
@@ -435,23 +454,28 @@
 	.login-card {
 		flex-direction: column;
 		min-height: 0;
-		border-radius: 12px;
+		border-radius: 24px;
 	}
 
 	.login-card-brand {
 		flex: none;
 		padding: var(--space-2xl) var(--space-xl);
 		min-height: 0;
+		border-radius: 24px 24px 0 0;
 	}
 
-	.login-welcome {
-		flex: none;
-		margin-top: var(--space-md);
-		font-size: 1.75rem;
+	.login-logo {
+		max-width: 148px;
+		width: 148px;
+	}
+
+	.login-brand-rule {
+		margin: 16px auto 12px;
 	}
 
 	.login-card-form {
 		padding: var(--space-2xl) var(--space-xl) var(--space-3xl);
+		border-radius: 0 0 24px 24px;
 	}
 
 	.login-otp-input {

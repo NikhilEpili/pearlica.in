@@ -1,7 +1,7 @@
 <?php
 /**
- * Pearlica Picks — optional YouTube embeds (INDEX_HOME_PICK_VIDEO_IDS) or Instagram CTA.
- * Expects: $base_path, $index_pick_video_ids (list of non-empty 11-char-ish YouTube IDs).
+ * Pearlica Picks — influencer reel carousel, optional YouTube embeds, Instagram CTA.
+ * Expects: $base_path, $influencer_reels, $index_pick_video_ids.
  */
 declare(strict_types=1);
 $pick_ids = isset($index_pick_video_ids) && is_array($index_pick_video_ids) ? $index_pick_video_ids : [];
@@ -9,6 +9,8 @@ $pick_ids = array_values(array_filter(array_map(static function ($id) {
 	$id = preg_replace('/[^a-zA-Z0-9_-]/', '', (string) $id);
 	return strlen($id) >= 6 ? $id : '';
 }, $pick_ids)));
+$index_influencer_reels_rendered = false;
+$pearlica_instagram_url = 'https://www.instagram.com/pearlicaofficial?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==&igsi=ZDNlZDc0MzIxNw==';
 ?>
 <section class="index-picks section-reveal" aria-label="Pearlica Picks">
 	<div class="index-picks-inner">
@@ -16,7 +18,10 @@ $pick_ids = array_values(array_filter(array_map(static function ($id) {
 			<h2 class="index-picks-title">Pearlica Picks</h2>
 			<p class="index-picks-sub">Short clips — styling, close-ups, and new drops.</p>
 		</div>
-		<?php if ($pick_ids !== []): ?>
+	</div>
+	<?php include __DIR__ . '/index_influencer_reels.php'; ?>
+	<div class="index-picks-inner">
+		<?php if (empty($index_influencer_reels_rendered) && $pick_ids !== []): ?>
 			<div class="index-picks-grid">
 				<?php foreach ($pick_ids as $vid): ?>
 					<div class="index-picks-cell">
@@ -32,11 +37,10 @@ $pick_ids = array_values(array_filter(array_map(static function ($id) {
 					</div>
 				<?php endforeach; ?>
 			</div>
-		<?php else: ?>
-			<div class="index-picks-fallback">
-				<p class="index-picks-fallback-text mb-3">See reels and styling videos on our Instagram.</p>
-				<a href="https://www.instagram.com/pearlicaofficial/" class="index-picks-ig-btn" target="_blank" rel="noopener noreferrer">Open Instagram</a>
-			</div>
 		<?php endif; ?>
+		<div class="index-picks-fallback<?= !empty($index_influencer_reels_rendered) ? ' index-picks-fallback--after-reels' : '' ?>">
+			<p class="index-picks-fallback-text mb-3">See reels and styling videos on our Instagram.</p>
+			<a href="<?= h($pearlica_instagram_url); ?>" class="index-picks-ig-btn" target="_blank" rel="noopener noreferrer">Open Instagram</a>
+		</div>
 	</div>
 </section>

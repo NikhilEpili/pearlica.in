@@ -4,5 +4,5 @@
  */
 ?>
 <section class="site-top-banner" role="status" aria-label="Promotion: flat forty percent off on all products">
-	<p class="site-top-banner__text">FLAT 40% OFF ON ALL PRODUCTS</p>
+	<p class="site-top-banner__text">LAUNCH OFFER IS LIVE — FLAT 40% OFF — VALID TILL 25 SEPT</p>
 </section>

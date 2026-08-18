@@ -96,7 +96,6 @@ $mb_search_suggest = ($mb_trim === '' ? '' : '/' . $mb_trim) . '/search-suggest'
 					<?php foreach ($mb_cats as $cat): ?>
 						<li><a class="mobile-dock-chip" href="<?php echo h($mb_base . 'products?category=' . (int) ($cat['id'] ?? 0)); ?>"><?php echo h((string) ($cat['name'] ?? '')); ?></a></li>
 					<?php endforeach; ?>
-					<li><a class="mobile-dock-chip" href="<?php echo h($mb_base); ?>collections">Collections</a></li>
 				</ul>
 			</div>
 

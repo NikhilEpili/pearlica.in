@@ -37,13 +37,24 @@
 		return;
 	}
 
+	var started = false;
+
 	function ensureCarouselCycles() {
+		if (started) {
+			return;
+		}
+		started = true;
 		void carouselEl.offsetHeight;
 		if (typeof bootstrap === 'undefined' || !bootstrap.Carousel) {
 			return;
 		}
 		try {
-			bootstrap.Carousel.getOrCreateInstance(carouselEl).cycle();
+			bootstrap.Carousel.getOrCreateInstance(carouselEl, {
+				interval: 4500,
+				pause: false,
+				touch: true,
+				ride: false
+			}).cycle();
 		} catch (e) {
 			/* ignore */
 		}
@@ -52,7 +63,7 @@
 	var imgs = carouselEl.querySelectorAll('.index-hero-banner-img');
 	var pending = 0;
 	imgs.forEach(function (img) {
-		if (img.complete) {
+		if (img.complete && img.naturalWidth > 0) {
 			return;
 		}
 		pending += 1;
@@ -68,5 +79,7 @@
 
 	if (pending === 0) {
 		ensureCarouselCycles();
+	} else {
+		setTimeout(ensureCarouselCycles, 8000);
 	}
 })();

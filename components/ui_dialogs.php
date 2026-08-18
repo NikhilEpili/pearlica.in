@@ -25,7 +25,7 @@ $ui_logged_in = auth_cookie_user_id() !== null;
 $ui_login_csrf = login_csrf_token();
 $ui_ts_cfg = telesign_config();
 $ui_otp_len = telesign_login_otp_digit_count();
-$ui_login_logo = $ui_base . 'assets/images/footer_white-logo_trans-bg.png';
+$ui_login_logo = $ui_base . 'assets/images/white-logo_trans-bg.png';
 $ui_states = indian_states_list();
 $ui_registration_complete = '0';
 $ui_shipping_complete = '0';
@@ -70,7 +70,7 @@ if ($ui_logged_in && isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
 				<!-- Sign in -->
 				<div class="pearlica-auth-step" id="pearlica-auth-step-login">
 					<h1 class="login-form-title" id="pearlica-auth-title">Sign in</h1>
-					<p class="login-form-subtitle">Use your mobile number and password to continue checkout.</p>
+					<p class="login-form-subtitle">Enter your mobile number and password.</p>
 					<form id="pearlica-auth-login-form" class="pearlica-profile-form" novalidate>
 						<div class="pearlica-form-field">
 							<label for="pearlica-auth-login-phone" class="pearlica-form-label">Mobile number</label>
@@ -98,7 +98,7 @@ if ($ui_logged_in && isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
 				<!-- Register -->
 				<div class="pearlica-auth-step" id="pearlica-auth-step-register" hidden>
 					<h1 class="login-form-title">Create your account</h1>
-					<p class="login-form-subtitle">Fill in your details. We&rsquo;ll verify your mobile with a one-time code.</p>
+					<p class="login-form-subtitle">A few details, then a one-time code to verify your mobile.</p>
 					<form id="pearlica-auth-register-form" class="pearlica-profile-form" novalidate>
 						<div class="pearlica-form-field">
 							<label for="pearlica-reg-full-name" class="pearlica-form-label">Full name *</label>

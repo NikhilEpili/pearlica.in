@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', function () {
 	var searchDrawer = document.getElementById('mobile-search-sheet');
 	var moreDrawer = document.getElementById('mobile-more-sheet');
 	var mq = window.matchMedia('(max-width: 991.98px)');
+	var lockedScrollY = 0;
+	var pageLocked = false;
 
 	function setActiveDock() {
 		if (!mq.matches) return;
@@ -35,12 +37,83 @@ document.addEventListener('DOMContentLoaded', function () {
 	var openBtnSearch = dock.querySelector('[data-mobile-dock-open="search"]');
 	var openBtnMore = dock.querySelector('[data-mobile-dock-open="more"]');
 
+	function lockPageScroll() {
+		if (pageLocked) {
+			return;
+		}
+		pageLocked = true;
+		lockedScrollY = window.scrollY || window.pageYOffset || 0;
+		document.documentElement.classList.add('mobile-sheet-open');
+		document.body.classList.add('mobile-sheet-open');
+		document.body.style.position = 'fixed';
+		document.body.style.top = '-' + lockedScrollY + 'px';
+		document.body.style.left = '0';
+		document.body.style.right = '0';
+		document.body.style.width = '100%';
+		document.body.style.overflow = 'hidden';
+	}
+
+	function unlockPageScroll() {
+		if (!pageLocked) {
+			return;
+		}
+		pageLocked = false;
+		document.documentElement.classList.remove('mobile-sheet-open');
+		document.body.classList.remove('mobile-sheet-open');
+		document.body.style.position = '';
+		document.body.style.top = '';
+		document.body.style.left = '';
+		document.body.style.right = '';
+		document.body.style.width = '';
+		document.body.style.overflow = '';
+		window.scrollTo(0, lockedScrollY);
+	}
+
 	function syncBodyLock() {
 		var searchOpen = searchDrawer && searchDrawer.classList.contains('is-open');
 		var moreOpen = moreDrawer && moreDrawer.classList.contains('is-open');
 		var cartOpen = document.body.classList.contains('cart-drawer-open');
-		document.body.style.overflow = searchOpen || moreOpen || cartOpen ? 'hidden' : '';
+		if (searchOpen || moreOpen || cartOpen) {
+			lockPageScroll();
+		} else {
+			unlockPageScroll();
+		}
 	}
+
+	function trapDrawerScroll(root) {
+		if (!root) {
+			return;
+		}
+		var inner = root.querySelector('.cart-drawer-panel-inner');
+		root.addEventListener('wheel', function (e) {
+			e.stopPropagation();
+			if (!inner) {
+				e.preventDefault();
+				return;
+			}
+			if (!inner.contains(e.target) && e.target !== inner) {
+				e.preventDefault();
+				return;
+			}
+			var delta = e.deltaY;
+			var atTop = inner.scrollTop <= 0 && delta < 0;
+			var atBottom = inner.scrollTop + inner.clientHeight >= inner.scrollHeight - 1 && delta > 0;
+			if (atTop || atBottom) {
+				e.preventDefault();
+			}
+		}, { passive: false });
+
+		root.addEventListener('touchmove', function (e) {
+			e.stopPropagation();
+			if (inner && (inner.contains(e.target) || e.target === inner)) {
+				return;
+			}
+			e.preventDefault();
+		}, { passive: false });
+	}
+
+	trapDrawerScroll(searchDrawer);
+	trapDrawerScroll(moreDrawer);
 
 	function openSearchDrawer(triggerBtn) {
 		if (!searchDrawer) return;
