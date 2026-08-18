@@ -152,16 +152,13 @@ $hero_fallback_src = $base_path . 'assets/images/banner_0.png';
 $mid_fallback_src = $base_path . 'assets/images/banner_1.png';
 $hero_banners = [];
 $hero_rows = [];
-$mid_rows = [];
 try {
 	if ($pdo) {
 		homepage_banner_ensure_schema($pdo);
 		$hero_rows = homepage_banner_list_active($pdo, 'hero');
-		$mid_rows = homepage_banner_list_active($pdo, 'mid');
 	}
 } catch (Throwable $e) {
 	$hero_rows = [];
-	$mid_rows = [];
 }
 
 // Only use hardcoded fallback assets when no active banners exist in the DB.
@@ -190,22 +187,6 @@ if ($hero_rows === []) {
 	];
 }
 
-$mid_ready = homepage_banner_hydrate_for_display(
-	$mid_rows,
-	$banners_upload_base,
-	'Pearlica collection — shop silver jewellery',
-	$base_path . 'products'
-);
-$mid_banner = $mid_ready[0] ?? [
-	'src' => $mid_fallback_src,
-	'alt_text' => 'Pearlica collection — shop silver jewellery',
-	'link_url' => $base_path . 'products',
-];
-$mid_banner_href = (string) ($mid_banner['link_url'] ?? $base_path . 'products');
-if ($mid_banner_href === '') {
-	$mid_banner_href = $base_path . 'products';
-}
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -221,7 +202,7 @@ if ($mid_banner_href === '') {
 	<!--
 		Home sequence (below global promo + header from navbar):
 		1) Banner (hero carousel)  2) Shop by price  3) Shop by category
-		4) New arrivals  5) Mid banner  6) Pearlica Picks (reels)  7) Footer
+		4) New arrivals  5) Pearlica Picks (reels)  6) Footer
 	-->
 	<section class="index-hero-banners" aria-label="Pearlica featured banners">
 		<div id="index-hero-carousel" class="carousel slide carousel-fade" data-bs-interval="4500" data-bs-pause="false" data-bs-touch="true">
@@ -320,14 +301,6 @@ if ($mid_banner_href === '') {
 				</div>
 			<?php endif; ?>
 		</div>
-	</section>
-
-	<section class="index-mid-banner section-reveal" aria-label="Featured offer">
-		<a href="<?= h($mid_banner_href); ?>" class="index-mid-banner-link">
-			<img class="index-mid-banner-img w-100 d-block" src="<?= h($mid_banner['src']); ?>"
-				alt="<?= h($mid_banner['alt_text']); ?>" width="1280" height="600" sizes="100vw"
-				loading="lazy" decoding="async">
-		</a>
 	</section>
 
 	<?php include __DIR__ . '/components/index_pearlica_picks.php'; ?>
