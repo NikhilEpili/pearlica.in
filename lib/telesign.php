@@ -187,20 +187,28 @@ function telesign_sms_verify_send(string $phone_e164_digits): array
 	if ($phone_e164_digits === '' || strlen($phone_e164_digits) < 10) {
 		return ['ok' => false, 'error' => 'Invalid phone number'];
 	}
+
 	$len = telesign_login_otp_digit_count();
 	$max = (10 ** $len) - 1;
 	$code = str_pad((string) random_int(0, $max), $len, '0', STR_PAD_LEFT);
+
 	$params = [
 		'phone_number' => $phone_e164_digits,
 		'verify_code' => $code,
-		'template' => telesign_login_otp_sms_template(),
 	];
+
 	$dlt_tid = defined('TELESIGN_DLT_TEMPLATE_ID') ? trim((string) TELESIGN_DLT_TEMPLATE_ID) : '';
 	$dlt_eid = defined('TELESIGN_DLT_ENTITY_ID') ? trim((string) TELESIGN_DLT_ENTITY_ID) : '';
+
+	// Only attach a custom template when India DLT IDs are configured.
+	// An unregistered custom template is a common reason SMS is accepted by the API
+	// but never delivered on the first attempt.
 	if ($dlt_tid !== '' && $dlt_eid !== '') {
+		$params['template'] = telesign_login_otp_sms_template();
 		$params['dlt_template_id'] = $dlt_tid;
 		$params['dlt_entity_id'] = $dlt_eid;
 	}
+
 	$body = http_build_query($params);
 	$res = telesign_request('POST', '/v1/verify/sms', null, $body);
 	$data = is_array($res['data'] ?? null) ? $res['data'] : null;

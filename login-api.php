@@ -19,6 +19,9 @@ header('Content-Type: application/json; charset=utf-8');
 if (!function_exists('login_api_json')) {
 	function login_api_json(array $payload, int $status = 200): void
 	{
+		if (session_status() === PHP_SESSION_ACTIVE) {
+			session_write_close();
+		}
 		http_response_code($status);
 		echo json_encode($payload);
 		exit;
@@ -190,17 +193,7 @@ if ($action === 'forgot_send_otp' || $action === 'forgot_resend_otp') {
 		}
 		$user = store_user_find_by_id($pdo, $user_id);
 		if (!$user) {
-			unset($_SESSION['pending_forgot_user_id']);
-			login_api_json(['ok' => false, 'error' => 'Session expired. Please start again.', 'step' => 'forgot']);
-		}
-		$e164 = store_user_phone_e164_digits((string) ($user['phone'] ?? ''));
-		if ($e164 === null && !empty($_SESSION['pending_forgot_phone_e164'])) {
-			$e164 = store_user_phone_e164_digits((string) $_SESSION['pending_forgot_phone_e164']);
-		}
-		if ($e164 === null && !empty($_SESSION['telesign_phone_e164'])) {
-			$e164 = store_user_phone_e164_digits((string) $_SESSION['telesign_phone_e164']);
-		}
-		if ($e164 === null) {
+			unset($_SESSION['pending_forgot_user_id'], $_SESSION['pending_forgot_phone_e164']);
 			login_api_json(['ok' => false, 'error' => 'Session expired. Please start again.', 'step' => 'forgot']);
 		}
 	} else {
@@ -213,6 +206,21 @@ if ($action === 'forgot_send_otp' || $action === 'forgot_resend_otp') {
 		if (!$user) {
 			login_api_json(['ok' => false, 'error' => 'No user found with this phone number.']);
 		}
+	}
+
+	// Always SMS the canonical phone on the account (same path for send + resend).
+	$e164 = store_user_phone_e164_digits((string) ($user['phone'] ?? ''));
+	if ($e164 === null && !empty($_SESSION['pending_forgot_phone_e164'])) {
+		$e164 = store_user_phone_e164_digits((string) $_SESSION['pending_forgot_phone_e164']);
+	}
+	if ($e164 === null && !empty($_SESSION['telesign_phone_e164'])) {
+		$e164 = store_user_phone_e164_digits((string) $_SESSION['telesign_phone_e164']);
+	}
+	if ($e164 === null && $action === 'forgot_send_otp') {
+		$e164 = store_user_phone_e164_digits(trim((string) ($_POST['phone'] ?? '')));
+	}
+	if ($e164 === null) {
+		login_api_json(['ok' => false, 'error' => 'Session expired. Please start again.', 'step' => 'forgot']);
 	}
 
 	$send = login_telesign_send_or_fail($e164, $ts_cfg, $login_otp_len);

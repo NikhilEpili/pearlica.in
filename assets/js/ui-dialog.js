@@ -96,7 +96,12 @@
 	function sanitizePhone(raw) {
 		var d = String(raw || '').replace(/\D/g, '');
 		if (d.indexOf('91') === 0 && d.length > 10) d = d.slice(2);
+		if (d.charAt(0) === '0' && d.length === 11) d = d.slice(1);
 		return d.slice(0, 10);
+	}
+
+	function isOtpSendSuccess(d) {
+		return !!(d && d.ok && !d.already_logged_in && (d.expires_at || d.step === 'forgot_reset' || d.step === 'register_verify'));
 	}
 
 	function sanitizeOtp(raw) {
@@ -429,10 +434,15 @@
 		showAuthError('');
 		var values = getRegisterValues();
 		postAuth('register_send_otp', values).then(function (d) {
-			if (d && d.ok) {
+			if (isOtpSendSuccess(d)) {
 				document.getElementById('pearlica-reg-phone-mask').textContent = d.phone_mask || 'your number';
 				startCountdown(d.expires_at, 'pearlica-reg-otp-countdown', 'pearlica-reg-otp-countdown-wrap');
 				showAuthStep('register-verify');
+				return;
+			}
+			if (d && d.already_logged_in) {
+				setLoggedInUI(true);
+				finishLogin(d);
 				return;
 			}
 			showAuthError((d && d.error) || 'Could not start registration.');
@@ -723,10 +733,33 @@
 		if (forgotForm) {
 			forgotForm.addEventListener('submit', function (e) {
 				e.preventDefault();
-				var phone = sanitizePhone(document.getElementById('pearlica-forgot-phone').value);
+				if (forgotForm.getAttribute('data-busy') === '1') return;
+				var phoneEl = document.getElementById('pearlica-forgot-phone');
+				var phone = sanitizePhone(phoneEl ? phoneEl.value : '');
+				if (phone.length !== 10) {
+					showAuthError('Please enter a valid 10-digit mobile number.');
+					return;
+				}
+				forgotForm.setAttribute('data-busy', '1');
+				var submitBtn = forgotForm.querySelector('button[type="submit"]');
+				if (submitBtn) {
+					submitBtn.disabled = true;
+					submitBtn.setAttribute('data-otp-busy', '1');
+				}
 				postAuth('forgot_send_otp', { phone: phone }).then(function (d) {
-					if (d && d.ok) {
+					forgotForm.removeAttribute('data-busy');
+					if (submitBtn) {
+						submitBtn.disabled = false;
+						submitBtn.removeAttribute('data-otp-busy');
+					}
+					if (isOtpSendSuccess(d)) {
 						applyForgotOtpSent(d);
+						toast('Verification code sent.', { type: 'success' });
+						return;
+					}
+					if (d && d.already_logged_in) {
+						setLoggedInUI(true);
+						finishLogin(d);
 						return;
 					}
 					showAuthError((d && d.error) || 'Could not send code.');
@@ -767,9 +800,12 @@
 		var forgotResendBtn = document.getElementById('pearlica-forgot-resend-btn');
 		if (forgotResendBtn) {
 			forgotResendBtn.addEventListener('click', function () {
+				if (forgotResendBtn.getAttribute('data-busy') === '1') return;
+				forgotResendBtn.setAttribute('data-busy', '1');
 				forgotResendBtn.disabled = true;
 				postAuth('forgot_resend_otp', {}).then(function (d) {
-					if (d && d.ok) {
+					forgotResendBtn.removeAttribute('data-busy');
+					if (isOtpSendSuccess(d)) {
 						showAuthError('');
 						var otpInput = document.getElementById('pearlica-forgot-otp');
 						if (otpInput) otpInput.value = '';
