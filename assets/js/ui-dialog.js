@@ -155,11 +155,52 @@
 	function showAuthStep(step) {
 		['login', 'register', 'register-verify', 'forgot', 'forgot-reset'].forEach(function (s) {
 			var el = document.getElementById('pearlica-auth-step-' + s);
-			if (el) el.hidden = s !== step;
+			if (!el) return;
+			var active = s === step;
+			el.hidden = !active;
+			// Disable fields in hidden steps so password managers only see the active form.
+			el.querySelectorAll('input, select, textarea, button').forEach(function (ctrl) {
+				if (ctrl.hasAttribute('data-keep-enabled')) return;
+				ctrl.disabled = !active;
+			});
 		});
 		showAuthError('');
+		if (step === 'forgot-reset') {
+			var fp = document.getElementById('pearlica-forgot-password');
+			var fpc = document.getElementById('pearlica-forgot-password-confirm');
+			if (fp) fp.value = '';
+			if (fpc) fpc.value = '';
+		}
 		var modalPanel = document.querySelector('#pearlica-login-modal .pearlica-login-panel');
 		if (modalPanel) modalPanel.scrollTop = 0;
+	}
+
+	function fieldValue(id) {
+		var el = document.getElementById(id);
+		return el ? String(el.value == null ? '' : el.value) : '';
+	}
+
+	function validateForgotResetFields() {
+		var otp = sanitizeOtp(fieldValue('pearlica-forgot-otp'));
+		var password = fieldValue('pearlica-forgot-password');
+		var passwordConfirm = fieldValue('pearlica-forgot-password-confirm');
+		var otpLen = parseInt((document.getElementById('pearlica-forgot-otp') || {}).getAttribute('maxlength') || '4', 10) || 4;
+		if (!otp || otp.length !== otpLen) {
+			return { error: 'Please enter the ' + otpLen + '-digit code from your SMS.', fieldId: 'pearlica-forgot-otp' };
+		}
+		if (!password) {
+			return { error: 'Please enter a password.', fieldId: 'pearlica-forgot-password' };
+		}
+		if (password.length < 8) {
+			return { error: 'Password must be at least 8 characters.', fieldId: 'pearlica-forgot-password' };
+		}
+		if (!passwordConfirm) {
+			return { error: 'Please confirm your password.', fieldId: 'pearlica-forgot-password-confirm' };
+		}
+		if (password !== passwordConfirm) {
+			return { error: 'Passwords do not match.', fieldId: 'pearlica-forgot-password-confirm' };
+		}
+		return { error: null, fieldId: null, otp: otp, password: password, password_confirm: passwordConfirm };
 	}
 
 	function postAuth(action, data) {
@@ -228,7 +269,10 @@
 				return;
 			}
 			if (waitEl) waitEl.hidden = false;
-			if (btn) btn.hidden = true;
+			if (btn) {
+				btn.hidden = true;
+				btn.disabled = true;
+			}
 			if (countEl) countEl.textContent = formatMmSs(left);
 			resendTimer = setTimeout(tick, 1000);
 		}
@@ -237,33 +281,10 @@
 
 	function applyForgotOtpSent(d) {
 		document.getElementById('pearlica-forgot-phone-mask').textContent = d.phone_mask || 'your number';
+		showAuthStep('forgot-reset');
 		startCountdown(d.expires_at, 'pearlica-forgot-otp-countdown', 'pearlica-forgot-otp-countdown-wrap');
 		var resendAt = d.resend_at || (Math.floor(Date.now() / 1000) + 60);
 		startForgotResendCountdown(resendAt);
-		showAuthStep('forgot-reset');
-	}
-
-	function validateForgotResetFields() {
-		var otp = sanitizeOtp(document.getElementById('pearlica-forgot-otp').value);
-		var password = document.getElementById('pearlica-forgot-password').value;
-		var confirm = document.getElementById('pearlica-forgot-password-confirm').value;
-		var otpLen = parseInt((document.getElementById('pearlica-forgot-otp').getAttribute('maxlength') || '4'), 10) || 4;
-		if (!otp || otp.length !== otpLen) {
-			return { error: 'Please enter the ' + otpLen + '-digit code from your SMS.', fieldId: 'pearlica-forgot-otp' };
-		}
-		if (!password) {
-			return { error: 'Please enter a password.', fieldId: 'pearlica-forgot-password' };
-		}
-		if (password.length < 8) {
-			return { error: 'Password must be at least 8 characters.', fieldId: 'pearlica-forgot-password' };
-		}
-		if (!confirm) {
-			return { error: 'Please confirm your password.', fieldId: 'pearlica-forgot-password-confirm' };
-		}
-		if (password !== confirm) {
-			return { error: 'Passwords do not match.', fieldId: 'pearlica-forgot-password-confirm' };
-		}
-		return { error: null, fieldId: null, otp: otp, password: password, password_confirm: confirm };
 	}
 
 	function applyAuthResponse(d) {
@@ -648,6 +669,8 @@
 	}
 
 	function bindAuth() {
+		showAuthStep('login');
+
 		document.querySelectorAll('#pearlica-auth-login-phone, #pearlica-reg-phone, #pearlica-forgot-phone').forEach(function (inp) {
 			inp.addEventListener('input', function () {
 				var n = sanitizePhone(inp.value);

@@ -184,11 +184,11 @@ if ($ui_logged_in && isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
 							inputmode="numeric" autocomplete="one-time-code" placeholder="<?php echo str_repeat('0', (int) $ui_otp_len); ?>" required>
 						<div class="pearlica-form-field">
 							<label for="pearlica-forgot-password" class="pearlica-form-label">New password</label>
-							<input type="password" id="pearlica-forgot-password" class="login-phone-input pearlica-form-input" minlength="8" autocomplete="new-password" required>
+							<input type="password" id="pearlica-forgot-password" class="login-phone-input pearlica-form-input" name="forgot_password" minlength="8" autocomplete="new-password" required>
 						</div>
 						<div class="pearlica-form-field">
 							<label for="pearlica-forgot-password-confirm" class="pearlica-form-label">Confirm password</label>
-							<input type="password" id="pearlica-forgot-password-confirm" class="login-phone-input pearlica-form-input" minlength="8" autocomplete="new-password" required>
+							<input type="password" id="pearlica-forgot-password-confirm" class="login-phone-input pearlica-form-input" name="forgot_password_confirm" minlength="8" autocomplete="off" required>
 						</div>
 						<button type="submit" class="login-submit">Update password</button>
 					</form>
