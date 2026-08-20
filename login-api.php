@@ -67,7 +67,7 @@ if ($return_url !== '' && strpos($return_url, '://') !== false) {
 	$return_url = 'profile';
 }
 $base_path = store_base_path_from_request();
-$guest_actions = ['login', 'register_send_otp', 'register_verify', 'forgot_send_otp', 'forgot_reset'];
+$guest_actions = ['login', 'register_send_otp', 'register_verify', 'forgot_send_otp', 'forgot_resend_otp', 'forgot_reset'];
 
 if ($pdo instanceof PDO) {
 	try {
@@ -179,26 +179,58 @@ if ($action === 'register_verify') {
 	login_api_auth_response($pdo, $user, $return_url, $base_path);
 }
 
-if ($action === 'forgot_send_otp') {
-	$phone_raw = trim((string) ($_POST['phone'] ?? ''));
-	$e164 = store_user_phone_e164_digits($phone_raw);
-	if ($e164 === null) {
-		login_api_json(['ok' => false, 'error' => 'Please enter a valid 10-digit mobile number.']);
+if ($action === 'forgot_send_otp' || $action === 'forgot_resend_otp') {
+	$e164 = null;
+	$user = null;
+
+	if ($action === 'forgot_resend_otp') {
+		$user_id = isset($_SESSION['pending_forgot_user_id']) ? (int) $_SESSION['pending_forgot_user_id'] : 0;
+		if ($user_id <= 0) {
+			login_api_json(['ok' => false, 'error' => 'Session expired. Please start again.', 'step' => 'forgot']);
+		}
+		$user = store_user_find_by_id($pdo, $user_id);
+		if (!$user) {
+			unset($_SESSION['pending_forgot_user_id']);
+			login_api_json(['ok' => false, 'error' => 'Session expired. Please start again.', 'step' => 'forgot']);
+		}
+		$e164 = store_user_phone_e164_digits((string) ($user['phone'] ?? ''));
+		if ($e164 === null && !empty($_SESSION['pending_forgot_phone_e164'])) {
+			$e164 = store_user_phone_e164_digits((string) $_SESSION['pending_forgot_phone_e164']);
+		}
+		if ($e164 === null && !empty($_SESSION['telesign_phone_e164'])) {
+			$e164 = store_user_phone_e164_digits((string) $_SESSION['telesign_phone_e164']);
+		}
+		if ($e164 === null) {
+			login_api_json(['ok' => false, 'error' => 'Session expired. Please start again.', 'step' => 'forgot']);
+		}
+	} else {
+		$phone_raw = trim((string) ($_POST['phone'] ?? ''));
+		$e164 = store_user_phone_e164_digits($phone_raw);
+		if ($e164 === null) {
+			login_api_json(['ok' => false, 'error' => 'Please enter a valid 10-digit mobile number.']);
+		}
+		$user = store_user_find_by_phone_e164($pdo, $e164);
+		if (!$user) {
+			login_api_json(['ok' => false, 'error' => 'No user found with this phone number.']);
+		}
 	}
-	$user = store_user_find_by_phone_e164($pdo, $e164);
-	if (!$user) {
-		login_api_json(['ok' => false, 'error' => 'No user found with this phone number.']);
-	}
+
 	$send = login_telesign_send_or_fail($e164, $ts_cfg, $login_otp_len);
 	if (empty($send['ok'])) {
-		login_api_json(['ok' => false, 'error' => (string) ($send['error'] ?? 'Unable to send code.')]);
+		$payload = ['ok' => false, 'error' => (string) ($send['error'] ?? 'Unable to send code.')];
+		if (isset($send['wait_seconds'])) {
+			$payload['wait_seconds'] = (int) $send['wait_seconds'];
+		}
+		login_api_json($payload);
 	}
 	$_SESSION['pending_forgot_user_id'] = (int) $user['id'];
+	$_SESSION['pending_forgot_phone_e164'] = $e164;
 	login_api_json([
 		'ok' => true,
 		'step' => 'forgot_reset',
 		'phone_mask' => $send['phone_mask'] ?? login_phone_mask_last4($e164),
 		'expires_at' => (int) ($send['expires_at'] ?? 0),
+		'resend_at' => time() + (OTP_RATE_LIMIT_MINUTES * 60),
 		'otp_length' => (int) ($send['otp_length'] ?? $login_otp_len),
 	]);
 }
@@ -208,10 +240,7 @@ if ($action === 'forgot_reset') {
 	if ($user_id <= 0) {
 		login_api_json(['ok' => false, 'error' => 'Session expired. Please start again.', 'step' => 'forgot']);
 	}
-	$verify = login_telesign_verify_or_fail((string) ($_POST['otp'] ?? ''), $login_otp_len);
-	if (empty($verify['ok'])) {
-		login_api_json(['ok' => false, 'error' => (string) ($verify['error'] ?? 'Invalid code.')]);
-	}
+	// Validate passwords before consuming the OTP so a mismatch does not expire the session.
 	$pw_err = store_profile_validate_password(
 		(string) ($_POST['password'] ?? ''),
 		(string) ($_POST['password_confirm'] ?? '')
@@ -219,8 +248,12 @@ if ($action === 'forgot_reset') {
 	if ($pw_err !== null) {
 		login_api_json(['ok' => false, 'error' => $pw_err]);
 	}
+	$verify = login_telesign_verify_or_fail((string) ($_POST['otp'] ?? ''), $login_otp_len);
+	if (empty($verify['ok'])) {
+		login_api_json(['ok' => false, 'error' => (string) ($verify['error'] ?? 'Invalid code.')]);
+	}
 	store_user_set_password($pdo, $user_id, (string) $_POST['password']);
-	unset($_SESSION['pending_forgot_user_id']);
+	unset($_SESSION['pending_forgot_user_id'], $_SESSION['pending_forgot_phone_e164']);
 	session_regenerate_id(true);
 	auth_cookie_set($user_id);
 	$user = store_user_find_by_id($pdo, $user_id);

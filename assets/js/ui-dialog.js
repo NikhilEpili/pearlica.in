@@ -11,6 +11,7 @@
 	var addressOnSaved = null;
 	var addressDismissable = true;
 	var otpTimer = null;
+	var resendTimer = null;
 	var savedAddresses = [];
 	var selectedAddressId = 0;
 
@@ -199,6 +200,70 @@
 		}
 		if (wrap) wrap.hidden = false;
 		tick();
+	}
+
+	function formatMmSs(totalSeconds) {
+		var left = Math.max(0, totalSeconds | 0);
+		var m = Math.floor(left / 60);
+		var s = left % 60;
+		return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+	}
+
+	function startForgotResendCountdown(resendAt) {
+		if (resendTimer) clearTimeout(resendTimer);
+		var waitEl = document.getElementById('pearlica-forgot-resend-wait');
+		var countEl = document.getElementById('pearlica-forgot-resend-countdown');
+		var btn = document.getElementById('pearlica-forgot-resend-btn');
+		function showReady() {
+			if (waitEl) waitEl.hidden = true;
+			if (btn) {
+				btn.hidden = false;
+				btn.disabled = false;
+			}
+		}
+		function tick() {
+			var left = (resendAt || 0) - Math.floor(Date.now() / 1000);
+			if (left <= 0) {
+				showReady();
+				return;
+			}
+			if (waitEl) waitEl.hidden = false;
+			if (btn) btn.hidden = true;
+			if (countEl) countEl.textContent = formatMmSs(left);
+			resendTimer = setTimeout(tick, 1000);
+		}
+		tick();
+	}
+
+	function applyForgotOtpSent(d) {
+		document.getElementById('pearlica-forgot-phone-mask').textContent = d.phone_mask || 'your number';
+		startCountdown(d.expires_at, 'pearlica-forgot-otp-countdown', 'pearlica-forgot-otp-countdown-wrap');
+		var resendAt = d.resend_at || (Math.floor(Date.now() / 1000) + 60);
+		startForgotResendCountdown(resendAt);
+		showAuthStep('forgot-reset');
+	}
+
+	function validateForgotResetFields() {
+		var otp = sanitizeOtp(document.getElementById('pearlica-forgot-otp').value);
+		var password = document.getElementById('pearlica-forgot-password').value;
+		var confirm = document.getElementById('pearlica-forgot-password-confirm').value;
+		var otpLen = parseInt((document.getElementById('pearlica-forgot-otp').getAttribute('maxlength') || '4'), 10) || 4;
+		if (!otp || otp.length !== otpLen) {
+			return { error: 'Please enter the ' + otpLen + '-digit code from your SMS.', fieldId: 'pearlica-forgot-otp' };
+		}
+		if (!password) {
+			return { error: 'Please enter a password.', fieldId: 'pearlica-forgot-password' };
+		}
+		if (password.length < 8) {
+			return { error: 'Password must be at least 8 characters.', fieldId: 'pearlica-forgot-password' };
+		}
+		if (!confirm) {
+			return { error: 'Please confirm your password.', fieldId: 'pearlica-forgot-password-confirm' };
+		}
+		if (password !== confirm) {
+			return { error: 'Passwords do not match.', fieldId: 'pearlica-forgot-password-confirm' };
+		}
+		return { error: null, fieldId: null, otp: otp, password: password, password_confirm: confirm };
 	}
 
 	function applyAuthResponse(d) {
@@ -478,8 +543,6 @@
 		});
 		var state = document.getElementById('pearlica-addr-state');
 		if (state) state.value = '';
-		var saveCb = document.getElementById('pearlica-addr-save');
-		if (saveCb) saveCb.checked = true;
 	}
 
 	function openAddress(opts) {
@@ -489,9 +552,11 @@
 		addressOnSaved = typeof opts.onSaved === 'function' ? opts.onSaved : null;
 		addressDismissable = opts.dismissable !== false;
 		var ctx = document.getElementById('pearlica-address-context');
-		if (ctx && opts.message) ctx.textContent = opts.message;
+		if (ctx) {
+			ctx.textContent = opts.message || 'Choose or add a delivery address before payment.';
+		}
 		showAddressError('');
-		selectedAddressId = 0;
+		selectedAddressId = opts.selectedAddressId ? (opts.selectedAddressId | 0) : 0;
 		savedAddresses = [];
 		resetAddressForm();
 		renderSavedAddresses();
@@ -501,6 +566,9 @@
 		postProfile('list_addresses', {}).then(function (d) {
 			if (d && d.ok && d.addresses) {
 				savedAddresses = d.addresses;
+				if (!selectedAddressId && d.checkout_address_id) {
+					selectedAddressId = d.checkout_address_id | 0;
+				}
 				renderSavedAddresses();
 				if (savedAddresses.length) {
 					if (form) form.hidden = true;
@@ -564,13 +632,16 @@
 				window.location.href = apiUrl('profile');
 				return false;
 			}
-			if (status.shipping_complete && opts.skipAddressIfComplete) {
+			if (status.shipping_complete && opts.skipAddressIfComplete !== false) {
 				if (typeof opts.onReady === 'function') opts.onReady(status);
 				return true;
 			}
 			return openAddress({
-				message: 'Confirm where we should deliver this order.',
+				message: status.shipping_complete
+					? 'Choose a delivery address or add a new one.'
+					: 'Add a delivery address to continue.',
 				dismissable: opts.dismissable !== false,
+				selectedAddressId: status.checkout_address_id || 0,
 				onSaved: opts.onReady,
 			});
 		});
@@ -632,8 +703,7 @@
 				var phone = sanitizePhone(document.getElementById('pearlica-forgot-phone').value);
 				postAuth('forgot_send_otp', { phone: phone }).then(function (d) {
 					if (d && d.ok) {
-						document.getElementById('pearlica-forgot-phone-mask').textContent = d.phone_mask || 'your number';
-						showAuthStep('forgot-reset');
+						applyForgotOtpSent(d);
 						return;
 					}
 					showAuthError((d && d.error) || 'Could not send code.');
@@ -645,17 +715,53 @@
 		if (forgotResetForm) {
 			forgotResetForm.addEventListener('submit', function (e) {
 				e.preventDefault();
+				var validation = validateForgotResetFields();
+				if (validation.error) {
+					showAuthError(validation.error);
+					var focusEl = document.getElementById(validation.fieldId);
+					if (focusEl) focusEl.focus();
+					return;
+				}
+				showAuthError('');
 				postAuth('forgot_reset', {
-					otp: sanitizeOtp(document.getElementById('pearlica-forgot-otp').value),
-					password: document.getElementById('pearlica-forgot-password').value,
-					password_confirm: document.getElementById('pearlica-forgot-password-confirm').value,
+					otp: validation.otp,
+					password: validation.password,
+					password_confirm: validation.password_confirm,
 				}).then(function (d) {
 					if (d && d.ok) {
 						setLoggedInUI(true);
 						finishLogin(d);
 						return;
 					}
+					if (d && d.step === 'forgot') {
+						showAuthStep('forgot');
+					}
 					showAuthError((d && d.error) || 'Could not reset password.');
+				});
+			});
+		}
+
+		var forgotResendBtn = document.getElementById('pearlica-forgot-resend-btn');
+		if (forgotResendBtn) {
+			forgotResendBtn.addEventListener('click', function () {
+				forgotResendBtn.disabled = true;
+				postAuth('forgot_resend_otp', {}).then(function (d) {
+					if (d && d.ok) {
+						showAuthError('');
+						var otpInput = document.getElementById('pearlica-forgot-otp');
+						if (otpInput) otpInput.value = '';
+						applyForgotOtpSent(d);
+						toast('A new code has been sent.', { type: 'success' });
+						return;
+					}
+					forgotResendBtn.disabled = false;
+					if (d && d.wait_seconds) {
+						startForgotResendCountdown(Math.floor(Date.now() / 1000) + (d.wait_seconds | 0));
+					}
+					if (d && d.step === 'forgot') {
+						showAuthStep('forgot');
+					}
+					showAuthError((d && d.error) || 'Could not resend code.');
 				});
 			});
 		}
@@ -676,6 +782,8 @@
 		});
 		var forgotBack = document.getElementById('pearlica-forgot-back');
 		if (forgotBack) forgotBack.addEventListener('click', function () { showAuthStep('login'); });
+		var forgotResetBack = document.getElementById('pearlica-forgot-reset-back');
+		if (forgotResetBack) forgotResetBack.addEventListener('click', function () { showAuthStep('forgot'); });
 		var regBack = document.getElementById('pearlica-reg-back');
 		if (regBack) regBack.addEventListener('click', function () { showAuthStep('register'); });
 
@@ -689,7 +797,6 @@
 		if (addrForm) {
 			addrForm.addEventListener('submit', function (e) {
 				e.preventDefault();
-				var saveCb = document.getElementById('pearlica-addr-save');
 				postProfile('checkout_save_address', {
 					label: document.getElementById('pearlica-addr-label').value,
 					address: document.getElementById('pearlica-addr-line1').value,
@@ -697,7 +804,6 @@
 					city: document.getElementById('pearlica-addr-city').value,
 					state: document.getElementById('pearlica-addr-state').value,
 					pincode: sanitizePincode(document.getElementById('pearlica-addr-pincode').value),
-					save_for_later: saveCb && saveCb.checked ? '1' : '0',
 				}).then(function (d) {
 					if (d && d.ok) {
 						setProfileFlags(isRegistrationComplete(), !!d.shipping_complete);

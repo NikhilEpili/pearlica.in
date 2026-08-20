@@ -216,3 +216,68 @@ function store_user_has_saved_address(PDO $pdo, int $user_id): bool
 {
 	return store_user_address_count($pdo, $user_id) > 0;
 }
+
+/**
+ * If the profile has a complete shipping address but no saved-address rows yet,
+ * create one so checkout can list/select it instead of forcing a blank form.
+ */
+function store_user_address_ensure_from_profile(PDO $pdo, array $user): ?array
+{
+	$user_id = (int) ($user['id'] ?? 0);
+	if ($user_id <= 0 || !store_user_addresses_available($pdo)) {
+		return null;
+	}
+	$existing = store_user_address_get_default($pdo, $user_id);
+	if ($existing) {
+		return $existing;
+	}
+
+	$address = trim((string) ($user['address'] ?? ''));
+	$city = trim((string) ($user['city'] ?? ''));
+	$state = trim((string) ($user['state'] ?? ''));
+	$pincode = preg_replace('/\D+/', '', (string) ($user['pincode'] ?? ''));
+	if ($address === '' || $city === '' || $state === '' || strlen((string) $pincode) !== 6) {
+		return null;
+	}
+
+	try {
+		$address_id = store_user_address_create($pdo, $user_id, [
+			'label' => 'Home',
+			'full_name' => trim((string) ($user['full_name'] ?? '')),
+			'phone' => trim((string) ($user['phone'] ?? '')),
+			'address' => $address,
+			'address_line_2' => trim((string) ($user['address_line_2'] ?? '')),
+			'city' => $city,
+			'state' => $state,
+			'pincode' => $pincode,
+		], true);
+
+		return store_user_address_find($pdo, $user_id, $address_id);
+	} catch (Throwable $e) {
+		error_log('Pearlica ensure address from profile: ' . $e->getMessage());
+
+		return null;
+	}
+}
+
+/**
+ * Prefer the session checkout selection, else default/profile-backed saved address.
+ * Also seeds $_SESSION['checkout_address_id'] when a saved address is available.
+ */
+function store_user_address_resolve_for_checkout(PDO $pdo, int $user_id, array $user): ?array
+{
+	store_user_address_ensure_from_profile($pdo, $user);
+	$selected_id = isset($_SESSION['checkout_address_id']) ? (int) $_SESSION['checkout_address_id'] : 0;
+	$row = null;
+	if ($selected_id > 0) {
+		$row = store_user_address_find($pdo, $user_id, $selected_id);
+	}
+	if (!$row) {
+		$row = store_user_address_get_default($pdo, $user_id);
+	}
+	if ($row) {
+		$_SESSION['checkout_address_id'] = (int) $row['id'];
+	}
+
+	return $row;
+}

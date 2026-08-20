@@ -57,9 +57,14 @@ if (!function_exists('login_telesign_send_or_fail')) {
 		$rate = login_telesign_can_send($e164);
 		if (!$rate['allowed']) {
 			$wait = (int) $rate['wait_seconds'];
-			$mins = max(1, (int) ceil($wait / 60));
+			if ($wait >= 60) {
+				$mins = (int) ceil($wait / 60);
+				$msg = 'Please wait ' . $mins . ' minute(s) before requesting another code.';
+			} else {
+				$msg = 'Please wait ' . max(1, $wait) . ' second(s) before requesting another code.';
+			}
 
-			return ['ok' => false, 'error' => 'Please wait ' . $mins . ' minute(s) before requesting another code.'];
+			return ['ok' => false, 'error' => $msg, 'wait_seconds' => $wait];
 		}
 		$send = telesign_sms_verify_send($e164);
 		if (empty($send['ok']) || empty($send['reference_id'])) {

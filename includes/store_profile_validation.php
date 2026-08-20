@@ -142,7 +142,10 @@ if (!function_exists('store_profile_validate_password')) {
 		if (strlen($password) < 8) {
 			return 'Password must be at least 8 characters.';
 		}
-		if ($confirm !== '' && $password !== $confirm) {
+		if ($confirm === '') {
+			return 'Please confirm your password.';
+		}
+		if ($password !== $confirm) {
 			return 'Passwords do not match.';
 		}
 

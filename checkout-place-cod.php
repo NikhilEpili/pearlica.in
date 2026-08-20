@@ -66,15 +66,8 @@ if (!$user) {
 	exit;
 }
 
-// Prefer the address the shopper confirmed at checkout, else their default one.
-$address_row = null;
-$selected_address_id = isset($_SESSION['checkout_address_id']) ? (int) $_SESSION['checkout_address_id'] : 0;
-if ($selected_address_id > 0) {
-	$address_row = store_user_address_find($pdo, (int) $user_id, $selected_address_id);
-}
-if (!$address_row) {
-	$address_row = store_user_address_get_default($pdo, (int) $user_id);
-}
+// Prefer the address the shopper confirmed at checkout, else their default/profile address.
+$address_row = store_user_address_resolve_for_checkout($pdo, (int) $user_id, $user);
 if ($address_row) {
 	store_user_address_sync_profile($pdo, (int) $user_id, $address_row);
 	$user = store_user_find_by_id($pdo, (int) $user_id) ?? $user;

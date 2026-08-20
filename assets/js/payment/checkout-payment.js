@@ -41,6 +41,39 @@ document.addEventListener('DOMContentLoaded', function () {
 		});
 	}
 
+	function formatCheckoutAddress(addr) {
+		if (!addr || typeof addr !== 'object') return '';
+		var line1 = String(addr.address || '').trim();
+		var line2 = String(addr.address_line_2 || '').trim();
+		var cityState = [addr.city, addr.state, addr.pincode].filter(function (part) {
+			return String(part || '').trim() !== '';
+		}).join(', ');
+		return [line1, line2, cityState].filter(function (part) { return part !== ''; }).join('\n');
+	}
+
+	function updateCheckoutAddressDisplay(d) {
+		var el = document.getElementById('checkout-address-display');
+		if (!el || !d) return;
+		var addr = d.address || null;
+		if (!addr && d.profile) {
+			addr = {
+				address: d.profile.address,
+				address_line_2: d.profile.address_line_2,
+				city: d.profile.city,
+				state: d.profile.state,
+				pincode: d.profile.pincode,
+			};
+		}
+		if (!addr) return;
+		var text = formatCheckoutAddress(addr);
+		if (!text) return;
+		el.textContent = text;
+		el.innerHTML = text.replace(/\n/g, '<br>');
+		if (document.body) {
+			document.body.setAttribute('data-shipping-complete', '1');
+		}
+	}
+
 	/** Replace the guest "sign in" panel with the signed-in summary, no page reload. */
 	function renderSignedInDelivery(profile) {
 		var body = document.getElementById('checkout-delivery-body');
@@ -69,9 +102,31 @@ document.addEventListener('DOMContentLoaded', function () {
 		var actions = document.getElementById('checkout-delivery-actions');
 		if (actions) {
 			actions.innerHTML =
-				'<a href="' + escapeHtml(apiUrl('profile')) + '" class="checkout-edit-link">Edit</a>' +
+				'<button type="button" class="checkout-edit-link" id="checkout-change-address-btn">Change address</button>' +
 				'<a href="' + escapeHtml(apiUrl('logout')) + '" class="checkout-edit-link ms-2">Sign out</a>';
+			bindChangeAddressButton();
 		}
+	}
+
+	function openCheckoutAddressPicker(onSaved) {
+		if (window.PearlicaUI && typeof PearlicaUI.openAddress === 'function') {
+			PearlicaUI.openAddress({
+				message: 'Choose a delivery address or add a new one.',
+				dismissable: true,
+				onSaved: typeof onSaved === 'function' ? onSaved : updateCheckoutAddressDisplay,
+			});
+			return;
+		}
+		window.location.href = apiUrl('profile');
+	}
+
+	function bindChangeAddressButton() {
+		var changeBtn = document.getElementById('checkout-change-address-btn');
+		if (!changeBtn || changeBtn.getAttribute('data-bound') === '1') return;
+		changeBtn.setAttribute('data-bound', '1');
+		changeBtn.addEventListener('click', function () {
+			openCheckoutAddressPicker(updateCheckoutAddressDisplay);
+		});
 	}
 
 	/** Open the sign-in modal and run `resume` once the shopper is authenticated. */
@@ -385,28 +440,6 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	btn.addEventListener('click', function () {
-		function formatCheckoutAddress(addr) {
-			if (!addr || typeof addr !== 'object') return '';
-			var line1 = String(addr.address || '').trim();
-			var line2 = String(addr.address_line_2 || '').trim();
-			var cityState = [addr.city, addr.state, addr.pincode].filter(function (part) {
-				return String(part || '').trim() !== '';
-			}).join(', ');
-			return [line1, line2, cityState].filter(function (part) { return part !== ''; }).join('\n');
-		}
-
-		function updateCheckoutAddressDisplay(d) {
-			var el = document.getElementById('checkout-address-display');
-			if (!el || !d || !d.address) return;
-			var text = formatCheckoutAddress(d.address);
-			if (!text) return;
-			el.textContent = text;
-			el.innerHTML = text.replace(/\n/g, '<br>');
-			if (document.body) {
-				document.body.setAttribute('data-shipping-complete', '1');
-			}
-		}
-
 		function scrollToPaymentSection() {
 			var target = document.querySelector('.checkout-payment-methods') || btn;
 			if (target && typeof target.scrollIntoView === 'function') {
@@ -545,14 +578,16 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 
 		/**
-		 * Gate every order attempt: sign in first, then confirm the delivery address,
-		 * and only then hand off to COD or Razorpay.
+		 * Gate every order attempt: sign in first, then collect an address only if
+		 * none is saved yet. Shoppers with a saved address go straight to payment
+		 * (COD or online) and can still change/add via "Change address".
 		 */
 		function startCheckout() {
 			if (window.PearlicaUI && typeof PearlicaUI.ensureCheckoutReady === 'function') {
 				PearlicaUI.ensureCheckoutReady({
 					returnUrl: 'checkout',
 					dismissable: true,
+					skipAddressIfComplete: true,
 					onAuthenticated: function (auth) {
 						if (auth && auth.profile) renderSignedInDelivery(auth.profile);
 					},
@@ -575,4 +610,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 		startCheckout();
 	});
+
+	bindChangeAddressButton();
 });

@@ -8,6 +8,7 @@ require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/db.php';
 require_once __DIR__ . '/lib/product.php';
 require_once __DIR__ . '/lib/store_user.php';
+require_once __DIR__ . '/lib/store_user_address.php';
 require_once __DIR__ . '/includes/cart_cookie.php';
 require_once __DIR__ . '/includes/auth_cookie.php';
 require_once __DIR__ . '/config/razorpay.php';
@@ -40,12 +41,18 @@ if (empty($cart)) {
 	exit;
 }
 $user = null;
+$checkout_address = null;
 if (!$is_guest) {
 	$user = store_user_find_by_id($pdo, (int) $user_id);
 	if (!$user) {
 		auth_cookie_clear();
 		header('Location: ' . $base_path . 'checkout', true, 302);
 		exit;
+	}
+	$checkout_address = store_user_address_resolve_for_checkout($pdo, (int) $user_id, $user);
+	if ($checkout_address) {
+		store_user_address_sync_profile($pdo, (int) $user_id, $checkout_address);
+		$user = store_user_find_by_id($pdo, (int) $user_id) ?? $user;
 	}
 }
 $checkout_states = indian_states_list();
@@ -278,7 +285,7 @@ $page_title = 'Checkout | Pearlica 925 Silver Jewellery';
 									<a href="<?php echo h($base_path); ?>login?return_url=<?php echo rawurlencode('checkout'); ?>"
 										class="checkout-edit-link">Log in</a>
 								<?php else: ?>
-									<a href="<?php echo h($base_path); ?>profile" class="checkout-edit-link">Edit</a>
+									<button type="button" class="checkout-edit-link" id="checkout-change-address-btn">Change address</button>
 									<a href="<?php echo h($base_path); ?>logout" class="checkout-edit-link ms-2">Sign out</a>
 								<?php endif; ?>
 							</span>

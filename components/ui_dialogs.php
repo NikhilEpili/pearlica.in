@@ -178,19 +178,25 @@ if ($ui_logged_in && isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
 				<div class="pearlica-auth-step" id="pearlica-auth-step-forgot-reset" hidden>
 					<h1 class="login-form-title">Set new password</h1>
 					<p class="login-form-subtitle">Code sent to <strong id="pearlica-forgot-phone-mask">your number</strong>.</p>
+					<p class="login-countdown" id="pearlica-forgot-otp-countdown-wrap"><span>Code valid for </span><strong id="pearlica-forgot-otp-countdown">10:00</strong></p>
 					<form id="pearlica-auth-forgot-reset-form" class="pearlica-profile-form" novalidate>
 						<input type="text" id="pearlica-forgot-otp" class="login-otp-input" maxlength="<?php echo (int) $ui_otp_len; ?>"
-							inputmode="numeric" placeholder="<?php echo str_repeat('0', (int) $ui_otp_len); ?>" required>
+							inputmode="numeric" autocomplete="one-time-code" placeholder="<?php echo str_repeat('0', (int) $ui_otp_len); ?>" required>
 						<div class="pearlica-form-field">
 							<label for="pearlica-forgot-password" class="pearlica-form-label">New password</label>
-							<input type="password" id="pearlica-forgot-password" class="login-phone-input pearlica-form-input" minlength="8" required>
+							<input type="password" id="pearlica-forgot-password" class="login-phone-input pearlica-form-input" minlength="8" autocomplete="new-password" required>
 						</div>
 						<div class="pearlica-form-field">
 							<label for="pearlica-forgot-password-confirm" class="pearlica-form-label">Confirm password</label>
-							<input type="password" id="pearlica-forgot-password-confirm" class="login-phone-input pearlica-form-input" minlength="8" required>
+							<input type="password" id="pearlica-forgot-password-confirm" class="login-phone-input pearlica-form-input" minlength="8" autocomplete="new-password" required>
 						</div>
 						<button type="submit" class="login-submit">Update password</button>
 					</form>
+					<p class="login-meta" id="pearlica-forgot-resend-wrap">
+						<span id="pearlica-forgot-resend-wait">Resend code in <strong id="pearlica-forgot-resend-countdown">1:00</strong></span>
+						<button type="button" class="pearlica-auth-link-btn" id="pearlica-forgot-resend-btn" hidden>Resend code</button>
+					</p>
+					<p class="login-meta"><button type="button" class="pearlica-auth-link-btn" id="pearlica-forgot-reset-back">Back</button></p>
 				</div>
 				<p class="pearlica-auth-signout" id="pearlica-auth-signout-wrap" <?php echo $ui_logged_in ? '' : 'hidden'; ?>>
 					<a href="<?php echo h($ui_base); ?>logout" class="pearlica-auth-link-btn">Sign out</a>
@@ -249,11 +255,7 @@ if ($ui_logged_in && isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
 							<input type="text" id="pearlica-addr-pincode" class="login-phone-input pearlica-form-input" inputmode="numeric" maxlength="6" required>
 						</div>
 					</div>
-					<label class="login-checkbox-row">
-						<input type="checkbox" id="pearlica-addr-save" value="1" checked>
-						<span class="login-checkbox-label">Save this address for next time</span>
-					</label>
-					<button type="submit" class="login-submit" id="pearlica-address-submit">Use this address &amp; proceed</button>
+					<button type="submit" class="login-submit" id="pearlica-address-submit">Use this address</button>
 				</form>
 				<p class="pearlica-auth-signout" id="pearlica-address-signout-wrap" <?php echo $ui_logged_in ? '' : 'hidden'; ?>>
 					<a href="<?php echo h($ui_base); ?>logout" class="pearlica-auth-link-btn">Sign out</a>

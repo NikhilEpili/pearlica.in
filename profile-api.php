@@ -62,6 +62,12 @@ if (!$user) {
 $action = isset($_POST['action']) ? trim((string) $_POST['action']) : '';
 
 if ($action === 'status') {
+	store_user_address_ensure_from_profile($pdo, $user);
+	$row = store_user_address_resolve_for_checkout($pdo, (int) $user_id, $user);
+	if ($row) {
+		store_user_address_sync_profile($pdo, (int) $user_id, $row);
+		$user = store_user_find_by_id($pdo, (int) $user_id) ?? $user;
+	}
 	$addresses = array_map('store_user_address_for_client', store_user_address_list($pdo, (int) $user_id));
 	profile_api_json([
 		'ok' => true,
@@ -70,12 +76,18 @@ if ($action === 'status') {
 		'shipping_complete' => store_user_shipping_complete($user, $pdo),
 		'addresses' => $addresses,
 		'checkout_address_id' => (int) ($_SESSION['checkout_address_id'] ?? 0),
+		'address' => $row ? store_user_address_for_client($row) : null,
 	]);
 }
 
 if ($action === 'list_addresses') {
+	store_user_address_ensure_from_profile($pdo, $user);
 	$addresses = array_map('store_user_address_for_client', store_user_address_list($pdo, (int) $user_id));
-	profile_api_json(['ok' => true, 'addresses' => $addresses]);
+	profile_api_json([
+		'ok' => true,
+		'addresses' => $addresses,
+		'checkout_address_id' => (int) ($_SESSION['checkout_address_id'] ?? 0),
+	]);
 }
 
 if ($action === 'checkout_select_address') {
@@ -103,36 +115,25 @@ if ($action === 'checkout_save_address') {
 	if (!$result['ok']) {
 		profile_api_json(['ok' => false, 'error' => $result['errors'][0] ?? 'Please check your address.']);
 	}
-	$save_for_later = isset($_POST['save_for_later']) && (string) $_POST['save_for_later'] === '1';
 	$label = trim((string) ($_POST['label'] ?? ''));
 	$data = $result['data'];
 	$data['full_name'] = trim((string) ($user['full_name'] ?? ''));
 	$data['phone'] = trim((string) ($user['phone'] ?? ''));
 	$data['label'] = $label !== '' ? $label : 'Home';
-	$address_id = 0;
-	if ($save_for_later) {
-		try {
-			$address_id = store_user_address_create($pdo, (int) $user_id, $data, true);
-		} catch (Throwable $e) {
-			profile_api_json(['ok' => false, 'error' => 'Could not save your address. Please try again.']);
-		}
-		$row = store_user_address_find($pdo, (int) $user_id, $address_id);
-	} else {
-		$row = array_merge(['id' => 0, 'label' => $data['label'], 'full_name' => $data['full_name'], 'phone' => $data['phone']], $data);
-		store_user_address_sync_profile($pdo, (int) $user_id, $row);
+	try {
+		$address_id = store_user_address_create($pdo, (int) $user_id, $data, true);
+	} catch (Throwable $e) {
+		profile_api_json(['ok' => false, 'error' => 'Could not save your address. Please try again.']);
 	}
+	$row = store_user_address_find($pdo, (int) $user_id, $address_id);
 	if ($row) {
-		if ($address_id > 0) {
-			$_SESSION['checkout_address_id'] = $address_id;
-		} else {
-			unset($_SESSION['checkout_address_id']);
-		}
+		$_SESSION['checkout_address_id'] = $address_id;
 		store_user_address_sync_profile($pdo, (int) $user_id, $row);
 	}
 	$user = store_user_find_by_id($pdo, (int) $user_id);
 	profile_api_json([
 		'ok' => true,
-		'message' => $save_for_later ? 'Address saved for next time.' : 'Address confirmed for this order.',
+		'message' => 'Address saved.',
 		'address' => $row ? store_user_address_for_client($row) : null,
 		'addresses' => array_map('store_user_address_for_client', store_user_address_list($pdo, (int) $user_id)),
 		'shipping_complete' => store_user_shipping_complete($user, $pdo),

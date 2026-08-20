@@ -8,6 +8,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/db.php';
 require_once __DIR__ . '/lib/store_user.php';
+require_once __DIR__ . '/lib/store_user_address.php';
 require_once __DIR__ . '/includes/auth_cookie.php';
 require_once __DIR__ . '/includes/indian_states.php';
 
@@ -170,6 +171,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 			}
 			try {
 				store_user_update($pdo, $user_id, $update);
+				$user = store_user_find_by_id($pdo, $user_id);
+				// Keep saved-address book in sync so checkout can list this address.
+				if ($user && strlen((string) $pincode) === 6 && $address !== '' && $city !== '' && $state !== '') {
+					$existing = store_user_address_get_default($pdo, $user_id);
+					if (!$existing) {
+						store_user_address_create($pdo, $user_id, [
+							'label' => 'Home',
+							'full_name' => (string) ($user['full_name'] ?? ''),
+							'phone' => (string) ($user['phone'] ?? ''),
+							'address' => $address,
+							'address_line_2' => $address_line_2,
+							'city' => $city,
+							'state' => $state,
+							'pincode' => $pincode,
+						], true);
+					} elseif ((int) ($existing['id'] ?? 0) > 0) {
+						// Update the default saved address to match profile edits.
+						$pdo->prepare(
+							'UPDATE store_user_addresses
+							 SET label = COALESCE(NULLIF(label, \'\'), \'Home\'),
+							     full_name = ?, phone = ?, address = ?, address_line_2 = ?,
+							     city = ?, state = ?, pincode = ?
+							 WHERE id = ? AND store_user_id = ?'
+						)->execute([
+							(string) ($user['full_name'] ?? ''),
+							(string) ($user['phone'] ?? ''),
+							$address,
+							$address_line_2,
+							$city,
+							$state,
+							$pincode,
+							(int) $existing['id'],
+							$user_id,
+						]);
+					}
+				}
 				$user = store_user_find_by_id($pdo, $user_id);
 				$user_state = (string) ($user['state'] ?? '');
 				$phone_locked = trim((string) ($user['phone'] ?? '')) !== '';

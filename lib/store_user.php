@@ -402,7 +402,7 @@ function store_user_profile_for_client(array $user, ?PDO $pdo = null): array
 
 define('OTP_EXPIRY_MINUTES', 10);
 define('OTP_LENGTH', 6);
-define('OTP_RATE_LIMIT_MINUTES', 2);
+define('OTP_RATE_LIMIT_MINUTES', 1);
 
 /**
  * Check if a new OTP can be requested for this email. Returns ['allowed' => bool, 'wait_seconds' => int (0 if allowed)].

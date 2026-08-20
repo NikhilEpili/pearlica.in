@@ -447,6 +447,11 @@
 	white-space: nowrap;
 }
 .checkout-edit-link {
+	appearance: none;
+	border: 0;
+	background: transparent;
+	padding: 0;
+	cursor: pointer;
 	font-family: var(--font-body);
 	font-size: var(--font-size-label);
 	letter-spacing: 0.12em;
