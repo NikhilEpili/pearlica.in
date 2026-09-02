@@ -9,7 +9,23 @@ $nav_prefix = (isset($nav_base) && (string) $nav_base !== '') ? (string) $nav_ba
 <ul class="navbar-nav navbar-nav-pearlica <?php echo htmlspecialchars($navbar_nav_ul_extra_classes, ENT_QUOTES, 'UTF-8'); ?>">
 	<li class="nav-item"><a class="nav-link nav-link-pearlica" href="<?php echo htmlspecialchars($nav_prefix, ENT_QUOTES, 'UTF-8'); ?>">HOME</a></li>
 	<li class="nav-item"><a class="nav-link nav-link-pearlica" href="<?php echo htmlspecialchars($nav_prefix . 'products', ENT_QUOTES, 'UTF-8'); ?>">SHOP</a></li>
+	<?php if (!empty($nav_store_collections)): ?>
+	<li class="nav-item nav-item-dropdown">
+		<a class="nav-link nav-link-pearlica" href="<?php echo htmlspecialchars($nav_prefix . 'collections', ENT_QUOTES, 'UTF-8'); ?>" aria-haspopup="true" aria-expanded="false">COLLECTIONS</a>
+		<ul class="nav-dropdown-panel" role="menu">
+			<?php foreach ($nav_store_collections as $col): ?>
+			<?php
+			$nav_col_name = isset($col['name']) ? (string) $col['name'] : '';
+			$nav_col_name = $nav_col_name !== '' ? mb_strtoupper($nav_col_name, 'UTF-8') : '';
+			$nav_col_slug = isset($col['slug']) ? (string) $col['slug'] : '';
+			?>
+			<li><a class="nav-dropdown-link" href="<?php echo htmlspecialchars($nav_prefix . 'collection?slug=' . rawurlencode($nav_col_slug), ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($nav_col_name, ENT_QUOTES, 'UTF-8'); ?></a></li>
+			<?php endforeach; ?>
+		</ul>
+	</li>
+	<?php else: ?>
 	<li class="nav-item"><a class="nav-link nav-link-pearlica" href="<?php echo htmlspecialchars($nav_prefix . 'collections', ENT_QUOTES, 'UTF-8'); ?>">COLLECTIONS</a></li>
+	<?php endif; ?>
 	<?php if (!empty($nav_parent_categories)): ?>
 	<li class="nav-item nav-item-dropdown">
 		<a class="nav-link nav-link-pearlica" href="<?php echo htmlspecialchars($nav_prefix . 'products', ENT_QUOTES, 'UTF-8'); ?>" aria-haspopup="true" aria-expanded="false">CATEGORIES</a>

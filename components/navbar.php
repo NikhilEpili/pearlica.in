@@ -15,6 +15,7 @@ $nav_base = isset($base_path) ? $base_path : '';
 $base_path = $nav_base;
 require_once __DIR__ . '/../includes/cart_for_drawer.php';
 $nav_parent_categories = [];
+$nav_store_collections = [];
 if (!isset($GLOBALS['pdo']) || !($GLOBALS['pdo'] instanceof PDO)) {
 	require_once __DIR__ . '/../config/db.php';
 }
@@ -24,6 +25,10 @@ if ($nav_pdo instanceof PDO) {
 		require_once __DIR__ . '/../lib/category.php';
 	}
 	$nav_parent_categories = category_list_parents_for_store($nav_pdo);
+	if (!function_exists('collection_list_for_store')) {
+		require_once __DIR__ . '/../lib/collection.php';
+	}
+	$nav_store_collections = collection_list_for_store($nav_pdo);
 }
 ?>
 <?php include __DIR__ . '/site_marquee.php'; ?>

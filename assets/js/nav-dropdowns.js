@@ -1,6 +1,6 @@
 /**
  * Nav dropdowns: on viewports where hover is not reliable (e.g. < 992px),
- * toggle .is-open on click so Categories and user menu open/close on tap.
+ * toggle .is-open on click so Categories, Collections, and user menu open/close on tap.
  */
 (function () {
 	'use strict';
