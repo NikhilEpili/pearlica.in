@@ -16,6 +16,8 @@ define('COLLECTION_UPLOAD_PATH', BASE_PATH . '/uploads/collections');
 define('BANNER_UPLOAD_PATH', BASE_PATH . '/uploads/banners');
 /** Homepage influencer reel videos and their poster frames. */
 define('REEL_UPLOAD_PATH', BASE_PATH . '/uploads/reels');
+/** Blog post cover images. */
+define('BLOG_UPLOAD_PATH', BASE_PATH . '/uploads/blogs');
 define('MAX_UPLOAD_SIZE', 5 * 1024 * 1024);
 /** Collection cover images (1080×1440 portrait exports). */
 define('COLLECTION_COVER_WIDTH', 1080);
@@ -31,6 +33,8 @@ define('BANNER_RECOMMENDED_WIDTH', 2560);
 define('BANNER_RECOMMENDED_HEIGHT', 1200);
 /** Reels are short vertical clips; keep them small enough to autoplay quickly. */
 define('REEL_MAX_VIDEO_SIZE', 32 * 1024 * 1024);
+/** Blog cover images (wide hero assets). */
+define('BLOG_MAX_UPLOAD_SIZE', 12 * 1024 * 1024);
 define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
 define('ALLOWED_VIDEO_TYPES', ['video/mp4', 'video/webm', 'video/quicktime']);
 
@@ -67,6 +71,13 @@ if (!defined('REEL_MEDIA_PUBLIC_BASE')) {
 		? 'https://www.pearlica.in/uploads/reels'
 		: '';
 	define('REEL_MEDIA_PUBLIC_BASE', $__media_fallback);
+	unset($__media_fallback);
+}
+if (!defined('BLOG_MEDIA_PUBLIC_BASE')) {
+	$__media_fallback = pearlica_is_local_dev_host() && !pearlica_upload_dir_has_media(BLOG_UPLOAD_PATH)
+		? 'https://www.pearlica.in/uploads/blogs'
+		: '';
+	define('BLOG_MEDIA_PUBLIC_BASE', $__media_fallback);
 	unset($__media_fallback);
 }
 

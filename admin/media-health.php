@@ -5,6 +5,8 @@
 require_once __DIR__ . '/config.php';
 require_super_admin();
 require_once ROOT . '/lib/media_serve.php';
+require_once ROOT . '/lib/homepage_banner.php';
+require_once ROOT . '/lib/instagram_reel.php';
 
 $pdo = $GLOBALS['pdo'];
 $page_title = 'Media health';
@@ -14,6 +16,7 @@ $base_path = defined('BASE_PATH') ? (string) BASE_PATH : '';
 $upload_products = defined('UPLOAD_PATH') ? (string) UPLOAD_PATH : '';
 $upload_collections = defined('COLLECTION_UPLOAD_PATH') ? (string) COLLECTION_UPLOAD_PATH : '';
 $upload_banners = defined('BANNER_UPLOAD_PATH') ? (string) BANNER_UPLOAD_PATH : '';
+$upload_reels = defined('REEL_UPLOAD_PATH') ? (string) REEL_UPLOAD_PATH : '';
 
 $doc_uploads = $doc_root !== '' ? rtrim($doc_root, '/\\') . DIRECTORY_SEPARATOR . 'uploads' : '';
 $base_uploads = $base_path !== '' ? rtrim($base_path, '/\\') . DIRECTORY_SEPARATOR . 'uploads' : '';
@@ -29,12 +32,60 @@ $counts = [
 	'products' => 0,
 	'collections' => 0,
 	'banners' => 0,
+	'reels' => 0,
 ];
 foreach (array_keys($counts) as $bucket) {
 	try {
 		$counts[$bucket] = media_serve_count_files($bucket);
 	} catch (Throwable $e) {
 		$counts[$bucket] = -1;
+	}
+}
+
+$homepage_missing = [];
+try {
+	homepage_banner_ensure_schema($pdo);
+	foreach (homepage_banner_list_active($pdo, 'hero') as $row) {
+		$rel = str_replace('\\', '/', (string) ($row['image_url'] ?? ''));
+		if ($rel === '') {
+			continue;
+		}
+		$homepage_missing[] = [
+			'label' => 'Homepage banner #' . (int) ($row['id'] ?? 0),
+			'bucket' => 'banners',
+			'rel' => $rel,
+			'on_disk' => media_serve_resolve('banners', $rel) !== null,
+		];
+	}
+} catch (Throwable $e) {
+	// ignore
+}
+
+try {
+	instagram_reel_ensure_schema($pdo);
+	foreach (instagram_reel_list_active($pdo) as $row) {
+		$rid = (int) ($row['id'] ?? 0);
+		foreach (['video_path' => 'video', 'poster_path' => 'poster'] as $col => $kind) {
+			$rel = str_replace('\\', '/', (string) ($row[$col] ?? ''));
+			if ($rel === '') {
+				continue;
+			}
+			$homepage_missing[] = [
+				'label' => 'Active reel #' . $rid . ' (' . $kind . ')',
+				'bucket' => 'reels',
+				'rel' => $rel,
+				'on_disk' => media_serve_resolve('reels', $rel) !== null,
+			];
+		}
+	}
+} catch (Throwable $e) {
+	// ignore
+}
+
+$homepage_missing_count = 0;
+foreach ($homepage_missing as $item) {
+	if (!$item['on_disk']) {
+		$homepage_missing_count++;
 	}
 }
 
@@ -132,7 +183,14 @@ if ($probe_rel !== '') {
 	<h1 class="page-title">Media health</h1>
 	<p class="text-muted small">Compares PHP upload paths with the web document root and checks whether DB media paths exist on disk.</p>
 
-	<?php if ($missing > 0 && $present === 0): ?>
+	<?php if ($homepage_missing_count > 0): ?>
+		<div class="alert alert-danger">
+			<strong><?= (int) $homepage_missing_count ?> homepage media file(s) are missing on disk.</strong>
+			This usually happens after a git deploy that replaces <code>uploads/</code> with an older copy, or when
+			files were uploaded on production but never synced back into git. Restore <code>uploads/</code> from a
+			Hostinger backup, or re-upload banners/reels and product images in Admin.
+		</div>
+	<?php elseif ($missing > 0 && $present === 0): ?>
 		<div class="alert alert-danger">
 			<strong>Root cause:</strong> PHP cannot find image files under <code>BASE_PATH/uploads</code>.
 			The database has paths, but those files are missing from the upload directories the app writes to.
@@ -159,6 +217,7 @@ if ($probe_rel !== '') {
 				<tr><th>UPLOAD_PATH (products)</th><td><code><?= h($upload_products) ?></code> <?= is_dir($upload_products) ? '✓ dir' : '✗ missing' ?></td></tr>
 				<tr><th>COLLECTION_UPLOAD_PATH</th><td><code><?= h($upload_collections) ?></code> <?= is_dir($upload_collections) ? '✓ dir' : '✗ missing' ?></td></tr>
 				<tr><th>BANNER_UPLOAD_PATH</th><td><code><?= h($upload_banners) ?></code> <?= is_dir($upload_banners) ? '✓ dir' : '✗ missing' ?></td></tr>
+				<tr><th>REEL_UPLOAD_PATH</th><td><code><?= h($upload_reels) ?></code> <?= is_dir($upload_reels) ? '✓ dir' : '✗ missing' ?></td></tr>
 				<tr><th>Docroot uploads</th><td><code><?= h($doc_uploads) ?></code> <?= ($doc_uploads !== '' && is_dir($doc_uploads)) ? '✓ dir' : '✗ missing' ?></td></tr>
 				<tr><th>Same uploads tree?</th><td><?= $same_tree ? 'Yes' : 'No — static URL path may not match PHP upload path' ?></td></tr>
 			</table>
@@ -172,12 +231,33 @@ if ($probe_rel !== '') {
 				<li>products: <strong><?= (int) $counts['products'] ?></strong></li>
 				<li>collections: <strong><?= (int) $counts['collections'] ?></strong></li>
 				<li>banners: <strong><?= (int) $counts['banners'] ?></strong></li>
+				<li>reels: <strong><?= (int) $counts['reels'] ?></strong></li>
 			</ul>
 			<?php if ($counts['products'] === 0): ?>
 				<p class="text-danger small mt-2 mb-0">Products upload folder is empty from PHP’s perspective. File Manager may be showing a different folder than <code><?= h($upload_products) ?></code>.</p>
 			<?php endif; ?>
 		</div>
 	</div>
+
+	<?php if ($homepage_missing !== []): ?>
+	<div class="card mb-4">
+		<div class="card-header">Homepage media (active banners + reels)</div>
+		<div class="card-body p-0">
+			<table class="table table-sm mb-0">
+				<thead><tr><th>Item</th><th>Path</th><th>On disk?</th></tr></thead>
+				<tbody>
+				<?php foreach ($homepage_missing as $item): ?>
+					<tr class="<?= $item['on_disk'] ? '' : 'table-danger' ?>">
+						<td><?= h($item['label']) ?></td>
+						<td><code><?= h($item['bucket'] . '/' . $item['rel']) ?></code></td>
+						<td><?= $item['on_disk'] ? '✓' : '✗ missing' ?></td>
+					</tr>
+				<?php endforeach; ?>
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<?php endif; ?>
 
 	<div class="card mb-4">
 		<div class="card-header">Sample DB paths vs disk</div>

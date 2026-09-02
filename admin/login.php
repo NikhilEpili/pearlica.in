@@ -48,7 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				'orders' => true,
 				'banners' => true,
 				'faqs' => true,
+				'reels' => true,
 				'policies' => true,
+				'blogs' => true,
 			];
 		}
 	} else {
@@ -61,7 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			'orders' => true,
 			'banners' => true,
 			'faqs' => true,
+			'reels' => true,
 			'policies' => true,
+			'blogs' => true,
 		];
 	}
 	require_once ROOT . '/lib/email_notifications.php';

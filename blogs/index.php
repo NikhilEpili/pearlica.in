@@ -5,12 +5,14 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../includes/store_base_path.php';
-require_once __DIR__ . '/../includes/blog_feed.php';
+require_once __DIR__ . '/../lib/blog.php';
 
 $base_path = store_base_path_from_request();
 $feed_url = defined('BLOG_FEED_JSON_URL') ? (string) BLOG_FEED_JSON_URL : 'https://www.pearlica.in/blogs/rss';
-$feed = pearlica_blog_feed_load($feed_url);
+$pdo = $GLOBALS['pdo'] ?? null;
+$feed = blog_storefront_feed($pdo instanceof PDO ? $pdo : null, $feed_url, $base_path);
 
 $blogs_heading = 'Journal';
 $blogs_meta_description = 'Stories, styling ideas, care tips, and studio updates from Pearlica — premium 925 sterling silver jewellery.';

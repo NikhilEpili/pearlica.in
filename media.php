@@ -1,6 +1,6 @@
 <?php
 /**
- * Public media gateway for /uploads/{products|collections|banners}/...
+ * Public media gateway for /uploads/{products|collections|banners|reels}/...
  * Invoked by .htaccess when the static file is missing so PHP can still
  * stream from BASE_PATH (same tree admin uploads write to).
  */

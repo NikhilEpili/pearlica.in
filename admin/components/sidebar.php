@@ -60,6 +60,12 @@
 			<span class="sidebar-text">Policies</span>
 		</a>
 		<?php endif; ?>
+		<?php if (current_user_can('blogs')): ?>
+		<a href="<?= h(admin_url('blogs/')) ?>" class="admin-sidebar-link" title="Blog">
+			<span class="sidebar-icon" aria-hidden="true"><i class="fa-solid fa-newspaper"></i></span>
+			<span class="sidebar-text">Blog</span>
+		</a>
+		<?php endif; ?>
 
 		<?php if (current_user_is_super_admin()): ?>
 		<a href="<?= h(admin_url('media-health.php')) ?>" class="admin-sidebar-link" title="Media health">

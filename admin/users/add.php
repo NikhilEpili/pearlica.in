@@ -42,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		'faqs' => !empty($perms_input['faqs']),
 		'reels' => !empty($perms_input['reels']),
 		'policies' => !empty($perms_input['policies']),
+		'blogs' => !empty($perms_input['blogs']),
 	]);
 	flash_set('success', 'User created.');
 	redirect(admin_url('users/'));
@@ -128,6 +129,11 @@ $error = flash_get('error');
 					<input class="form-check-input" type="checkbox" id="perm_policies" name="permissions[policies]" value="1"
 						<?= !isset($permissions_post['policies']) || !empty($permissions_post['policies']) ? 'checked' : '' ?>>
 					<label class="form-check-label" for="perm_policies">Policies</label>
+				</div>
+				<div class="form-check">
+					<input class="form-check-input" type="checkbox" id="perm_blogs" name="permissions[blogs]" value="1"
+						<?= !isset($permissions_post['blogs']) || !empty($permissions_post['blogs']) ? 'checked' : '' ?>>
+					<label class="form-check-label" for="perm_blogs">Blog</label>
 				</div>
 				<small class="text-muted d-block mt-1">Super admins always have full access, regardless of these settings.</small>
 			</div>

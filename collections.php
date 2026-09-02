@@ -95,7 +95,7 @@ $meta_keywords = 'Pearlica, collections, curated jewellery, 925 silver, sterling
 										<img src="<?php echo h($thumb_src); ?>" alt="" class="collections-card-img"
 											width="<?php echo $thumb_w; ?>" height="<?php echo $thumb_h; ?>"
 											srcset="<?php echo h($thumb_src); ?> <?php echo $thumb_w; ?>w"
-											sizes="(min-width: 992px) 25vw, 50vw" loading="lazy" decoding="async">
+											sizes="(min-width: 992px) 210px, 50vw" loading="lazy" decoding="async">
 									<?php endif; ?>
 								</div>
 								<h2 class="collections-card-title"><?php echo h((string) ($c['name'] ?? 'Collection')); ?></h2>

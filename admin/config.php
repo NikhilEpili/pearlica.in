@@ -278,3 +278,14 @@ function uploads_reels_base_url() {
 	}
 	return rtrim($base, '/') . '/uploads/reels';
 }
+
+/** Public URL prefix for blog cover images. */
+function uploads_blogs_base_url() {
+	$req_uri = $_SERVER['REQUEST_URI'] ?? '/';
+	$base = preg_match('#^(.*?)/admin#', $req_uri, $m) ? $m[1] : '';
+	if (function_exists('pearlica_uploads_blogs_base')) {
+		$site_base = $base === '' ? '/' : rtrim($base, '/') . '/';
+		return pearlica_uploads_blogs_base($site_base);
+	}
+	return rtrim($base, '/') . '/uploads/blogs';
+}

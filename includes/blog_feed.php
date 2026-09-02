@@ -129,7 +129,7 @@ function pearlica_blog_feed_normalize_post(array $p, string $site_base): ?array
  *   posts: list<array{title: string, href: string, excerpt: string, date_label: string, image: string, slug: string}>
  * }
  */
-function pearlica_blog_feed_load(string $feed_url): array
+function pearlica_blog_feed_from_array(array $data): array
 {
 	$empty = [
 		'ok' => false,
@@ -140,16 +140,6 @@ function pearlica_blog_feed_load(string $feed_url): array
 		'generated_at' => null,
 		'posts' => [],
 	];
-	$body = pearlica_blog_feed_http_get($feed_url);
-	if ($body === null) {
-		$empty['error'] = 'Could not load the blog feed. Please try again later.';
-		return $empty;
-	}
-	$data = json_decode($body, true);
-	if (!is_array($data)) {
-		$empty['error'] = 'Blog feed was not valid JSON.';
-		return $empty;
-	}
 	$site = $data['site'] ?? [];
 	$site_title = is_array($site) ? trim((string) ($site['title'] ?? 'Pearlica')) : 'Pearlica';
 	$site_base = is_array($site) ? trim((string) ($site['base_url'] ?? 'https://pearlica.in/blogs/')) : 'https://pearlica.in/blogs/';
@@ -190,4 +180,28 @@ function pearlica_blog_feed_load(string $feed_url): array
 		'generated_at' => $generated_at,
 		'posts' => $posts,
 	];
+}
+
+function pearlica_blog_feed_load(string $feed_url): array
+{
+	$empty = [
+		'ok' => false,
+		'error' => null,
+		'site_title' => 'Pearlica',
+		'site_base' => 'https://pearlica.in/blogs/',
+		'site_description' => '',
+		'generated_at' => null,
+		'posts' => [],
+	];
+	$body = pearlica_blog_feed_http_get($feed_url);
+	if ($body === null) {
+		$empty['error'] = 'Could not load the blog feed. Please try again later.';
+		return $empty;
+	}
+	$data = json_decode($body, true);
+	if (!is_array($data)) {
+		$empty['error'] = 'Blog feed was not valid JSON.';
+		return $empty;
+	}
+	return pearlica_blog_feed_from_array($data);
 }

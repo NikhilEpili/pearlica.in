@@ -14,7 +14,7 @@ if ($uri !== '/' && is_file($file)) {
 }
 
 // Uploads: prefer on-disk file; else stream via media.php; local hosts may redirect to prod.
-if (preg_match('#^/uploads/(products|collections|banners)/(.+)$#', $uri, $m) && !is_file($file)) {
+if (preg_match('#^/uploads/(products|collections|banners|reels|blogs)/(.+)$#', $uri, $m) && !is_file($file)) {
 	$host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
 	$host = preg_replace('/:\d+$/', '', $host) ?? $host;
 	$is_local = ($host === 'localhost' || $host === '127.0.0.1' || $host === '::1'

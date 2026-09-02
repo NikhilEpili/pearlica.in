@@ -60,9 +60,10 @@ function admin_user_permissions_get(PDO $pdo, $user_id) {
         'faqs' => true,
         'reels' => true,
         'policies' => true,
+        'blogs' => true,
     ];
     try {
-        $stmt = $pdo->prepare('SELECT can_dashboard, can_categories, can_product_groups, can_collections, can_products, can_orders, can_banners, can_faqs, can_reels, can_policies FROM admin_user_permissions WHERE user_id = ?');
+        $stmt = $pdo->prepare('SELECT can_dashboard, can_categories, can_product_groups, can_collections, can_products, can_orders, can_banners, can_faqs, can_reels, can_policies, can_blogs FROM admin_user_permissions WHERE user_id = ?');
         $stmt->execute([(int) $user_id]);
         $row = $stmt->fetch();
     } catch (Throwable $e) {
@@ -100,6 +101,7 @@ function admin_user_permissions_get(PDO $pdo, $user_id) {
         'faqs' => array_key_exists('can_faqs', $row) ? !empty($row['can_faqs']) : true,
         'reels' => array_key_exists('can_reels', $row) ? !empty($row['can_reels']) : true,
         'policies' => array_key_exists('can_policies', $row) ? !empty($row['can_policies']) : true,
+        'blogs' => array_key_exists('can_blogs', $row) ? !empty($row['can_blogs']) : true,
     ];
 }
 
@@ -119,9 +121,10 @@ function admin_user_permissions_set(PDO $pdo, $user_id, array $perms) {
         'faqs' => !empty($perms['faqs']),
         'reels' => !empty($perms['reels']),
         'policies' => !empty($perms['policies']),
+        'blogs' => !empty($perms['blogs']),
     ];
     try {
-        $stmt = $pdo->prepare('REPLACE INTO admin_user_permissions (user_id, can_dashboard, can_categories, can_product_groups, can_collections, can_products, can_orders, can_banners, can_faqs, can_reels, can_policies) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt = $pdo->prepare('REPLACE INTO admin_user_permissions (user_id, can_dashboard, can_categories, can_product_groups, can_collections, can_products, can_orders, can_banners, can_faqs, can_reels, can_policies, can_blogs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([
             $user_id,
             $flags['dashboard'] ? 1 : 0,
@@ -134,6 +137,7 @@ function admin_user_permissions_set(PDO $pdo, $user_id, array $perms) {
             $flags['faqs'] ? 1 : 0,
             $flags['reels'] ? 1 : 0,
             $flags['policies'] ? 1 : 0,
+            $flags['blogs'] ? 1 : 0,
         ]);
     } catch (Throwable $e) {
         try {

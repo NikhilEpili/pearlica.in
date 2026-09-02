@@ -95,3 +95,17 @@ if (!function_exists('pearlica_uploads_reels_base')) {
 		return ($prefix === '' ? '' : $prefix) . '/uploads/reels';
 	}
 }
+
+if (!function_exists('pearlica_uploads_blogs_base')) {
+	/**
+	 * @param string $base_path Storefront URL prefix (usually ends with "/").
+	 */
+	function pearlica_uploads_blogs_base(string $base_path = ''): string
+	{
+		if (defined('BLOG_MEDIA_PUBLIC_BASE') && BLOG_MEDIA_PUBLIC_BASE !== '') {
+			return rtrim((string) BLOG_MEDIA_PUBLIC_BASE, '/');
+		}
+		$prefix = rtrim($base_path, '/');
+		return ($prefix === '' ? '' : $prefix) . '/uploads/blogs';
+	}
+}

@@ -13,6 +13,8 @@ storage/razorpay.mode
 storage/razorpay.settings.json
 storage/cache/
 
-# Blogs: Ignore everything in blogs except index.php
+# Blogs: Ignore everything in blogs except index.php, post.php, and rss.php
 blogs/*
 !blogs/index.php
+!blogs/post.php
+!blogs/rss.php
