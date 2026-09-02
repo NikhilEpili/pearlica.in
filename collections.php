@@ -21,6 +21,31 @@ try {
 	$collections = [];
 }
 
+if (!function_exists('collection_cover_dimensions')) {
+	/**
+	 * @return array{width:int,height:int}
+	 */
+	function collection_cover_dimensions(string $rel): array
+	{
+		$fallback_w = defined('COLLECTION_COVER_WIDTH') ? (int) COLLECTION_COVER_WIDTH : 1080;
+		$fallback_h = defined('COLLECTION_COVER_HEIGHT') ? (int) COLLECTION_COVER_HEIGHT : 1440;
+		$rel = trim(str_replace(['\\', '..'], '', $rel), '/ ');
+		if ($rel === '' || !defined('COLLECTION_UPLOAD_PATH')) {
+			return ['width' => $fallback_w, 'height' => $fallback_h];
+		}
+		$path = COLLECTION_UPLOAD_PATH . '/' . str_replace('/', DIRECTORY_SEPARATOR, $rel);
+		$info = is_file($path) ? @getimagesize($path) : false;
+		if ($info === false) {
+			return ['width' => $fallback_w, 'height' => $fallback_h];
+		}
+
+		return [
+			'width' => max(1, (int) ($info[0] ?? $fallback_w)),
+			'height' => max(1, (int) ($info[1] ?? $fallback_h)),
+		];
+	}
+}
+
 $page_title = 'Collections | Pearlica 925 Silver Jewellery';
 $meta_title_full = $page_title;
 $meta_description = 'Shop curated jewellery collections from Pearlica — 925 sterling silver pieces grouped by theme and edit.';
@@ -53,21 +78,27 @@ $meta_keywords = 'Pearlica, collections, curated jewellery, 925 silver, sterling
 							$url = $base_path . 'collection?slug=' . rawurlencode($slug);
 							$desc = trim((string) ($c['description'] ?? ''));
 							$excerpt = $desc !== '' ? (mb_strlen($desc) > 160 ? mb_substr($desc, 0, 157) . '…' : $desc) : '';
-							$count = (int) ($c['active_product_count'] ?? 0);
 							$thumb_rel = trim(str_replace(['\\', '..'], '', (string) ($c['thumbnail_url'] ?? '')), '/ ');
 							$thumb_src = '';
+							$thumb_w = defined('COLLECTION_COVER_WIDTH') ? (int) COLLECTION_COVER_WIDTH : 1080;
+							$thumb_h = defined('COLLECTION_COVER_HEIGHT') ? (int) COLLECTION_COVER_HEIGHT : 1440;
 							if ($thumb_rel !== '') {
 								$thumb_src = pearlica_uploads_collections_base($base_path) . '/' . implode('/', array_map('rawurlencode', explode('/', str_replace('\\', '/', $thumb_rel))));
+								$dims = collection_cover_dimensions($thumb_rel);
+								$thumb_w = (int) $dims['width'];
+								$thumb_h = (int) $dims['height'];
 							}
 							?>
 							<a href="<?php echo h($url); ?>" class="collections-card">
 								<div class="collections-card-media" aria-hidden="true">
 									<?php if ($thumb_src !== ''): ?>
-										<img src="<?php echo h($thumb_src); ?>" alt="" class="collections-card-img" width="1080" height="1440" loading="lazy">
+										<img src="<?php echo h($thumb_src); ?>" alt="" class="collections-card-img"
+											width="<?php echo $thumb_w; ?>" height="<?php echo $thumb_h; ?>"
+											srcset="<?php echo h($thumb_src); ?> <?php echo $thumb_w; ?>w"
+											sizes="(min-width: 992px) 25vw, 50vw" loading="lazy" decoding="async">
 									<?php endif; ?>
 								</div>
 								<h2 class="collections-card-title"><?php echo h((string) ($c['name'] ?? 'Collection')); ?></h2>
-								<p class="collections-card-meta"><?php echo (int) $count; ?> piece<?php echo $count === 1 ? '' : 's'; ?></p>
 								<?php if ($excerpt !== ''): ?>
 									<p class="collections-card-desc"><?php echo h($excerpt); ?></p>
 								<?php endif; ?>

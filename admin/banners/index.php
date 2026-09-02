@@ -49,8 +49,10 @@ function admin_banner_src(array $b, string $uploads_base): string
 <main class="container-fluid p-4 admin-content">
 	<h1 class="page-title">Homepage banners</h1>
 	<p class="text-muted small mb-4">
-		Manage the homepage hero carousel and the mid-page banner. Recommended size about
-		<strong>1280×600</strong> (JPG/PNG/WebP, max 8MB). Drag hero slides to reorder.
+		Manage the homepage hero carousel and the mid-page banner. Upload at
+		<strong><?= (int) (defined('BANNER_RECOMMENDED_WIDTH') ? BANNER_RECOMMENDED_WIDTH : 2560) ?>×<?= (int) (defined('BANNER_RECOMMENDED_HEIGHT') ? BANNER_RECOMMENDED_HEIGHT : 1200) ?></strong>
+		or larger for sharp retina displays (JPG/PNG/WebP, max <?= (int) round((defined('BANNER_MAX_UPLOAD_SIZE') ? BANNER_MAX_UPLOAD_SIZE : (15 * 1024 * 1024)) / (1024 * 1024)) ?>MB).
+		Images are stored at full quality up to <?= (int) (defined('BANNER_MAX_STORE_WIDTH') ? BANNER_MAX_STORE_WIDTH : 3840) ?>px wide. Drag hero slides to reorder.
 		On phones the storefront keeps the same wide ratio — keep important content toward the center.
 	</p>
 
@@ -204,7 +206,7 @@ function admin_banner_src(array $b, string $uploads_base): string
 <?php require dirname(__DIR__) . '/components/wrapper_end.php'; ?>
 <?php require dirname(__DIR__) . '/footer.php'; ?>
 <style>
-.banner-admin-thumb { aspect-ratio: 1280 / 600; object-fit: cover; background: #f5f5f5; display: block; }
+.banner-admin-thumb { aspect-ratio: 1280 / 600; object-fit: contain; background: #f5f5f5; display: block; }
 .banner-admin-handle { cursor: grab; padding-top: .65rem; font-size: 1.1rem; }
 .banner-admin-card.sortable-ghost { opacity: .45; }
 @media (max-width: 575px) {

@@ -771,11 +771,46 @@ function product_related_for_store(PDO $pdo, int $product_id, ?int $category_id,
 }
 
 /**
+ * Product-only autocomplete (ranked storefront search, no categories or popular queries).
+ *
+ * @return list<array{type:string,label:string,url:string}>
+ */
+function product_search_product_suggestions(PDO $pdo, string $q, int $limit = 12): array
+{
+    $q = trim($q);
+    $limit = max(1, min(20, $limit));
+    $qlen = function_exists('mb_strlen') ? mb_strlen($q, 'UTF-8') : strlen($q);
+    if ($qlen < 2) {
+        return [];
+    }
+
+    $result = product_list_store($pdo, 1, $limit, ['search' => $q]);
+    $out = [];
+    foreach ($result['items'] ?? [] as $row) {
+        $label = trim((string) ($row['name'] ?? ''));
+        $slug = trim((string) ($row['slug'] ?? ''));
+        if ($label === '' || $slug === '') {
+            continue;
+        }
+        $out[] = [
+            'type' => 'product',
+            'label' => $label,
+            'url' => 'product?slug=' . rawurlencode($slug),
+        ];
+    }
+    return $out;
+}
+
+/**
  * Autocomplete suggestions from product names and category names (relative URLs, no base path).
  *
  * @return list<array{type:string,label:string,url:string}>
  */
-function product_search_suggestions(PDO $pdo, string $q, int $limit = 12) {
+function product_search_suggestions(PDO $pdo, string $q, int $limit = 12, bool $products_only = false) {
+    if ($products_only) {
+        return product_search_product_suggestions($pdo, $q, $limit);
+    }
+
     $q = trim($q);
     $limit = max(1, min(20, $limit));
     $out = [];

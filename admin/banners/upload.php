@@ -2,6 +2,7 @@
 require_once dirname(__DIR__) . '/config.php';
 require_permission('banners');
 require_once ROOT . '/lib/homepage_banner.php';
+require_once ROOT . '/lib/banner_image.php';
 
 header('Content-Type: application/json');
 
@@ -38,42 +39,18 @@ if (!is_writable($base_upload)) {
 }
 
 $file = $_FILES['image'] ?? null;
-if (!$file || !is_array($file) || empty($file['tmp_name'])) {
+if (!$file || !is_array($file)) {
 	echo json_encode(['ok' => false, 'error' => 'No image selected']);
 	exit;
 }
 
-$err = (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE);
-if ($err !== UPLOAD_ERR_OK) {
-	$msg = $err === UPLOAD_ERR_INI_SIZE || $err === UPLOAD_ERR_FORM_SIZE ? 'File too large' : 'Upload error ' . $err;
-	echo json_encode(['ok' => false, 'error' => $msg]);
+$validated = banner_image_validate_upload($file);
+if (empty($validated['ok'])) {
+	echo json_encode(['ok' => false, 'error' => (string) ($validated['error'] ?? 'Invalid upload')]);
 	exit;
 }
-if (!is_uploaded_file($file['tmp_name'])) {
-	echo json_encode(['ok' => false, 'error' => 'Invalid upload']);
-	exit;
-}
-
-$max_size = defined('BANNER_MAX_UPLOAD_SIZE') ? BANNER_MAX_UPLOAD_SIZE : (8 * 1024 * 1024);
-if (($file['size'] ?? 0) > $max_size) {
-	echo json_encode(['ok' => false, 'error' => 'File too large (max 8MB)']);
-	exit;
-}
-
-$allowed = defined('ALLOWED_IMAGE_TYPES') ? ALLOWED_IMAGE_TYPES : ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-$finfo = new finfo(FILEINFO_MIME_TYPE);
-$mime = $finfo->file($file['tmp_name']);
-if (!in_array($mime, $allowed, true)) {
-	echo json_encode(['ok' => false, 'error' => 'Invalid file type. Use JPG, PNG, GIF, or WebP.']);
-	exit;
-}
-$ext = match ($mime) {
-	'image/jpeg' => 'jpg',
-	'image/png' => 'png',
-	'image/gif' => 'gif',
-	'image/webp' => 'webp',
-	default => 'jpg',
-};
+$mime = (string) $validated['mime'];
+$ext = (string) $validated['ext'];
 
 $folder_name = bin2hex(random_bytes(8));
 $image_name = 'image.' . $ext;
@@ -84,8 +61,10 @@ if (!is_dir($image_dir) && !@mkdir($image_dir, 0755, true)) {
 	exit;
 }
 $dest = $image_dir . '/' . $image_name;
-if (!move_uploaded_file($file['tmp_name'], $dest)) {
-	echo json_encode(['ok' => false, 'error' => 'Upload failed.']);
+$stored = banner_image_store_from_upload($file['tmp_name'], $dest, $mime);
+if (empty($stored['ok'])) {
+	@rmdir($image_dir);
+	echo json_encode(['ok' => false, 'error' => (string) ($stored['error'] ?? 'Upload failed.')]);
 	exit;
 }
 

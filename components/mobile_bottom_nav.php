@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 /**
- * Fixed bottom navigation (phones only). Expects same context as navbar: $nav_base, $nav_cart_count, $nav_parent_categories, $nav_logged_in.
+ * Fixed bottom navigation (phones only). Expects same context as navbar: $nav_base, $nav_cart_count, $nav_parent_categories, $nav_store_collections, $nav_logged_in.
  */
 if (!function_exists('h')) {
 	function h($s)
@@ -12,6 +12,7 @@ if (!function_exists('h')) {
 $mb_base = isset($nav_base) ? (string) $nav_base : '';
 $mb_cart = isset($nav_cart_count) ? (int) $nav_cart_count : 0;
 $mb_cats = isset($nav_parent_categories) && is_array($nav_parent_categories) ? $nav_parent_categories : [];
+$mb_collections = isset($nav_store_collections) && is_array($nav_store_collections) ? $nav_store_collections : [];
 $mb_logged_in = !empty($nav_logged_in);
 $mb_trim = trim($mb_base, '/');
 $mb_search_suggest = ($mb_trim === '' ? '' : '/' . $mb_trim) . '/search-suggest';
@@ -64,15 +65,18 @@ $mb_search_suggest = ($mb_trim === '' ? '' : '/' . $mb_trim) . '/search-suggest'
 		</div>
 		<div class="cart-drawer-panel-inner">
 			<div class="site-search-wrap w-100 px-0 pb-0" data-site-search-wrap>
-				<div class="site-search position-relative mx-auto" data-site-search data-search-url="<?php echo h($mb_search_suggest); ?>">
+				<div class="site-search position-relative mx-auto" data-site-search data-search-url="<?php echo h($mb_search_suggest); ?>" data-search-products-only data-search-min-chars="2">
 					<label class="visually-hidden" for="mobile-site-search-input">Search products</label>
 					<input type="search" id="mobile-site-search-input" class="site-search-input form-control" name="q" autocomplete="off" placeholder="Rings, pendants, chains…" maxlength="80" data-site-search-input>
 					<div class="site-search-dropdown list-group list-group-flush shadow-sm d-none" data-site-search-dropdown role="listbox" aria-label="Search suggestions"></div>
 				</div>
 			</div>
-			<ul class="mobile-dock-chip-grid mobile-search-chip-grid" aria-label="Browse categories">
+			<ul class="mobile-dock-chip-grid mobile-search-chip-grid" aria-label="Browse shop">
 				<li><a class="mobile-dock-chip" href="<?php echo h($mb_base); ?>products">All products</a></li>
-				<li><a class="mobile-dock-chip" href="<?php echo h($mb_base); ?>collections">Collections</a></li>
+				<li><a class="mobile-dock-chip" href="<?php echo h($mb_base); ?>collections">All collections</a></li>
+				<?php foreach ($mb_collections as $col): ?>
+					<li><a class="mobile-dock-chip" href="<?php echo h($mb_base . 'collection?slug=' . rawurlencode((string) ($col['slug'] ?? ''))); ?>"><?php echo h((string) ($col['name'] ?? '')); ?></a></li>
+				<?php endforeach; ?>
 				<?php foreach ($mb_cats as $cat): ?>
 					<li><a class="mobile-dock-chip" href="<?php echo h($mb_base . 'products?category=' . (int) ($cat['id'] ?? 0)); ?>"><?php echo h((string) ($cat['name'] ?? '')); ?></a></li>
 				<?php endforeach; ?>
@@ -89,6 +93,18 @@ $mb_search_suggest = ($mb_trim === '' ? '' : '/' . $mb_trim) . '/search-suggest'
 			<button type="button" class="cart-drawer-close-btn" data-mobile-dock-close aria-label="Close menu">&times;</button>
 		</div>
 		<div class="cart-drawer-panel-inner">
+			<?php if (!empty($mb_collections)): ?>
+			<div class="mobile-more-section" aria-labelledby="mobile-more-collections-title">
+				<p class="mobile-more-section__title" id="mobile-more-collections-title">Collections</p>
+				<ul class="mobile-dock-chip-grid mobile-more-chip-grid" aria-label="Collections">
+					<li><a class="mobile-dock-chip" href="<?php echo h($mb_base); ?>collections">All collections</a></li>
+					<?php foreach ($mb_collections as $col): ?>
+						<li><a class="mobile-dock-chip" href="<?php echo h($mb_base . 'collection?slug=' . rawurlencode((string) ($col['slug'] ?? ''))); ?>"><?php echo h((string) ($col['name'] ?? '')); ?></a></li>
+					<?php endforeach; ?>
+				</ul>
+			</div>
+			<?php endif; ?>
+
 			<div class="mobile-more-section" aria-labelledby="mobile-more-categories-title">
 				<p class="mobile-more-section__title" id="mobile-more-categories-title">Categories</p>
 				<ul class="mobile-dock-chip-grid mobile-more-chip-grid" aria-label="Categories">
@@ -103,7 +119,6 @@ $mb_search_suggest = ($mb_trim === '' ? '' : '/' . $mb_trim) . '/search-suggest'
 				<p class="mobile-more-section__title" id="mobile-more-options-title">More options</p>
 				<ul class="mobile-dock-chip-grid mobile-more-chip-grid" aria-label="More options">
 					<li><a class="mobile-dock-chip" href="<?php echo h($mb_base); ?>wishlist">Wishlist</a></li>
-					<li><a class="mobile-dock-chip" href="<?php echo h($mb_base); ?>gifting">Gifting</a></li>
 					<li><a class="mobile-dock-chip" href="<?php echo h($mb_base); ?>about">About</a></li>
 					<li><a class="mobile-dock-chip" href="<?php echo h($mb_base); ?>blogs">Blog</a></li>
 					<?php if ($mb_logged_in): ?>

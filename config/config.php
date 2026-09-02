@@ -17,8 +17,18 @@ define('BANNER_UPLOAD_PATH', BASE_PATH . '/uploads/banners');
 /** Homepage influencer reel videos and their poster frames. */
 define('REEL_UPLOAD_PATH', BASE_PATH . '/uploads/reels');
 define('MAX_UPLOAD_SIZE', 5 * 1024 * 1024);
+/** Collection cover images (1080×1440 portrait exports). */
+define('COLLECTION_COVER_WIDTH', 1080);
+define('COLLECTION_COVER_HEIGHT', 1440);
+define('COLLECTION_MAX_UPLOAD_SIZE', 12 * 1024 * 1024);
 /** Banners are often larger wide assets; still capped. */
-define('BANNER_MAX_UPLOAD_SIZE', 8 * 1024 * 1024);
+define('BANNER_MAX_UPLOAD_SIZE', 15 * 1024 * 1024);
+/** Store banner masters up to this width; larger uploads are downscaled (never upscaled). */
+define('BANNER_MAX_STORE_WIDTH', 3840);
+define('BANNER_JPEG_QUALITY', 92);
+define('BANNER_WEBP_QUALITY', 90);
+define('BANNER_RECOMMENDED_WIDTH', 2560);
+define('BANNER_RECOMMENDED_HEIGHT', 1200);
 /** Reels are short vertical clips; keep them small enough to autoplay quickly. */
 define('REEL_MAX_VIDEO_SIZE', 32 * 1024 * 1024);
 define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
@@ -103,7 +113,7 @@ define('CHECKOUT_SHIPPING_FEE_BELOW_MIN_PAISE', 19900);
 define('CHECKOUT_COD_MAX_ORDER_RUPEES', 10000);
 define('ADMIN_PATH', BASE_PATH . '/admin');
 define('AUTH_COOKIE_NAME', 'pearlica_user');
-define('AUTH_COOKIE_DAYS', 15);
+define('AUTH_COOKIE_DAYS', 7);
 if (!defined('AUTH_SECRET_KEY')) {
 	define('AUTH_SECRET_KEY', 'change-this-in-production-pearlica-auth-secret');
 }

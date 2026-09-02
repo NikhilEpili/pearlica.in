@@ -28,6 +28,7 @@
 			<div class="footer-col">
 				<h5 class="footer-heading section-label">Customer care</h5>
 				<ul class="footer-links list-unstyled">
+					<li><a href="<?php echo $footer_base; ?>faqs" class="footer-link">FAQs</a></li>
 					<li><a href="<?php echo $footer_base; ?>orders" class="footer-link">Track your order</a></li>
 					<li><a href="<?php echo $footer_base; ?>contact" class="footer-link">Contact us</a></li>
 					<li><a href="<?php echo $footer_base; ?>policies/care-guide" class="footer-link">Jewellery care guide</a></li>

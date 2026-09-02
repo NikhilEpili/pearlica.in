@@ -1,6 +1,6 @@
 <?php
 /**
- * Redirect to storefront with auth modal (password login / register).
+ * Redirect to storefront with auth modal (OTP login / register).
  */
 declare(strict_types=1);
 

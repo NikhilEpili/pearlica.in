@@ -1,6 +1,6 @@
 <?php
 /**
- * FAQ accordion for About page. Two columns; only question visible until clicked.
+ * FAQ accordion (two columns; question visible until clicked).
  * Loads from DB (admin-editable). Falls back to built-in defaults if DB unavailable.
  */
 $faq_accordion_base = isset($base_path) ? $base_path : '';

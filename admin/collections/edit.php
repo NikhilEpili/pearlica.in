@@ -145,8 +145,8 @@ foreach ($picker_products as $p) {
 				</div>
 				<ul id="collection-thumb-list" class="list-unstyled d-flex flex-wrap gap-2 mb-0">
 					<?php if ($thumbnail_rel !== ''): ?>
-					<li class="collection-thumb-item border rounded overflow-hidden position-relative" style="width: 120px; aspect-ratio: 3/4; flex-shrink: 0;">
-						<img src="<?= h($collections_upload_base . '/' . $thumbnail_rel) ?>" alt="" class="w-100 h-100 object-fit-cover" id="collection-thumb-img">
+					<li class="collection-thumb-item border rounded overflow-hidden position-relative" style="width: 180px; aspect-ratio: 3/4; flex-shrink: 0;">
+						<img src="<?= h($collections_upload_base . '/' . $thumbnail_rel) ?>" alt="" class="w-100 h-100" style="object-fit: contain; background:#f5f5f5;" id="collection-thumb-img">
 						<button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 collection-thumb-delete-btn" title="Remove">×</button>
 					</li>
 					<?php endif; ?>
@@ -282,6 +282,7 @@ foreach ($picker_products as $p) {
 	var cropModal = null;
 	var cropper = null;
 	var cropQueue = [];
+	var pendingUploadContinue = null;
 	var currentCropFile = null;
 	var currentObjectUrl = '';
 	var isCroppingFlow = false;
@@ -310,11 +311,13 @@ foreach ($picker_products as $p) {
 		thumbList.innerHTML = '';
 		var li = document.createElement('li');
 		li.className = 'collection-thumb-item border rounded overflow-hidden position-relative';
-		li.style.cssText = 'width: 120px; aspect-ratio: 3/4; flex-shrink: 0;';
+		li.style.cssText = 'width: 180px; aspect-ratio: 3/4; flex-shrink: 0;';
 		var img = document.createElement('img');
 		img.src = thumbSrcFromRel(relPath);
 		img.alt = '';
-		img.className = 'w-100 h-100 object-fit-cover';
+		img.className = 'w-100 h-100';
+		img.style.objectFit = 'contain';
+		img.style.background = '#f5f5f5';
 		img.id = 'collection-thumb-img';
 		var btn = document.createElement('button');
 		btn.type = 'button';
@@ -419,11 +422,39 @@ foreach ($picker_products as $p) {
 		return d && d.width >= 1080 && d.height >= 1440;
 	}
 
+	function isCoverExportSize(width, height) {
+		if (width < 1080 || height < 1440) return false;
+		var ratio = width / height;
+		return Math.abs(ratio - 0.75) < 0.02;
+	}
+
+	function probeImageFile(file, cb) {
+		if (!file || typeof cb !== 'function') return;
+		var img = new Image();
+		var url = URL.createObjectURL(file);
+		img.onload = function () {
+			var w = img.naturalWidth || 0;
+			var h = img.naturalHeight || 0;
+			URL.revokeObjectURL(url);
+			cb(w, h);
+		};
+		img.onerror = function () {
+			URL.revokeObjectURL(url);
+			cb(0, 0);
+		};
+		img.src = url;
+	}
+
 	function beginNextCrop() {
 		if (!cropQueue.length) {
 			isCroppingFlow = false;
 			currentCropFile = null;
 			destroyCropper();
+			if (typeof pendingUploadContinue === 'function') {
+				var resume = pendingUploadContinue;
+				pendingUploadContinue = null;
+				resume();
+			}
 			return;
 		}
 		currentCropFile = cropQueue.shift();
@@ -440,15 +471,29 @@ foreach ($picker_products as $p) {
 
 	function uploadFiles(files) {
 		if (!files || !files.length) return;
-		if (typeof window.Cropper === 'undefined') {
-			uploadRawFiles(Array.prototype.slice.call(files));
-			fileInput.value = '';
-			return;
-		}
-		cropQueue = Array.prototype.slice.call(files);
-		isCroppingFlow = true;
-		beginNextCrop();
+		var list = Array.prototype.slice.call(files);
 		fileInput.value = '';
+
+		function handleNext() {
+			if (!list.length) return;
+			var file = list.shift();
+			probeImageFile(file, function (w, h) {
+				if (isCoverExportSize(w, h)) {
+					uploadRawFiles([file], function () { handleNext(); });
+					return;
+				}
+				if (typeof window.Cropper === 'undefined') {
+					uploadRawFiles([file], function () { handleNext(); });
+					return;
+				}
+				cropQueue = [file];
+				isCroppingFlow = true;
+				pendingUploadContinue = handleNext;
+				beginNextCrop();
+			});
+		}
+
+		handleNext();
 	}
 
 	if (cropModalEl) {

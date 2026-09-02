@@ -12,7 +12,8 @@ header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 
 $q = isset($_GET['q']) ? trim((string) $_GET['q']) : '';
+$products_only = isset($_GET['mode']) && (string) $_GET['mode'] === 'products';
 $pdo = $GLOBALS['pdo'];
-$suggestions = product_search_suggestions($pdo, $q, 12);
+$suggestions = product_search_suggestions($pdo, $q, 12, $products_only);
 
 echo json_encode(['suggestions' => $suggestions], JSON_UNESCAPED_UNICODE);

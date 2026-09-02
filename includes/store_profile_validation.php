@@ -153,6 +153,33 @@ if (!function_exists('store_profile_validate_password')) {
 	}
 }
 
+if (!function_exists('store_profile_validate_new_registration')) {
+	/**
+	 * Registration details + phone (no password).
+	 *
+	 * @return array{ok:bool,errors:array<int,string>,data:array<string,mixed>}
+	 */
+	function store_profile_validate_new_registration(PDO $pdo, array $input): array
+	{
+		$result = store_profile_validate_registration($pdo, 0, $input);
+		if (!$result['ok']) {
+			return $result;
+		}
+		$phone_raw = trim((string) ($input['phone'] ?? ''));
+		$e164 = store_user_phone_e164_digits($phone_raw);
+		if ($e164 === null) {
+			return ['ok' => false, 'errors' => ['Please enter a valid 10-digit mobile number.'], 'data' => []];
+		}
+		if (store_user_phone_taken($pdo, $e164)) {
+			return ['ok' => false, 'errors' => ['This mobile number is already registered. Please sign in instead.'], 'data' => []];
+		}
+		$result['data']['phone_e164'] = $e164;
+		$result['data']['phone_display'] = store_user_phone_display($e164);
+
+		return $result;
+	}
+}
+
 if (!function_exists('store_profile_validate_registration_with_password')) {
 	/**
 	 * @return array{ok:bool,errors:array<int,string>,data:array<string,mixed>}

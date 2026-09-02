@@ -800,6 +800,30 @@ a.btn.btn-dark:focus,
 	text-align: left;
 }
 
+.offcanvas-nav-pearlica .nav-item-dropdown > .nav-link {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+}
+
+.offcanvas-nav-pearlica .nav-item-dropdown > .nav-link::after {
+	content: '';
+	display: inline-block;
+	width: 0.45rem;
+	height: 0.45rem;
+	margin-left: 0.75rem;
+	border-right: 1.5px solid currentColor;
+	border-bottom: 1.5px solid currentColor;
+	transform: rotate(45deg);
+	transition: transform 0.2s ease;
+	flex-shrink: 0;
+}
+
+.offcanvas-nav-pearlica .nav-item-dropdown.is-open > .nav-link::after {
+	transform: rotate(-135deg);
+}
+
 .offcanvas-nav-pearlica .nav-item-dropdown {
 	position: static;
 }

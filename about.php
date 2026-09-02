@@ -1,6 +1,6 @@
 <?php
 /**
- * About Us page. Luxury design system: hero, brand story, founder, values, FAQ accordion, CTA.
+ * About Us page. Luxury design system: hero, brand story, founder, values, CTA.
  */
 declare(strict_types=1);
 
@@ -84,13 +84,6 @@ $page_head_extra = '<link rel="stylesheet" href="' . htmlspecialchars(asset_url(
 			</div>
 		</section>
 
-		<!-- FAQ -->
-		<section class="about-section about-faq-section">
-			<p class="about-section-label">Support</p>
-			<h2 class="about-faq-title">Frequently Asked Questions</h2>
-			<?php include __DIR__ . '/components/section_faqs_accordion.php'; ?>
-		</section>
-
 		<!-- CTA strip -->
 		<div class="about-cta-strip">
 			<p class="about-cta-heading">Have more questions?</p>
@@ -106,7 +99,6 @@ $page_head_extra = '<link rel="stylesheet" href="' . htmlspecialchars(asset_url(
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
 	<?php include __DIR__ . '/components/swiper_bundle_script.php'; ?>
 	<script src="<?php echo htmlspecialchars(asset_url('assets/js/script.min.js', $base_path), ENT_QUOTES, 'UTF-8'); ?>"></script>
-	<script src="<?php echo htmlspecialchars(asset_url('assets/js/about.js', $base_path), ENT_QUOTES, 'UTF-8'); ?>"></script>
 </body>
 
 </html>

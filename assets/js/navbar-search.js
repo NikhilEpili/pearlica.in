@@ -46,6 +46,9 @@ document.addEventListener('DOMContentLoaded', function () {
 	var input = root.querySelector('[data-site-search-input]');
 	var dropdown = root.querySelector('[data-site-search-dropdown]');
 	var urlAttr = root.getAttribute('data-search-url') || '';
+	var productsOnly = root.hasAttribute('data-search-products-only');
+	var minChars = parseInt(root.getAttribute('data-search-min-chars') || '2', 10);
+	if (!Number.isFinite(minChars) || minChars < 1) minChars = 2;
 	if (!input || !dropdown) return;
 
 	var debounceTimer = null;
@@ -74,9 +77,18 @@ document.addEventListener('DOMContentLoaded', function () {
 		return bp.replace(/\/?$/, '/') + rel.replace(/^\//, '');
 	}
 
+	function queryMeetsMinChars(q) {
+		return (q || '').trim().length >= minChars;
+	}
+
 	function render(list) {
 		dropdown.innerHTML = '';
 		items = [];
+		if (productsOnly && list) {
+			list = list.filter(function (s) {
+				return (s.type || '') === 'product';
+			});
+		}
 		if (!list || !list.length) {
 			hide();
 			return;
@@ -87,9 +99,13 @@ document.addEventListener('DOMContentLoaded', function () {
 			btn.className = 'list-group-item list-group-item-action text-start border-0 border-bottom';
 			btn.setAttribute('role', 'option');
 			btn.dataset.index = String(i);
-			var t = s.type || '';
-			var type = t === 'category' ? 'Category' : t === 'search' ? 'Popular search' : 'Product';
-			btn.innerHTML = '<span class="site-search-hint d-block mb-1">' + type + '</span><span>' + escapeHtml(s.label || '') + '</span>';
+			if (productsOnly) {
+				btn.innerHTML = '<span>' + escapeHtml(s.label || '') + '</span>';
+			} else {
+				var t = s.type || '';
+				var type = t === 'category' ? 'Category' : t === 'search' ? 'Popular search' : 'Product';
+				btn.innerHTML = '<span class="site-search-hint d-block mb-1">' + type + '</span><span>' + escapeHtml(s.label || '') + '</span>';
+			}
 			btn.addEventListener('click', function () {
 				window.location.href = resolveHref(s.url || '');
 			});
@@ -116,7 +132,13 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	function fetchSuggestions(q) {
+		q = (q || '').trim();
+		if (productsOnly && !queryMeetsMinChars(q)) {
+			hide();
+			return;
+		}
 		var u = suggestEndpoint() + '?q=' + encodeURIComponent(q);
+		if (productsOnly) u += '&mode=products';
 		fetch(u, { credentials: 'same-origin' })
 			.then(function (r) { return r.json(); })
 			.then(function (data) {
@@ -130,6 +152,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	function scheduleFetch() {
 		var q = (input.value || '').trim();
+		if (productsOnly && !queryMeetsMinChars(q)) {
+			hide();
+			return;
+		}
 		if (debounceTimer) clearTimeout(debounceTimer);
 		debounceTimer = setTimeout(function () {
 			fetchSuggestions(q);
@@ -143,6 +169,10 @@ document.addEventListener('DOMContentLoaded', function () {
 	}
 
 	input.addEventListener('focus', function () {
+		if (productsOnly && !queryMeetsMinChars(input.value || '')) {
+			hide();
+			return;
+		}
 		scheduleFetch();
 	});
 

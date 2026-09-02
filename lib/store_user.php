@@ -305,10 +305,11 @@ function store_user_set_password(PDO $pdo, int $user_id, string $password): void
 /**
  * @param array{full_name:string,email:string,phone_display:string,birthday:?string,gender:string} $profile
  */
-function store_user_create_registered(PDO $pdo, array $profile, string $password): int
+function store_user_create_registered(PDO $pdo, array $profile, ?string $password = null): int
 {
 	store_user_ensure_schema($pdo);
 	$email = trim((string) ($profile['email'] ?? ''));
+	$password_hash = ($password !== null && $password !== '') ? password_hash($password, PASSWORD_DEFAULT) : null;
 	$stmt = $pdo->prepare(
 		'INSERT INTO store_users (email, full_name, phone, birthday, gender, password_hash, address, address_line_2, city, state, pincode)
 		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
@@ -319,7 +320,7 @@ function store_user_create_registered(PDO $pdo, array $profile, string $password
 		trim((string) ($profile['phone_display'] ?? '')),
 		$profile['birthday'] ?? null,
 		trim((string) ($profile['gender'] ?? '')),
-		password_hash($password, PASSWORD_DEFAULT),
+		$password_hash,
 		'',
 		'',
 		'',

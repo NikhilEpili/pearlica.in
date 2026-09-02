@@ -60,8 +60,8 @@
 
 .collections-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-	gap: 16px;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 8px;
 }
 
 .collections-card {
@@ -78,7 +78,6 @@
 .collections-card-media {
 	aspect-ratio: 3 / 4;
 	width: 100%;
-	max-height: 180px;
 	background: #f4f4f4;
 	position: relative;
 	overflow: hidden;
@@ -89,10 +88,12 @@
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+	object-position: center center;
+	-webkit-backface-visibility: hidden;
+	backface-visibility: hidden;
 }
 
 .collections-card .collections-card-title,
-.collections-card .collections-card-meta,
 .collections-card .collections-card-desc,
 .collections-card .collections-card-cta {
 	padding-left: 14px;
@@ -113,19 +114,9 @@
 	font-family: var(--font-heading);
 	font-size: 16px;
 	font-weight: 400;
-	margin: 0 0 6px;
+	margin: 0 0 8px;
 	color: var(--text-main);
 	line-height: 1.25;
-}
-
-.collections-card-meta {
-	font-family: var(--font-body);
-	font-size: 10px;
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
-	color: var(--text-muted);
-	margin: 0 0 8px;
-	padding-bottom: 0;
 }
 
 .collections-card-desc {
@@ -172,6 +163,12 @@
 	line-height: 1.65;
 }
 
+@media (max-width: 991px) {
+	.collections-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
 @media (max-width: 767px) {
 	.collections-section {
 		padding: 40px 20px 56px;
@@ -180,11 +177,10 @@
 	.collections-page .collections-index-section .products-title {
 		font-size: 32px;
 	}
+}
+
+@media (max-width: 575px) {
 	.collections-grid {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 12px;
-	}
-	.collections-card-media {
-		max-height: 150px;
+		gap: 6px;
 	}
 }

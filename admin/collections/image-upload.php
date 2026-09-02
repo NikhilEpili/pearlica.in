@@ -42,7 +42,7 @@ if (!$files || !is_array($files['name'])) {
 	$files = ['name' => [$_FILES['image']['name'] ?? ''], 'type' => [$_FILES['image']['type'] ?? ''], 'tmp_name' => [$_FILES['image']['tmp_name'] ?? ''], 'error' => [$_FILES['image']['error'] ?? 4], 'size' => [$_FILES['image']['size'] ?? 0]];
 }
 
-$max_size = defined('MAX_UPLOAD_SIZE') ? MAX_UPLOAD_SIZE : (5 * 1024 * 1024);
+$max_size = defined('COLLECTION_MAX_UPLOAD_SIZE') ? COLLECTION_MAX_UPLOAD_SIZE : (12 * 1024 * 1024);
 $allowed = defined('ALLOWED_IMAGE_TYPES') ? ALLOWED_IMAGE_TYPES : ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
 $uploaded = [];
@@ -60,7 +60,8 @@ for ($i = 0; $i < count($files['name']); $i++) {
 		continue;
 	}
 	if (($files['size'][$i] ?? 0) > $max_size) {
-		echo json_encode(['ok' => false, 'error' => 'File too large']);
+		$max_mb = (int) round($max_size / (1024 * 1024));
+		echo json_encode(['ok' => false, 'error' => 'File too large (max ' . $max_mb . 'MB)']);
 		exit;
 	}
 	$finfo = new finfo(FILEINFO_MIME_TYPE);

@@ -294,6 +294,28 @@ function homepage_banner_file_mtime(string $rel): int
 }
 
 /**
+ * @return array{width:int,height:int}
+ */
+function homepage_banner_image_dimensions(string $rel): array
+{
+	$path = homepage_banner_disk_path($rel);
+	$fallback_w = defined('BANNER_RECOMMENDED_WIDTH') ? (int) BANNER_RECOMMENDED_WIDTH : 2560;
+	$fallback_h = defined('BANNER_RECOMMENDED_HEIGHT') ? (int) BANNER_RECOMMENDED_HEIGHT : 1200;
+	if ($path === null) {
+		return ['width' => $fallback_w, 'height' => $fallback_h];
+	}
+	$info = @getimagesize($path);
+	if ($info === false) {
+		return ['width' => $fallback_w, 'height' => $fallback_h];
+	}
+
+	return [
+		'width' => max(1, (int) ($info[0] ?? $fallback_w)),
+		'height' => max(1, (int) ($info[1] ?? $fallback_h)),
+	];
+}
+
+/**
  * Whether a DB banner row should be rendered on the storefront.
  * - Local/dev: always allow (missing files may 302 to production via .htaccess).
  * - Production: only when the file is present under BANNER_UPLOAD_PATH (media.php uses the same tree).
@@ -371,10 +393,13 @@ function homepage_banner_hydrate_for_display(array $rows, string $uploads_base, 
 		}
 		$alt = trim((string) ($row['alt_text'] ?? ''));
 		$link = homepage_banner_safe_href($row['link_url'] ?? null, $link_fallback);
+		$dims = homepage_banner_image_dimensions($rel);
 		$ready[] = [
 			'id' => $id,
 			'image_url' => $rel,
 			'src' => $src,
+			'width' => (int) $dims['width'],
+			'height' => (int) $dims['height'],
 			'alt_text' => $alt !== '' ? $alt : $default_alt,
 			'link_url' => $link !== '' ? $link : null,
 		];

@@ -174,6 +174,8 @@ if ($hero_rows === []) {
 			'id' => 0,
 			'image_url' => '',
 			'src' => $hero_fallback_src,
+			'width' => 2560,
+			'height' => 1200,
 			'alt_text' => 'Pearlica launch offer banner — upto 50% off',
 			'link_url' => null,
 		],
@@ -181,6 +183,8 @@ if ($hero_rows === []) {
 			'id' => 0,
 			'image_url' => '',
 			'src' => $mid_fallback_src,
+			'width' => 2560,
+			'height' => 1200,
 			'alt_text' => 'Pearlica pearl jewelry banner — elegant 925 silver collection',
 			'link_url' => null,
 		],
@@ -212,18 +216,22 @@ if ($hero_rows === []) {
 					$slide_src = (string) ($hb['src'] ?? '');
 					$slide_alt = (string) ($hb['alt_text'] ?? 'Pearlica homepage banner');
 					$slide_link = trim((string) ($hb['link_url'] ?? ''));
+					$slide_w = max(1, (int) ($hb['width'] ?? 2560));
+					$slide_h = max(1, (int) ($hb['height'] ?? 1200));
+					$slide_srcset = $slide_src !== '' ? h($slide_src) . ' ' . $slide_w . 'w' : '';
+					$slide_attrs = ' class="index-hero-banner-img w-100 d-block" src="' . h($slide_src) . '"'
+						. ' alt="' . h($slide_alt) . '" width="' . $slide_w . '" height="' . $slide_h . '"'
+						. ($slide_srcset !== '' ? ' srcset="' . $slide_srcset . '"' : '')
+						. ' sizes="100vw" decoding="async"'
+						. ($hi === 0 ? ' fetchpriority="high"' : '');
 					?>
 					<div class="carousel-item<?= $hi === 0 ? ' active' : '' ?>">
 						<?php if ($slide_link !== ''): ?>
 							<a href="<?= h($slide_link) ?>" class="d-block index-hero-banner-link">
-								<img class="index-hero-banner-img w-100 d-block" src="<?= h($slide_src); ?>"
-									alt="<?= h($slide_alt) ?>" width="1280" height="600"
-									sizes="100vw" decoding="async"<?= $hi === 0 ? ' fetchpriority="high"' : '' ?>>
+								<img<?= $slide_attrs ?>>
 							</a>
 						<?php else: ?>
-							<img class="index-hero-banner-img w-100 d-block" src="<?= h($slide_src); ?>"
-								alt="<?= h($slide_alt) ?>" width="1280" height="600"
-								sizes="100vw" decoding="async"<?= $hi === 0 ? ' fetchpriority="high"' : '' ?>>
+							<img<?= $slide_attrs ?>>
 						<?php endif; ?>
 					</div>
 				<?php endforeach; ?>

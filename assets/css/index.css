@@ -48,6 +48,7 @@ body.homepage .index-picks {
 	overflow: hidden;
 	aspect-ratio: 1280 / 600;
 	min-height: clamp(140px, 42vw, 600px);
+	max-height: min(75vh, 900px);
 	background: #111;
 }
 
@@ -113,6 +114,9 @@ body.homepage .index-picks {
 	height: 100% !important;
 	object-fit: cover;
 	object-position: center center;
+	-webkit-backface-visibility: hidden;
+	backface-visibility: hidden;
+	transform: translateZ(0);
 }
 
 .index-hero-banners .carousel-control-prev,
@@ -1056,18 +1060,8 @@ body.homepage .index-picks {
 	flex-shrink: 0;
 }
 @media (max-width: 991px) {
-	.index-price-categories-grid,
 	.index-special-categories-grid {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
-	.index-price-cat-tile {
-		border-right: 1px solid var(--border);
-	}
-	.index-price-cat-tile:nth-child(2n) {
-		border-right: none;
-	}
-	.index-price-cat-tile:nth-child(-n + 2) {
-		border-bottom: 1px solid var(--border);
 	}
 	.index-special-cat-title {
 		letter-spacing: 0.12em;
