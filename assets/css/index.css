@@ -1029,22 +1029,22 @@ body.homepage .index-picks {
 }
 .index-special-cat-title {
 	font-family: var(--font-body);
-	font-size: clamp(11px, 1.65vw, 16px);
+	font-size: clamp(10px, 1.35vw, 14px);
 	font-weight: 500;
-	letter-spacing: 0.14em;
+	letter-spacing: 0.12em;
 	text-transform: uppercase;
 	color: #fff;
 	line-height: 1.25;
-	margin: 0 0 0.55rem;
+	margin: 0 0 0.4rem;
 	max-width: 100%;
 	overflow-wrap: anywhere;
 	word-break: break-word;
 }
 .index-special-cat-cta {
 	font-family: var(--font-body);
-	font-size: clamp(9px, 1.05vw, 11px);
+	font-size: clamp(8px, 0.95vw, 10px);
 	font-weight: 500;
-	letter-spacing: 0.14em;
+	letter-spacing: 0.12em;
 	text-transform: uppercase;
 	color: rgba(255, 255, 255, 0.92);
 	display: inline-flex;
@@ -1061,10 +1061,19 @@ body.homepage .index-picks {
 }
 @media (max-width: 991px) {
 	.index-special-categories-grid {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+	.index-special-cat-copy {
+		padding: 8px 6px 10px;
 	}
 	.index-special-cat-title {
-		letter-spacing: 0.12em;
+		font-size: clamp(8px, 2.1vw, 10px);
+		letter-spacing: 0.08em;
+		margin-bottom: 0.2rem;
+	}
+	.index-special-cat-cta {
+		font-size: clamp(7px, 1.6vw, 8px);
+		letter-spacing: 0.08em;
 	}
 }
 @media (max-width: 575px) {
@@ -1073,16 +1082,15 @@ body.homepage .index-picks {
 		font-size: 22px;
 	}
 	.index-special-cat-copy {
-		padding: 12px 10px 14px;
+		padding: 6px 5px 8px;
 	}
 	.index-special-cat-title {
-		font-size: 11px;
-		letter-spacing: 0.1em;
-		margin-bottom: 0.4rem;
+		font-size: 8px;
+		letter-spacing: 0.06em;
+		margin-bottom: 0;
 	}
 	.index-special-cat-cta {
-		font-size: 9px;
-		letter-spacing: 0.1em;
+		display: none;
 	}
 }
 
