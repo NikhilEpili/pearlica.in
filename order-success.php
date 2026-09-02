@@ -1,6 +1,6 @@
 <?php
 /**
- * Order success page (shown after successful Razorpay payment verification).
+ * Order success page (shown after checkout). Order details require same-session grant or owner login.
  */
 declare(strict_types=1);
 
@@ -18,9 +18,16 @@ if (!function_exists('h')) {
 
 $base_path = '';
 $order_id = isset($_GET['order_id']) ? (int) $_GET['order_id'] : 0;
+$auth_user_id = auth_cookie_user_id();
 
 $pdo = $GLOBALS['pdo'];
-$order = $order_id > 0 ? order_find_by_id($pdo, $order_id) : null;
+$order = null;
+if ($order_id > 0) {
+	$found = order_find_by_id($pdo, $order_id);
+	if ($found && order_success_can_view($found, $auth_user_id)) {
+		$order = $found;
+	}
+}
 
 $page_title = 'Order Confirmed | Pearlica';
 ?>

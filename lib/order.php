@@ -249,6 +249,45 @@ function shiprocket_order_find_by_order_id(PDO $pdo, int $order_id): ?array
 	}
 }
 
+/** Max order IDs remembered in session after checkout (same-session success page access). */
+const ORDER_SUCCESS_ACCESS_SESSION_MAX = 40;
+
+function order_success_grant(int $order_id): void
+{
+	if ($order_id <= 0) {
+		return;
+	}
+	if (!isset($_SESSION['order_success_access']) || !is_array($_SESSION['order_success_access'])) {
+		$_SESSION['order_success_access'] = [];
+	}
+	$_SESSION['order_success_access'][$order_id] = time();
+	$keys = array_keys($_SESSION['order_success_access']);
+	if (count($keys) > ORDER_SUCCESS_ACCESS_SESSION_MAX) {
+		foreach (array_slice($keys, 0, -ORDER_SUCCESS_ACCESS_SESSION_MAX) as $old_id) {
+			unset($_SESSION['order_success_access'][$old_id]);
+		}
+	}
+}
+
+function order_success_can_view(array $order, ?int $store_user_id): bool
+{
+	$order_id = (int) ($order['id'] ?? 0);
+	if ($order_id <= 0) {
+		return false;
+	}
+
+	$grants = $_SESSION['order_success_access'] ?? [];
+	if (is_array($grants) && array_key_exists($order_id, $grants)) {
+		return true;
+	}
+
+	if ($store_user_id !== null && $store_user_id > 0) {
+		return (int) ($order['store_user_id'] ?? 0) === $store_user_id;
+	}
+
+	return false;
+}
+
 function shiprocket_order_upsert(PDO $pdo, int $order_id, array $data): void
 {
 	try {

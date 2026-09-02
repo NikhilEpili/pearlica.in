@@ -238,6 +238,7 @@ try {
 	}
 
 	cart_to_cookie([]);
+	order_success_grant($order_id);
 
 	echo json_encode(['ok' => true, 'order_id' => $order_id], JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {

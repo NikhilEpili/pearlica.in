@@ -95,6 +95,7 @@ try {
 
 	// Clear cart after successful payment.
 	cart_to_cookie([]);
+	order_success_grant($order_id);
 
 	echo json_encode(['ok' => true, 'order_id' => $order_id]);
 } catch (Throwable $e) {
