@@ -29,9 +29,9 @@ $current_root = defined('MEDIA_STORAGE_ROOT') ? (string) MEDIA_STORAGE_ROOT : ''
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php require dirname(__DIR__) . '/header.php'; ?>
+<?php require __DIR__ . '/header.php'; ?>
 <body class="admin-body">
-<?php require dirname(__DIR__) . '/components/wrapper_start.php'; ?>
+<?php require __DIR__ . '/components/wrapper_start.php'; ?>
 <main class="container-fluid p-4 admin-content">
 	<h1 class="page-title">Migrate media to durable storage</h1>
 	<p class="text-muted small mb-3">
@@ -100,7 +100,7 @@ $current_root = defined('MEDIA_STORAGE_ROOT') ? (string) MEDIA_STORAGE_ROOT : ''
 		static file under <code>public_html</code> is missing.
 	</div>
 </main>
-<?php require dirname(__DIR__) . '/components/wrapper_end.php'; ?>
-<?php require dirname(__DIR__) . '/footer.php'; ?>
+<?php require __DIR__ . '/components/wrapper_end.php'; ?>
+<?php require __DIR__ . '/footer.php'; ?>
 </body>
 </html>

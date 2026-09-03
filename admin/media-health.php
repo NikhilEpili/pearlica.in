@@ -181,9 +181,9 @@ if ($probe_rel !== '') {
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<?php require dirname(__DIR__) . '/header.php'; ?>
+<?php require __DIR__ . '/header.php'; ?>
 <body class="admin-body">
-<?php require dirname(__DIR__) . '/components/wrapper_start.php'; ?>
+<?php require __DIR__ . '/components/wrapper_start.php'; ?>
 <main class="container-fluid p-4 admin-content">
 	<h1 class="page-title">Media health</h1>
 	<p class="text-muted small">Compares PHP upload paths with the web document root and checks whether DB media paths exist on disk.</p>
@@ -307,7 +307,7 @@ if ($probe_rel !== '') {
 	<?php endif; ?>
 	<a href="<?= h(admin_url('dashboard/')) ?>" class="btn btn-secondary">Back</a>
 </main>
-<?php require dirname(__DIR__) . '/components/wrapper_end.php'; ?>
-<?php require dirname(__DIR__) . '/footer.php'; ?>
+<?php require __DIR__ . '/components/wrapper_end.php'; ?>
+<?php require __DIR__ . '/footer.php'; ?>
 </body>
 </html>
