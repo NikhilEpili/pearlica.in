@@ -22,7 +22,8 @@ function media_serve_bucket_roots(): array
 }
 
 /**
- * Ordered roots to probe for a bucket (BASE_PATH first, then DOCUMENT_ROOT/uploads).
+ * Ordered roots to probe for a bucket (durable MEDIA_STORAGE_ROOT first,
+ * then legacy BASE_PATH/uploads, then DOCUMENT_ROOT/uploads).
  *
  * @return list<string>
  */
@@ -50,6 +51,12 @@ function media_serve_bucket_root_candidates(string $bucket): array
 
 	if ($primary !== '') {
 		$append($primary);
+	}
+
+	if (function_exists('media_storage_legacy_root')) {
+		$append(media_storage_legacy_root() . '/' . $bucket);
+	} elseif (defined('BASE_PATH')) {
+		$append(rtrim(str_replace('\\', '/', (string) BASE_PATH), '/') . '/uploads/' . $bucket);
 	}
 
 	$doc_root = rtrim(str_replace('\\', '/', (string) ($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');

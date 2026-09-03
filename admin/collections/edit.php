@@ -133,7 +133,7 @@ foreach ($picker_products as $p) {
 		<div class="card mb-4">
 			<div class="card-header bg-light">Collection cover</div>
 			<div class="card-body">
-				<p class="small text-muted mb-3">Portrait <strong>3:4</strong> image, exported at <strong>1080 × 1440</strong> px (same workflow as product photos). Used on the collections listing.</p>
+				<p class="small text-muted mb-3">Portrait <strong>3:4</strong> image, exported at <strong><?= (int) COLLECTION_COVER_WIDTH ?> × <?= (int) COLLECTION_COVER_HEIGHT ?></strong> px (same workflow as product photos). Used on the collections listing.</p>
 				<div id="collection-thumb-drop-zone" class="border border-2 border-dashed rounded p-4 text-center mb-3"
 					style="min-height: 120px; cursor: pointer;">
 					<input type="file" id="collection-thumb-file-input" accept="image/jpeg,image/png,image/gif,image/webp" class="d-none">
@@ -162,7 +162,7 @@ foreach ($picker_products as $p) {
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 					<div class="modal-body">
-						<div class="small text-muted mb-2">Target export size: 1080 × 1440 px</div>
+						<div class="small text-muted mb-2">Target export size: <?= (int) COLLECTION_COVER_WIDTH ?> × <?= (int) COLLECTION_COVER_HEIGHT ?> px</div>
 						<div class="w-100 bg-light d-flex align-items-center justify-content-center mx-auto" style="width: min(100%, 420px); aspect-ratio: 3 / 4; max-height: 70vh; overflow: hidden;">
 							<img id="collection-cropper-image-preview" alt="Crop preview" style="max-width: 100%; max-height: 100%; display: block;">
 						</div>
@@ -266,6 +266,9 @@ foreach ($picker_products as $p) {
 	var deleteUrl = <?= json_encode(admin_url('collections/image-delete.php')) ?>;
 	var csrfToken = <?= json_encode(csrf_token()) ?>;
 	var uploadsBase = <?= json_encode($collections_upload_base) ?>;
+	var exportWidth = <?= (int) COLLECTION_COVER_WIDTH ?>;
+	var exportHeight = <?= (int) COLLECTION_COVER_HEIGHT ?>;
+	var exportJpegQuality = <?= json_encode((float) COLLECTION_IMAGE_JPEG_QUALITY) ?>;
 
 	var dropZone = document.getElementById('collection-thumb-drop-zone');
 	var fileInput = document.getElementById('collection-thumb-file-input');
@@ -419,11 +422,11 @@ foreach ($picker_products as $p) {
 	function hasQualitySafeCrop() {
 		if (!cropper) return false;
 		var d = cropper.getData(true);
-		return d && d.width >= 1080 && d.height >= 1440;
+		return d && d.width >= exportWidth && d.height >= exportHeight;
 	}
 
 	function isCoverExportSize(width, height) {
-		if (width < 1080 || height < 1440) return false;
+		if (width < exportWidth || height < exportHeight) return false;
 		var ratio = width / height;
 		return Math.abs(ratio - 0.75) < 0.02;
 	}
@@ -513,8 +516,8 @@ foreach ($picker_products as $p) {
 					var cropBoxData = cropper.getCropBoxData();
 					var baseRatio = imageData.naturalWidth > 0 ? (imageData.width / imageData.naturalWidth) : null;
 					minZoomRatio = baseRatio ? (baseRatio * 0.95) : null;
-					var limitByWidth = cropBoxData.width / 1080;
-					var limitByHeight = cropBoxData.height / 1440;
+					var limitByWidth = cropBoxData.width / exportWidth;
+					var limitByHeight = cropBoxData.height / exportHeight;
 					maxZoomRatio = Math.min(limitByWidth, limitByHeight);
 					if (minZoomRatio !== null && maxZoomRatio !== null && maxZoomRatio < minZoomRatio) {
 						maxZoomRatio = minZoomRatio;
@@ -546,13 +549,13 @@ foreach ($picker_products as $p) {
 		cropApplyBtn.addEventListener('click', function () {
 			if (!cropper) return;
 			if (!hasQualitySafeCrop()) {
-				alert('Please zoom out a little. Crop area must be at least 1080 × 1440 to keep quality.');
+				alert('Please zoom out a little. Crop area must be at least ' + exportWidth + ' × ' + exportHeight + ' to keep quality.');
 				return;
 			}
 			cropApplyBtn.disabled = true;
 			var canvas = cropper.getCroppedCanvas({
-				width: 1080,
-				height: 1440,
+				width: exportWidth,
+				height: exportHeight,
 				imageSmoothingEnabled: true,
 				imageSmoothingQuality: 'high',
 				fillColor: '#fff'
@@ -574,7 +577,7 @@ foreach ($picker_products as $p) {
 					if (m) m.hide();
 					else beginNextCrop();
 				});
-			}, 'image/jpeg', 0.92);
+			}, 'image/jpeg', exportJpegQuality);
 		});
 	}
 

@@ -11,8 +11,7 @@ if (!function_exists('pearlica_get_image_dimensions')) {
 	{
 		static $cache = [];
 
-		$uploads_disk_dir = __DIR__ . '/../uploads/products';
-		$cache_key = $relative_or_url !== '' ? ($uploads_disk_dir . '/' . ltrim($relative_or_url, '/')) : $fallback_src;
+		$cache_key = $relative_or_url !== '' ? ('dim:' . $relative_or_url) : ('fb:' . $fallback_src);
 		if (isset($cache[$cache_key])) {
 			return $cache[$cache_key];
 		}
@@ -21,8 +20,20 @@ if (!function_exists('pearlica_get_image_dimensions')) {
 		$h = 0;
 
 		if ($relative_or_url !== '') {
-			$abs_path = $uploads_disk_dir . '/' . ltrim($relative_or_url, '/');
-			if (is_file($abs_path)) {
+			$abs_path = null;
+			if (function_exists('media_serve_resolve')) {
+				$abs_path = media_serve_resolve('products', $relative_or_url);
+			}
+			if ($abs_path === null) {
+				$uploads_disk_dir = defined('UPLOAD_PATH')
+					? (string) UPLOAD_PATH
+					: (__DIR__ . '/../uploads/products');
+				$candidate = rtrim($uploads_disk_dir, '/\\') . '/' . ltrim(str_replace('\\', '/', $relative_or_url), '/');
+				if (is_file($candidate)) {
+					$abs_path = $candidate;
+				}
+			}
+			if ($abs_path !== null) {
 				$info = @getimagesize($abs_path);
 				if (is_array($info) && isset($info[0], $info[1])) {
 					$w = (int) $info[0];
@@ -76,11 +87,19 @@ if (!function_exists('format_price_parts')) {
  */
 function pearlica_product_card_vars(array $p, string $uploads_base, string $base_path, array $wishlist_ids, string $wishlist_return): array
 {
-	$img_src = !empty($p['image_url']) ? $uploads_base . '/' . $p['image_url'] : 'https://placehold.co/400x400?text=No+Image';
-	[$img_w, $img_h] = pearlica_get_image_dimensions((string) ($p['image_url'] ?? ''), (string) $img_src);
-	$img2_rel = trim((string) ($p['image_url_2'] ?? ''));
 	$primary_rel = trim((string) ($p['image_url'] ?? ''));
-	$img2_src = ($img2_rel !== '' && $img2_rel !== $primary_rel) ? $uploads_base . '/' . $img2_rel : '';
+	$img_src = $primary_rel !== ''
+		? (function_exists('media_storage_public_url')
+			? media_storage_public_url($uploads_base, $primary_rel, 'products')
+			: ($uploads_base . '/' . $primary_rel))
+		: 'https://placehold.co/400x400?text=No+Image';
+	[$img_w, $img_h] = pearlica_get_image_dimensions($primary_rel, (string) $img_src);
+	$img2_rel = trim((string) ($p['image_url_2'] ?? ''));
+	$img2_src = ($img2_rel !== '' && $img2_rel !== $primary_rel)
+		? (function_exists('media_storage_public_url')
+			? media_storage_public_url($uploads_base, $img2_rel, 'products')
+			: ($uploads_base . '/' . $img2_rel))
+		: '';
 	$product_url = $base_path . 'product?slug=' . rawurlencode((string) ($p['slug'] ?? ''));
 	$product_name = (string) ($p['name'] ?? '');
 	$price_parts = format_price_parts($p['mrp'] ?? null, $p['discount_percentage'] ?? 0);

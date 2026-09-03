@@ -125,7 +125,9 @@ foreach ($media as $m) {
 		break;
 	}
 }
-$primary_img_src = $primary_img ? $uploads_base . '/' . $primary_img : 'https://placehold.co/600x700?text=No+Image';
+$primary_img_src = $primary_img
+	? media_storage_public_url($uploads_base, (string) $primary_img, 'products')
+	: 'https://placehold.co/600x700?text=No+Image';
 
 $mrp = (float) ($product['mrp'] ?? 0);
 $discount = (float) ($product['discount_percentage'] ?? 0);
@@ -181,7 +183,7 @@ $rating_cnt = (int) ($review_stats['count'] ?? 0);
 $gallery_slide_srcs = [];
 foreach ($media as $gm) {
 	if (!empty($gm['url'])) {
-		$gallery_slide_srcs[] = $uploads_base . '/' . $gm['url'];
+		$gallery_slide_srcs[] = media_storage_public_url($uploads_base, (string) $gm['url'], 'products');
 	}
 }
 if ($gallery_slide_srcs === []) {
@@ -226,7 +228,9 @@ $product_share_url = (defined('SITE_PUBLIC_URL') && (string) SITE_PUBLIC_URL !==
 												$is_current = $gm_id === (int) $product['id'];
 												$gm_slug = (string) ($gm['slug'] ?? '');
 												$gm_url = $base_path . 'product?slug=' . rawurlencode($gm_slug);
-												$gm_img = !empty($gm['image_url']) ? $uploads_base . '/' . $gm['image_url'] : 'https://placehold.co/120x120?text=No+Image';
+												$gm_img = !empty($gm['image_url'])
+													? media_storage_public_url($uploads_base, (string) $gm['image_url'], 'products')
+													: 'https://placehold.co/120x120?text=No+Image';
 												?>
 												<li class="product-other-options-item">
 													<a href="<?php echo h($gm_url); ?>"
@@ -678,7 +682,9 @@ $product_share_url = (defined('SITE_PUBLIC_URL') && (string) SITE_PUBLIC_URL !==
 						<div class="product-ymal-carousel" data-product-ymal-carousel>
 							<div class="product-ymal-track">
 								<?php foreach ($related_products as $rp):
-									$rp_img = !empty($rp['image_url']) ? $uploads_base . '/' . $rp['image_url'] : 'https://placehold.co/400x400?text=No+Image';
+									$rp_img = !empty($rp['image_url'])
+										? media_storage_public_url($uploads_base, (string) $rp['image_url'], 'products')
+										: 'https://placehold.co/400x400?text=No+Image';
 									$rp_url = $base_path . 'product?slug=' . rawurlencode((string) ($rp['slug'] ?? ''));
 									$rp_mrp = (float) ($rp['mrp'] ?? 0);
 									$rp_disc = (float) ($rp['discount_percentage'] ?? 0);

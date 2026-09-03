@@ -526,7 +526,7 @@ $include_cropper = true;
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 					<div class="modal-body">
-						<div class="small text-muted mb-2">Target export size: 1080 x 1350 px</div>
+						<div class="small text-muted mb-2">Target export size: <?= (int) PRODUCT_IMAGE_EXPORT_WIDTH ?> × <?= (int) PRODUCT_IMAGE_EXPORT_HEIGHT ?> px</div>
 						<div class="w-100 bg-light d-flex align-items-center justify-content-center mx-auto" style="width: min(100%, 420px); aspect-ratio: 4 / 5; max-height: 70vh; overflow: hidden;">
 							<img id="cropper-image-preview" alt="Crop preview" style="max-width: 100%; max-height: 100%; display: block;">
 						</div>
@@ -565,6 +565,9 @@ $include_cropper = true;
 				var reorderUrl = <?= json_encode(admin_url('products/image-reorder.php')) ?>;
 				var csrfToken = <?= json_encode(csrf_token()) ?>;
 				var uploadsBase = <?= json_encode($uploads_base) ?>;
+				var exportWidth = <?= (int) PRODUCT_IMAGE_EXPORT_WIDTH ?>;
+				var exportHeight = <?= (int) PRODUCT_IMAGE_EXPORT_HEIGHT ?>;
+				var exportJpegQuality = <?= json_encode((float) PRODUCT_IMAGE_JPEG_QUALITY) ?>;
 
 				var dropZone = document.getElementById('image-drop-zone');
 				var fileInput = document.getElementById('image-file-input');
@@ -711,11 +714,11 @@ $include_cropper = true;
 					minZoomRatio = null;
 					maxZoomRatio = null;
 				}
-				function hasQualitySafeCrop() {
-					if (!cropper) return false;
-					var d = cropper.getData(true);
-					return d && d.width >= 1080 && d.height >= 1350;
-				}
+					function hasQualitySafeCrop() {
+						if (!cropper) return false;
+						var d = cropper.getData(true);
+						return d && d.width >= exportWidth && d.height >= exportHeight;
+					}
 
 				function beginNextCrop() {
 					if (!cropQueue.length) {
@@ -768,8 +771,8 @@ $include_cropper = true;
 								var cropBoxData = cropper.getCropBoxData();
 								var baseRatio = imageData.naturalWidth > 0 ? (imageData.width / imageData.naturalWidth) : null;
 								minZoomRatio = baseRatio ? (baseRatio * 0.95) : null;
-								var limitByWidth = cropBoxData.width / 1080;
-								var limitByHeight = cropBoxData.height / 1350;
+								var limitByWidth = cropBoxData.width / exportWidth;
+								var limitByHeight = cropBoxData.height / exportHeight;
 								maxZoomRatio = Math.min(limitByWidth, limitByHeight);
 								if (minZoomRatio !== null && maxZoomRatio !== null && maxZoomRatio < minZoomRatio) {
 									maxZoomRatio = minZoomRatio;
@@ -801,13 +804,13 @@ $include_cropper = true;
 					cropApplyBtn.addEventListener('click', function () {
 						if (!cropper) return;
 						if (!hasQualitySafeCrop()) {
-							alert('Please zoom out a little. Crop area must be at least 1080 x 1350 to keep quality.');
+							alert('Please zoom out a little. Crop area must be at least ' + exportWidth + ' × ' + exportHeight + ' to keep quality.');
 							return;
 						}
 						cropApplyBtn.disabled = true;
 						var canvas = cropper.getCroppedCanvas({
-							width: 1080,
-							height: 1350,
+							width: exportWidth,
+							height: exportHeight,
 							imageSmoothingEnabled: true,
 							imageSmoothingQuality: 'high',
 							fillColor: '#fff'
@@ -829,7 +832,7 @@ $include_cropper = true;
 								if (m) m.hide();
 								else beginNextCrop();
 							});
-						}, 'image/jpeg', 0.92);
+						}, 'image/jpeg', exportJpegQuality);
 					});
 				}
 

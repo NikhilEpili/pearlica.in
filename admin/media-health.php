@@ -5,6 +5,7 @@
 require_once __DIR__ . '/config.php';
 require_super_admin();
 require_once ROOT . '/lib/media_serve.php';
+require_once ROOT . '/lib/media_storage.php';
 require_once ROOT . '/lib/homepage_banner.php';
 require_once ROOT . '/lib/instagram_reel.php';
 
@@ -13,13 +14,17 @@ $page_title = 'Media health';
 
 $doc_root = (string) ($_SERVER['DOCUMENT_ROOT'] ?? '');
 $base_path = defined('BASE_PATH') ? (string) BASE_PATH : '';
+$media_root = defined('MEDIA_STORAGE_ROOT') ? (string) MEDIA_STORAGE_ROOT : '';
 $upload_products = defined('UPLOAD_PATH') ? (string) UPLOAD_PATH : '';
 $upload_collections = defined('COLLECTION_UPLOAD_PATH') ? (string) COLLECTION_UPLOAD_PATH : '';
 $upload_banners = defined('BANNER_UPLOAD_PATH') ? (string) BANNER_UPLOAD_PATH : '';
 $upload_reels = defined('REEL_UPLOAD_PATH') ? (string) REEL_UPLOAD_PATH : '';
+$media_durable = media_storage_is_durable();
+$media_sibling = media_storage_sibling_root();
+$media_legacy = media_storage_legacy_root();
 
 $doc_uploads = $doc_root !== '' ? rtrim($doc_root, '/\\') . DIRECTORY_SEPARATOR . 'uploads' : '';
-$base_uploads = $base_path !== '' ? rtrim($base_path, '/\\') . DIRECTORY_SEPARATOR . 'uploads' : '';
+$base_uploads = $media_legacy;
 
 $same_tree = false;
 if ($doc_uploads !== '' && $base_uploads !== '') {
@@ -183,29 +188,41 @@ if ($probe_rel !== '') {
 	<h1 class="page-title">Media health</h1>
 	<p class="text-muted small">Compares PHP upload paths with the web document root and checks whether DB media paths exist on disk.</p>
 
+	<?php if (!$media_durable): ?>
+		<div class="alert alert-danger">
+			<strong>Media is still inside the git deploy tree.</strong>
+			Every Hostinger redeploy can wipe or roll back images.
+			<a class="alert-link" href="<?= h(admin_url('media-migrate.php')) ?>">Migrate media to pearlica-media</a>
+			(sibling of <code>public_html</code>), then confirm this page shows durable storage.
+		</div>
+	<?php else: ?>
+		<div class="alert alert-success">
+			<strong>Durable media storage is active.</strong>
+			Writes go to <code><?= h($media_root) ?></code> (outside the deploy tree). Redeploys will not replace these files.
+		</div>
+	<?php endif; ?>
+
 	<?php if ($homepage_missing_count > 0): ?>
 		<div class="alert alert-danger">
 			<strong><?= (int) $homepage_missing_count ?> homepage media file(s) are missing on disk.</strong>
-			This usually happens after a git deploy that replaces <code>uploads/</code> with an older copy, or when
-			files were uploaded on production but never synced back into git. Restore <code>uploads/</code> from a
-			Hostinger backup, or re-upload banners/reels and product images in Admin.
+			Run <a class="alert-link" href="<?= h(admin_url('media-migrate.php')) ?>">media migrate</a> if files still exist under legacy
+			<code>uploads/</code>, restore from a Hostinger backup, or re-upload banners/reels in Admin.
 		</div>
 	<?php elseif ($missing > 0 && $present === 0): ?>
 		<div class="alert alert-danger">
-			<strong>Root cause:</strong> PHP cannot find image files under <code>BASE_PATH/uploads</code>.
-			The database has paths, but those files are missing from the upload directories the app writes to.
-			Restore files into <code>public_html/uploads/products</code> (and banners/collections), or re-upload via Admin.
+			<strong>Root cause:</strong> PHP cannot find image files under the media roots.
+			The database has paths, but those files are missing from disk.
+			<a class="alert-link" href="<?= h(admin_url('media-migrate.php')) ?>">Migrate</a>, restore from backup, or re-upload via Admin.
 		</div>
 	<?php elseif ($missing > 0): ?>
 		<div class="alert alert-warning">Some sampled media files are missing on disk. Restore or re-upload those products/banners.</div>
-	<?php elseif (!$same_tree): ?>
+	<?php elseif (!$media_durable && !$same_tree): ?>
 		<div class="alert alert-warning">
-			<strong>Document root and BASE_PATH uploads differ.</strong>
-			Static <code>/uploads/...</code> URLs may 404 even when PHP can read files.
+			<strong>Document root and legacy uploads differ.</strong>
 			Deploy the updated <code>.htaccess</code> + <code>media.php</code> so missing static files are streamed by PHP.
 		</div>
-	<?php else: ?>
-		<div class="alert alert-success">Sampled media files are present on disk under BASE_PATH. If the storefront still 404s, deploy <code>.htaccess</code> + <code>media.php</code> and purge CDN cache.</div>
+	<?php elseif ($media_durable || $same_tree): ?>
+		<div class="alert alert-success">Sampled media files are present on disk. If the storefront still 404s, purge Hostinger cache.</div>
 	<?php endif; ?>
 
 	<div class="card mb-4">
@@ -214,13 +231,17 @@ if ($probe_rel !== '') {
 			<table class="table table-sm mb-0">
 				<tr><th>DOCUMENT_ROOT</th><td><code><?= h($doc_root) ?></code></td></tr>
 				<tr><th>BASE_PATH</th><td><code><?= h($base_path) ?></code></td></tr>
+				<tr><th>MEDIA_STORAGE_ROOT</th><td><code><?= h($media_root) ?></code> <?= $media_durable ? '✓ durable' : '✗ inside deploy tree' ?></td></tr>
+				<tr><th>Durable sibling target</th><td><code><?= h($media_sibling) ?></code> <?= is_dir($media_sibling) ? '✓ dir' : '✗ not created yet' ?></td></tr>
+				<tr><th>Legacy uploads</th><td><code><?= h($media_legacy) ?></code> <?= is_dir($media_legacy) ? '✓ dir' : '✗ missing' ?></td></tr>
 				<tr><th>UPLOAD_PATH (products)</th><td><code><?= h($upload_products) ?></code> <?= is_dir($upload_products) ? '✓ dir' : '✗ missing' ?></td></tr>
 				<tr><th>COLLECTION_UPLOAD_PATH</th><td><code><?= h($upload_collections) ?></code> <?= is_dir($upload_collections) ? '✓ dir' : '✗ missing' ?></td></tr>
 				<tr><th>BANNER_UPLOAD_PATH</th><td><code><?= h($upload_banners) ?></code> <?= is_dir($upload_banners) ? '✓ dir' : '✗ missing' ?></td></tr>
 				<tr><th>REEL_UPLOAD_PATH</th><td><code><?= h($upload_reels) ?></code> <?= is_dir($upload_reels) ? '✓ dir' : '✗ missing' ?></td></tr>
 				<tr><th>Docroot uploads</th><td><code><?= h($doc_uploads) ?></code> <?= ($doc_uploads !== '' && is_dir($doc_uploads)) ? '✓ dir' : '✗ missing' ?></td></tr>
-				<tr><th>Same uploads tree?</th><td><?= $same_tree ? 'Yes' : 'No — static URL path may not match PHP upload path' ?></td></tr>
+				<tr><th>Docroot == legacy uploads?</th><td><?= $same_tree ? 'Yes' : 'No — media.php fallback required for static misses' ?></td></tr>
 			</table>
+			<p class="mt-3 mb-0"><a href="<?= h(admin_url('media-migrate.php')) ?>" class="btn btn-sm btn-outline-primary">Migrate media</a></p>
 		</div>
 	</div>
 

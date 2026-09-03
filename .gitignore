@@ -2,12 +2,14 @@
 uploads.zip
 
 migrations/*
-# Keep product/collection/banner media in git for Hostinger deploy.
-# Still ignore archives / OS junk under uploads (GitHub 100MB file limit).
-uploads/**/*.zip
-uploads/**/*.rar
-uploads/**/*.7z
-uploads/**/.DS_Store
+# Media binaries live on the server outside git (pearlica-media/).
+# Keep only security stubs + empty dir markers in the repo so Hostinger
+# deploy never overwrites production uploads with a stale git tree.
+uploads/**
+!uploads/.htaccess
+!uploads/**/
+!uploads/**/.htaccess
+!uploads/**/.gitkeep
 # Admin-saved Razorpay settings (runtime; contains key secrets)
 storage/razorpay.mode
 storage/razorpay.settings.json

@@ -30,13 +30,13 @@ ErrorDocument 404 /404.php
 
 # Existing upload files: serve statically, do not apply later rewrite rules.
 RewriteCond %{REQUEST_FILENAME} -f
-RewriteRule ^uploads/(products|collections|banners|reels)/ - [L]
+RewriteRule ^uploads/(products|collections|banners|reels|blogs)/ - [L]
 
 # Local clone only: missing uploads → production (before PHP media gateway).
 RewriteCond %{HTTP_HOST} ^(localhost|127\.0\.0\.1)(:[0-9]+)?$ [NC,OR]
 RewriteCond %{HTTP_HOST} ^.+\.(local|test|localhost)(:[0-9]+)?$ [NC]
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^uploads/(products|collections|banners|reels)/(.*)$ https://www.pearlica.in/uploads/$1/$2 [R=302,L]
+RewriteRule ^uploads/(products|collections|banners|reels|blogs)/(.*)$ https://www.pearlica.in/uploads/$1/$2 [R=302,L]
 
 # Production / other hosts: missing static file → stream via PHP from BASE_PATH.
 # Keeps public URLs as /uploads/... while surviving rewrite / path quirks.

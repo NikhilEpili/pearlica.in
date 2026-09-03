@@ -9,19 +9,68 @@ ini_set('log_errors', '1');
 error_reporting(E_ALL);
 
 define('BASE_PATH', dirname(__DIR__));
-define('UPLOAD_PATH', BASE_PATH . '/uploads/products');
+
+require_once BASE_PATH . '/includes/uploads_url.php';
+require_once BASE_PATH . '/includes/asset_url.php';
+require_once BASE_PATH . '/lib/media_storage.php';
+require_once BASE_PATH . '/lib/media_serve.php';
+
+// Optional local secrets early so MEDIA_STORAGE_ROOT can be overridden before paths bind.
+$__secrets_local = __DIR__ . '/secrets.local.php';
+if (is_file($__secrets_local)) {
+	require_once $__secrets_local;
+}
+unset($__secrets_local);
+
+/**
+ * Durable media root (outside public_html when possible).
+ * Override in secrets.local.php: define('MEDIA_STORAGE_ROOT', '/home/.../pearlica-media');
+ */
+if (!defined('MEDIA_STORAGE_ROOT')) {
+	define('MEDIA_STORAGE_ROOT', media_storage_resolve_root());
+}
+media_storage_ensure_buckets((string) MEDIA_STORAGE_ROOT);
+
+if (!defined('UPLOAD_PATH')) {
+	define('UPLOAD_PATH', rtrim((string) MEDIA_STORAGE_ROOT, '/\\') . '/products');
+}
 /** Curated collection cover images (3:4 exports live under this tree). */
-define('COLLECTION_UPLOAD_PATH', BASE_PATH . '/uploads/collections');
+if (!defined('COLLECTION_UPLOAD_PATH')) {
+	define('COLLECTION_UPLOAD_PATH', rtrim((string) MEDIA_STORAGE_ROOT, '/\\') . '/collections');
+}
 /** Homepage hero / mid-page banner images. */
-define('BANNER_UPLOAD_PATH', BASE_PATH . '/uploads/banners');
+if (!defined('BANNER_UPLOAD_PATH')) {
+	define('BANNER_UPLOAD_PATH', rtrim((string) MEDIA_STORAGE_ROOT, '/\\') . '/banners');
+}
 /** Homepage influencer reel videos and their poster frames. */
-define('REEL_UPLOAD_PATH', BASE_PATH . '/uploads/reels');
+if (!defined('REEL_UPLOAD_PATH')) {
+	define('REEL_UPLOAD_PATH', rtrim((string) MEDIA_STORAGE_ROOT, '/\\') . '/reels');
+}
 /** Blog post cover images. */
-define('BLOG_UPLOAD_PATH', BASE_PATH . '/uploads/blogs');
-define('MAX_UPLOAD_SIZE', 5 * 1024 * 1024);
-/** Collection cover images (1080×1440 portrait exports). */
-define('COLLECTION_COVER_WIDTH', 1080);
-define('COLLECTION_COVER_HEIGHT', 1440);
+if (!defined('BLOG_UPLOAD_PATH')) {
+	define('BLOG_UPLOAD_PATH', rtrim((string) MEDIA_STORAGE_ROOT, '/\\') . '/blogs');
+}
+define('MAX_UPLOAD_SIZE', 8 * 1024 * 1024);
+/** Product crop export (4:5) — 1.5× 1080 so retina cards/PDP stay sharp. */
+if (!defined('PRODUCT_IMAGE_EXPORT_WIDTH')) {
+	define('PRODUCT_IMAGE_EXPORT_WIDTH', 1620);
+}
+if (!defined('PRODUCT_IMAGE_EXPORT_HEIGHT')) {
+	define('PRODUCT_IMAGE_EXPORT_HEIGHT', 2025);
+}
+if (!defined('PRODUCT_IMAGE_JPEG_QUALITY')) {
+	define('PRODUCT_IMAGE_JPEG_QUALITY', 0.95);
+}
+/** Collection cover images (3:4 portrait exports). */
+if (!defined('COLLECTION_COVER_WIDTH')) {
+	define('COLLECTION_COVER_WIDTH', 1620);
+}
+if (!defined('COLLECTION_COVER_HEIGHT')) {
+	define('COLLECTION_COVER_HEIGHT', 2160);
+}
+if (!defined('COLLECTION_IMAGE_JPEG_QUALITY')) {
+	define('COLLECTION_IMAGE_JPEG_QUALITY', 0.95);
+}
 define('COLLECTION_MAX_UPLOAD_SIZE', 12 * 1024 * 1024);
 /** Banners are often larger wide assets; still capped. */
 define('BANNER_MAX_UPLOAD_SIZE', 15 * 1024 * 1024);
@@ -38,54 +87,57 @@ define('BLOG_MAX_UPLOAD_SIZE', 12 * 1024 * 1024);
 define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
 define('ALLOWED_VIDEO_TYPES', ['video/mp4', 'video/webm', 'video/quicktime']);
 
-require_once BASE_PATH . '/includes/uploads_url.php';
-require_once BASE_PATH . '/includes/asset_url.php';
 /**
  * Absolute public base for product/collection media when the local uploads tree
  * is empty (images are gitignored). Local/dev only — never on pearlica.in.
  * Override in secrets.local.php if needed.
  */
 if (!defined('PRODUCT_MEDIA_PUBLIC_BASE')) {
-	$__media_fallback = pearlica_is_local_dev_host() && !pearlica_upload_dir_has_media(UPLOAD_PATH)
+	$__media_fallback = pearlica_is_local_dev_host()
+		&& !pearlica_upload_dir_has_media(UPLOAD_PATH)
+		&& !pearlica_upload_dir_has_media(media_storage_legacy_root() . '/products')
 		? 'https://www.pearlica.in/uploads/products'
 		: '';
 	define('PRODUCT_MEDIA_PUBLIC_BASE', $__media_fallback);
 	unset($__media_fallback);
 }
 if (!defined('COLLECTION_MEDIA_PUBLIC_BASE')) {
-	$__media_fallback = pearlica_is_local_dev_host() && !pearlica_upload_dir_has_media(COLLECTION_UPLOAD_PATH)
+	$__media_fallback = pearlica_is_local_dev_host()
+		&& !pearlica_upload_dir_has_media(COLLECTION_UPLOAD_PATH)
+		&& !pearlica_upload_dir_has_media(media_storage_legacy_root() . '/collections')
 		? 'https://www.pearlica.in/uploads/collections'
 		: '';
 	define('COLLECTION_MEDIA_PUBLIC_BASE', $__media_fallback);
 	unset($__media_fallback);
 }
 if (!defined('BANNER_MEDIA_PUBLIC_BASE')) {
-	$__media_fallback = pearlica_is_local_dev_host() && !pearlica_upload_dir_has_media(BANNER_UPLOAD_PATH)
+	$__media_fallback = pearlica_is_local_dev_host()
+		&& !pearlica_upload_dir_has_media(BANNER_UPLOAD_PATH)
+		&& !pearlica_upload_dir_has_media(media_storage_legacy_root() . '/banners')
 		? 'https://www.pearlica.in/uploads/banners'
 		: '';
 	define('BANNER_MEDIA_PUBLIC_BASE', $__media_fallback);
 	unset($__media_fallback);
 }
 if (!defined('REEL_MEDIA_PUBLIC_BASE')) {
-	$__media_fallback = pearlica_is_local_dev_host() && !pearlica_upload_dir_has_media(REEL_UPLOAD_PATH)
+	$__media_fallback = pearlica_is_local_dev_host()
+		&& !pearlica_upload_dir_has_media(REEL_UPLOAD_PATH)
+		&& !pearlica_upload_dir_has_media(media_storage_legacy_root() . '/reels')
 		? 'https://www.pearlica.in/uploads/reels'
 		: '';
 	define('REEL_MEDIA_PUBLIC_BASE', $__media_fallback);
 	unset($__media_fallback);
 }
 if (!defined('BLOG_MEDIA_PUBLIC_BASE')) {
-	$__media_fallback = pearlica_is_local_dev_host() && !pearlica_upload_dir_has_media(BLOG_UPLOAD_PATH)
+	$__media_fallback = pearlica_is_local_dev_host()
+		&& !pearlica_upload_dir_has_media(BLOG_UPLOAD_PATH)
+		&& !pearlica_upload_dir_has_media(media_storage_legacy_root() . '/blogs')
 		? 'https://www.pearlica.in/uploads/blogs'
 		: '';
 	define('BLOG_MEDIA_PUBLIC_BASE', $__media_fallback);
 	unset($__media_fallback);
 }
 
-// Optional local secrets (server-only, gitignored).
-$__secrets_local = __DIR__ . '/secrets.local.php';
-if (is_file($__secrets_local)) {
-	require_once $__secrets_local;
-}
 // TeleSign keys (tracked). Defines only if not already set by secrets.local.php.
 $__telesign_cred = __DIR__ . '/telesign.credentials.php';
 if (is_file($__telesign_cred)) {
