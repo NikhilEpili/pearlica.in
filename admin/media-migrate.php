@@ -58,6 +58,13 @@ $current_root = defined('MEDIA_STORAGE_ROOT') ? (string) MEDIA_STORAGE_ROOT : ''
 			<strong>Copy finished into</strong> <code><?= h($result['dest']) ?></code>.
 			Open Media health next. New uploads write to the durable root when it exists.
 		</div>
+		<?php if (!empty($result['sources'])): ?>
+			<p class="small">Sources used:
+				<?php foreach ($result['sources'] as $i => $src): ?>
+					<code><?= h($src) ?></code><?= $i < count($result['sources']) - 1 ? ', ' : '' ?>
+				<?php endforeach; ?>
+			</p>
+		<?php endif; ?>
 		<table class="table table-sm">
 			<thead><tr><th>Bucket</th><th>Copied</th><th>Skipped (already present)</th><th>Errors</th></tr></thead>
 			<tbody>
@@ -78,6 +85,19 @@ $current_root = defined('MEDIA_STORAGE_ROOT') ? (string) MEDIA_STORAGE_ROOT : ''
 			<?php endforeach; ?>
 			</tbody>
 		</table>
+		<?php
+		$banner_copied = (int) (($result['buckets']['banners']['copied'] ?? 0) + ($result['buckets']['banners']['skipped'] ?? 0));
+		$reel_copied = (int) (($result['buckets']['reels']['copied'] ?? 0) + ($result['buckets']['reels']['skipped'] ?? 0));
+		?>
+		<?php if ($banner_copied === 0 || $reel_copied === 0): ?>
+			<div class="alert alert-warning">
+				<strong>Homepage media still looks empty after copy</strong>
+				(banners accounted: <?= $banner_copied ?>, reels accounted: <?= $reel_copied ?>).
+				In File Manager confirm files exist at
+				<code>pearlica-media/banners/…</code> and <code>pearlica-media/reels/…</code>
+				(not <code>pearlica-media/uploads/banners</code>). If both locations are empty, restore from a Hostinger backup or re-upload in Admin → Banners / Reels.
+			</div>
+		<?php endif; ?>
 	<?php endif; ?>
 
 	<?php if ($durable && $result === null && $error === ''): ?>

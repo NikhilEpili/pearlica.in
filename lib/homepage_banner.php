@@ -252,7 +252,13 @@ function homepage_banner_public_src(string $rel, string $uploads_base): string
 function homepage_banner_disk_path(string $rel): ?string
 {
 	$rel = homepage_banner_safe_rel_path($rel);
-	if ($rel === '' || !defined('BANNER_UPLOAD_PATH') || BANNER_UPLOAD_PATH === '') {
+	if ($rel === '') {
+		return null;
+	}
+	if (function_exists('media_serve_resolve')) {
+		return media_serve_resolve('banners', $rel);
+	}
+	if (!defined('BANNER_UPLOAD_PATH') || BANNER_UPLOAD_PATH === '') {
 		return null;
 	}
 	$base = realpath(BANNER_UPLOAD_PATH);

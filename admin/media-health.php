@@ -55,11 +55,16 @@ try {
 		if ($rel === '') {
 			continue;
 		}
+		$normalized = media_serve_normalize_rel($rel, 'banners');
+		$disk = media_serve_resolve('banners', $rel);
 		$homepage_missing[] = [
 			'label' => 'Homepage banner #' . (int) ($row['id'] ?? 0),
 			'bucket' => 'banners',
 			'rel' => $rel,
-			'on_disk' => media_serve_resolve('banners', $rel) !== null,
+			'normalized' => $normalized,
+			'on_disk' => $disk !== null,
+			'disk_path' => $disk ?? '',
+			'probed' => media_serve_bucket_root_candidates('banners'),
 		];
 	}
 } catch (Throwable $e) {
@@ -75,11 +80,16 @@ try {
 			if ($rel === '') {
 				continue;
 			}
+			$normalized = media_serve_normalize_rel($rel, 'reels');
+			$disk = media_serve_resolve('reels', $rel);
 			$homepage_missing[] = [
 				'label' => 'Active reel #' . $rid . ' (' . $kind . ')',
 				'bucket' => 'reels',
 				'rel' => $rel,
-				'on_disk' => media_serve_resolve('reels', $rel) !== null,
+				'normalized' => $normalized,
+				'on_disk' => $disk !== null,
+				'disk_path' => $disk ?? '',
+				'probed' => media_serve_bucket_root_candidates('reels'),
 			];
 		}
 	}
@@ -205,8 +215,9 @@ if ($probe_rel !== '') {
 	<?php if ($homepage_missing_count > 0): ?>
 		<div class="alert alert-danger">
 			<strong><?= (int) $homepage_missing_count ?> homepage media file(s) are missing on disk.</strong>
-			Run <a class="alert-link" href="<?= h(admin_url('media-migrate.php')) ?>">media migrate</a> if files still exist under legacy
-			<code>uploads/</code>, restore from a Hostinger backup, or re-upload banners/reels in Admin.
+			Run <a class="alert-link" href="<?= h(admin_url('media-migrate.php')) ?>">media migrate</a> again after this deploy
+			(it now flattens <code>pearlica-media/uploads/…</code> and also reads <code>public_html/uploads</code>).
+			If migrate copies 0 banners/reels, restore those folders from a Hostinger backup or re-upload in Admin.
 		</div>
 	<?php elseif ($missing > 0 && $present === 0): ?>
 		<div class="alert alert-danger">
@@ -265,17 +276,42 @@ if ($probe_rel !== '') {
 		<div class="card-header">Homepage media (active banners + reels)</div>
 		<div class="card-body p-0">
 			<table class="table table-sm mb-0">
-				<thead><tr><th>Item</th><th>Path</th><th>On disk?</th></tr></thead>
+				<thead><tr><th>Item</th><th>DB path</th><th>Normalized</th><th>On disk?</th><th>Resolved path</th></tr></thead>
 				<tbody>
 				<?php foreach ($homepage_missing as $item): ?>
 					<tr class="<?= $item['on_disk'] ? '' : 'table-danger' ?>">
 						<td><?= h($item['label']) ?></td>
 						<td><code><?= h($item['bucket'] . '/' . $item['rel']) ?></code></td>
+						<td><code><?= h((string) ($item['normalized'] ?? '')) ?></code></td>
 						<td><?= $item['on_disk'] ? '✓' : '✗ missing' ?></td>
+						<td class="small"><?= $item['on_disk'] ? '<code>' . h((string) ($item['disk_path'] ?? '')) . '</code>' : '—' ?></td>
 					</tr>
 				<?php endforeach; ?>
 				</tbody>
 			</table>
+			<?php
+			$first_missing = null;
+			foreach ($homepage_missing as $item) {
+				if (!$item['on_disk']) {
+					$first_missing = $item;
+					break;
+				}
+			}
+			?>
+			<?php if ($first_missing !== null && !empty($first_missing['probed'])): ?>
+				<div class="p-3 small border-top">
+					<strong>Probe roots for <?= h((string) $first_missing['bucket']) ?>:</strong>
+					<ul class="mb-0 mt-1">
+						<?php foreach ($first_missing['probed'] as $root): ?>
+							<li><code><?= h($root) ?></code> <?= is_dir($root) ? '✓' : '✗' ?></li>
+						<?php endforeach; ?>
+					</ul>
+					<p class="text-muted mb-0 mt-2">
+						Expected file layout: <code>pearlica-media/<?= h((string) $first_missing['bucket']) ?>/<?= h((string) ($first_missing['normalized'] !== '' ? $first_missing['normalized'] : $first_missing['rel'])) ?></code>
+						— not nested under an extra <code>uploads/</code> folder.
+					</p>
+				</div>
+			<?php endif; ?>
 		</div>
 	</div>
 	<?php endif; ?>

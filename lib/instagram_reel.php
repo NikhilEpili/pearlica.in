@@ -676,9 +676,21 @@ function instagram_reel_media_url(?string $relative, string $base_path = ''): st
 		: rtrim($base_path, '/') . '/uploads/reels';
 
 	$url = rtrim($base, '/') . '/' . $relative;
-	$full = instagram_reel_upload_path() . '/' . $relative;
-	if (is_file($full)) {
-		$url .= '?v=' . (int) filemtime($full);
+	$full = null;
+	if (function_exists('media_serve_resolve')) {
+		$full = media_serve_resolve('reels', $relative);
+	}
+	if ($full === null) {
+		$candidate = instagram_reel_upload_path() . '/' . $relative;
+		if (is_file($candidate)) {
+			$full = $candidate;
+		}
+	}
+	if ($full !== null) {
+		$mtime = @filemtime($full);
+		if ($mtime) {
+			$url .= '?v=' . (string) (int) $mtime;
+		}
 	}
 
 	return $url;

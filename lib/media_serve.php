@@ -23,7 +23,8 @@ function media_serve_bucket_roots(): array
 
 /**
  * Ordered roots to probe for a bucket (durable MEDIA_STORAGE_ROOT first,
- * then legacy BASE_PATH/uploads, then DOCUMENT_ROOT/uploads).
+ * then nested pearlica-media/uploads mistake, legacy BASE_PATH/uploads,
+ * then DOCUMENT_ROOT/uploads).
  *
  * @return list<string>
  */
@@ -53,6 +54,19 @@ function media_serve_bucket_root_candidates(string $bucket): array
 		$append($primary);
 	}
 
+	if (defined('MEDIA_STORAGE_ROOT') && MEDIA_STORAGE_ROOT !== '') {
+		$media_root = rtrim(str_replace('\\', '/', (string) MEDIA_STORAGE_ROOT), '/');
+		$append($media_root . '/' . $bucket);
+		// Common File Manager mistake: copied whole uploads/ under pearlica-media/.
+		$append($media_root . '/uploads/' . $bucket);
+	}
+
+	if (function_exists('media_storage_sibling_root')) {
+		$sibling = media_storage_sibling_root();
+		$append($sibling . '/' . $bucket);
+		$append($sibling . '/uploads/' . $bucket);
+	}
+
 	if (function_exists('media_storage_legacy_root')) {
 		$append(media_storage_legacy_root() . '/' . $bucket);
 	} elseif (defined('BASE_PATH')) {
@@ -76,10 +90,23 @@ function media_serve_normalize_rel(string $path, string $bucket = ''): string
 	if ($path === '' || str_contains($path, "\0") || str_contains($path, '../') || str_starts_with($path, '../')) {
 		return '';
 	}
-	if (!preg_match('#^[A-Za-z0-9._/-]+$#', $path)) {
+
+	// Strip accidental URL / bucket prefixes from DB values.
+	if (preg_match('#^https?://[^/]+/(?:.*/)?uploads/([^/]+)/(.+)$#i', $path, $m)) {
+		$path = $m[2];
+		if ($bucket === '' && isset($m[1])) {
+			$bucket = strtolower((string) $m[1]);
+		}
+	}
+	$path = preg_replace('#^uploads/#i', '', $path) ?? $path;
+	$bucket = strtolower(trim($bucket));
+	if ($bucket !== '' && str_starts_with(strtolower($path), $bucket . '/')) {
+		$path = substr($path, strlen($bucket) + 1);
+	}
+
+	if ($path === '' || !preg_match('#^[A-Za-z0-9._/-]+$#', $path)) {
 		return '';
 	}
-	$bucket = strtolower(trim($bucket));
 	if ($bucket === 'reels') {
 		if (!preg_match('/\.(jpe?g|png|gif|webp|mp4|webm|mov)$/i', $path)) {
 			return '';

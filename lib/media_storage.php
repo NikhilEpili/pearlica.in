@@ -149,27 +149,69 @@ function media_storage_copy_bucket(string $src_root, string $dest_root, string $
 }
 
 /**
- * Migrate all buckets from legacy BASE_PATH/uploads into durable sibling root.
+ * Migrate all buckets into durable sibling root.
+ * Sources (in order, merged): legacy BASE_PATH/uploads, DOCUMENT_ROOT/uploads,
+ * and a nested pearlica-media/uploads mistake from File Manager copies.
  *
- * @return array{ok:bool, dest:string, buckets:array<string, array{copied:int, skipped:int, errors:list<string>}>, error?:string}
+ * @return array{ok:bool, dest:string, buckets:array<string, array{copied:int, skipped:int, errors:list<string>}>, sources:list<string>, error?:string}
  */
 function media_storage_migrate_from_legacy(): array
 {
 	$dest = media_storage_sibling_root();
-	$src = media_storage_legacy_root();
-	if ($dest === $src) {
-		return ['ok' => false, 'dest' => $dest, 'buckets' => [], 'error' => 'Destination equals legacy uploads path.'];
+	$sources = [];
+	$legacy = media_storage_legacy_root();
+	if ($legacy !== '' && is_dir($legacy)) {
+		$sources[] = $legacy;
+	}
+	$doc_root = rtrim(str_replace('\\', '/', (string) ($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');
+	if ($doc_root !== '') {
+		$doc_uploads = $doc_root . '/uploads';
+		if (is_dir($doc_uploads) && !in_array($doc_uploads, $sources, true)) {
+			$real_doc = realpath($doc_uploads);
+			$real_legacy = realpath($legacy);
+			if ($real_doc === false || $real_legacy === false || $real_doc !== $real_legacy) {
+				$sources[] = $doc_uploads;
+			}
+		}
+	}
+	// Flatten accidental pearlica-media/uploads/{bucket} into pearlica-media/{bucket}.
+	$nested = $dest . '/uploads';
+	if (is_dir($nested)) {
+		$sources[] = $nested;
+	}
+
+	if ($dest === $legacy && count($sources) <= 1) {
+		return ['ok' => false, 'dest' => $dest, 'buckets' => [], 'sources' => $sources, 'error' => 'Destination equals legacy uploads path.'];
 	}
 	if (!media_storage_ensure_buckets($dest)) {
-		return ['ok' => false, 'dest' => $dest, 'buckets' => [], 'error' => 'Cannot create durable media folders at ' . $dest];
+		return ['ok' => false, 'dest' => $dest, 'buckets' => [], 'sources' => $sources, 'error' => 'Cannot create durable media folders at ' . $dest];
+	}
+	if ($sources === []) {
+		return [
+			'ok' => false,
+			'dest' => $dest,
+			'buckets' => [],
+			'sources' => [],
+			'error' => 'No source uploads folders found. Restore public_html/uploads from a Hostinger backup, or re-upload banners/reels.',
+		];
 	}
 
 	$buckets = [];
 	foreach (media_storage_bucket_names() as $bucket) {
-		$buckets[$bucket] = media_storage_copy_bucket($src, $dest, $bucket);
+		$merged = ['copied' => 0, 'skipped' => 0, 'errors' => []];
+		foreach ($sources as $src) {
+			if ($src === $dest) {
+				continue;
+			}
+			$part = media_storage_copy_bucket($src, $dest, $bucket);
+			$merged['copied'] += $part['copied'];
+			$merged['skipped'] += $part['skipped'];
+			$merged['errors'] = array_merge($merged['errors'], $part['errors']);
+		}
+		$buckets[$bucket] = $merged;
 	}
 
-	return ['ok' => true, 'dest' => $dest, 'buckets' => $buckets];
+	return ['ok' => true, 'dest' => $dest, 'buckets' => $buckets, 'sources' => $sources];
 }
 
 /**
