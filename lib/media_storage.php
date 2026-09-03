@@ -1,7 +1,7 @@
 <?php
 /**
- * Durable media root: keep uploads outside the Hostinger git deploy tree
- * so redeploys never wipe admin-uploaded product/banner/reel files.
+ * Media roots for Hostinger: write outside public_html when pearlica-media exists
+ * so git deploy cannot wipe uploads. Always probe both trees when reading.
  */
 declare(strict_types=1);
 
@@ -11,9 +11,6 @@ function media_storage_bucket_names(): array
 	return ['products', 'collections', 'banners', 'reels', 'blogs'];
 }
 
-/**
- * Sibling folder next to public_html (Hostinger-safe). Never under BASE_PATH.
- */
 function media_storage_sibling_root(): string
 {
 	$parent = dirname((string) BASE_PATH);
@@ -25,9 +22,6 @@ function media_storage_legacy_root(): string
 	return rtrim(str_replace('\\', '/', (string) BASE_PATH), '/') . '/uploads';
 }
 
-/**
- * True when MEDIA_STORAGE_ROOT is outside the git-deployed app tree.
- */
 function media_storage_is_durable(): bool
 {
 	if (!defined('MEDIA_STORAGE_ROOT') || !defined('BASE_PATH')) {
@@ -42,9 +36,6 @@ function media_storage_is_durable(): bool
 	return !str_starts_with($root, $base . '/');
 }
 
-/**
- * Create bucket dirs under the current media root. Returns false if root cannot be created.
- */
 function media_storage_ensure_buckets(?string $root = null): bool
 {
 	$root = $root ?? (defined('MEDIA_STORAGE_ROOT') ? (string) MEDIA_STORAGE_ROOT : '');
@@ -65,36 +56,20 @@ function media_storage_ensure_buckets(?string $root = null): bool
 }
 
 /**
- * Resolve where new uploads should be written.
- * Prefers an existing sibling pearlica-media/; on production, creates it when possible.
+ * Prefer pearlica-media (survives Hostinger git replace of public_html).
+ * Fall back to public_html/uploads when the sibling folder does not exist.
  */
 function media_storage_resolve_root(): string
 {
 	$sibling = media_storage_sibling_root();
 	$legacy = media_storage_legacy_root();
-
 	if (is_dir($sibling)) {
 		return $sibling;
 	}
-
-	if (function_exists('pearlica_is_local_dev_host') && pearlica_is_local_dev_host()) {
-		return $legacy;
-	}
-
-	$parent = dirname((string) BASE_PATH);
-	if (is_dir($parent) && is_writable($parent)) {
-		if (@mkdir($sibling, 0755, true) || is_dir($sibling)) {
-			return $sibling;
-		}
-	}
-
 	return $legacy;
 }
 
 /**
- * Recursively copy media files from $src_root/$bucket into $dest_root/$bucket.
- * Skips .gitkeep; does not delete destination extras.
- *
  * @return array{copied:int, skipped:int, errors:list<string>}
  */
 function media_storage_copy_bucket(string $src_root, string $dest_root, string $bucket): array
@@ -117,10 +92,7 @@ function media_storage_copy_bucket(string $src_root, string $dest_root, string $
 	);
 	foreach ($iterator as $file) {
 		/** @var SplFileInfo $file */
-		if (!$file->isFile()) {
-			continue;
-		}
-		if ($file->getFilename() === '.gitkeep') {
+		if (!$file->isFile() || $file->getFilename() === '.gitkeep') {
 			continue;
 		}
 		$full = str_replace('\\', '/', $file->getPathname());
@@ -149,74 +121,60 @@ function media_storage_copy_bucket(string $src_root, string $dest_root, string $
 }
 
 /**
- * Migrate all buckets into durable sibling root.
- * Sources (in order, merged): legacy BASE_PATH/uploads, DOCUMENT_ROOT/uploads,
- * and a nested pearlica-media/uploads mistake from File Manager copies.
+ * Merge media both ways: pearlica-media ↔ public_html/uploads (and nested uploads mistake).
  *
  * @return array{ok:bool, dest:string, buckets:array<string, array{copied:int, skipped:int, errors:list<string>}>, sources:list<string>, error?:string}
  */
-function media_storage_migrate_from_legacy(): array
+function media_storage_sync_trees(): array
 {
-	$dest = media_storage_sibling_root();
-	$sources = [];
+	$sibling = media_storage_sibling_root();
 	$legacy = media_storage_legacy_root();
-	if ($legacy !== '' && is_dir($legacy)) {
-		$sources[] = $legacy;
+	$pairs = [];
+
+	if (!media_storage_ensure_buckets($sibling)) {
+		return ['ok' => false, 'dest' => $sibling, 'buckets' => [], 'sources' => [], 'error' => 'Cannot create ' . $sibling . ' — create folder pearlica-media next to public_html in File Manager.'];
 	}
-	$doc_root = rtrim(str_replace('\\', '/', (string) ($_SERVER['DOCUMENT_ROOT'] ?? '')), '/');
-	if ($doc_root !== '') {
-		$doc_uploads = $doc_root . '/uploads';
-		if (is_dir($doc_uploads) && !in_array($doc_uploads, $sources, true)) {
-			$real_doc = realpath($doc_uploads);
-			$real_legacy = realpath($legacy);
-			if ($real_doc === false || $real_legacy === false || $real_doc !== $real_legacy) {
-				$sources[] = $doc_uploads;
-			}
-		}
-	}
-	// Flatten accidental pearlica-media/uploads/{bucket} into pearlica-media/{bucket}.
-	$nested = $dest . '/uploads';
-	if (is_dir($nested)) {
-		$sources[] = $nested;
+	if (!media_storage_ensure_buckets($legacy)) {
+		return ['ok' => false, 'dest' => $legacy, 'buckets' => [], 'sources' => [], 'error' => 'Cannot create ' . $legacy];
 	}
 
-	if ($dest === $legacy && count($sources) <= 1) {
-		return ['ok' => false, 'dest' => $dest, 'buckets' => [], 'sources' => $sources, 'error' => 'Destination equals legacy uploads path.'];
+	// Flatten pearlica-media/uploads/{bucket} → pearlica-media/{bucket}.
+	$nested = $sibling . '/uploads';
+	if (is_dir($nested)) {
+		foreach (media_storage_bucket_names() as $bucket) {
+			media_storage_copy_bucket($nested, $sibling, $bucket);
+		}
 	}
-	if (!media_storage_ensure_buckets($dest)) {
-		return ['ok' => false, 'dest' => $dest, 'buckets' => [], 'sources' => $sources, 'error' => 'Cannot create durable media folders at ' . $dest];
-	}
-	if ($sources === []) {
-		return [
-			'ok' => false,
-			'dest' => $dest,
-			'buckets' => [],
-			'sources' => [],
-			'error' => 'No source uploads folders found. Restore public_html/uploads from a Hostinger backup, or re-upload banners/reels.',
-		];
+
+	$sources = [];
+	foreach ([$legacy, $sibling] as $root) {
+		if (is_dir($root)) {
+			$sources[] = $root;
+		}
 	}
 
 	$buckets = [];
 	foreach (media_storage_bucket_names() as $bucket) {
 		$merged = ['copied' => 0, 'skipped' => 0, 'errors' => []];
-		foreach ($sources as $src) {
-			if ($src === $dest) {
-				continue;
-			}
-			$part = media_storage_copy_bucket($src, $dest, $bucket);
-			$merged['copied'] += $part['copied'];
-			$merged['skipped'] += $part['skipped'];
-			$merged['errors'] = array_merge($merged['errors'], $part['errors']);
-		}
+		// uploads → pearlica-media
+		$a = media_storage_copy_bucket($legacy, $sibling, $bucket);
+		// pearlica-media → uploads (so Apache can serve statically too)
+		$b = media_storage_copy_bucket($sibling, $legacy, $bucket);
+		$merged['copied'] = $a['copied'] + $b['copied'];
+		$merged['skipped'] = $a['skipped'] + $b['skipped'];
+		$merged['errors'] = array_merge($a['errors'], $b['errors']);
 		$buckets[$bucket] = $merged;
 	}
 
-	return ['ok' => true, 'dest' => $dest, 'buckets' => $buckets, 'sources' => $sources];
+	return ['ok' => true, 'dest' => $sibling, 'buckets' => $buckets, 'sources' => $sources];
 }
 
-/**
- * Public media URL with mtime cache-bust when the file is readable.
- */
+/** @deprecated use media_storage_sync_trees */
+function media_storage_migrate_from_legacy(): array
+{
+	return media_storage_sync_trees();
+}
+
 function media_storage_public_url(string $uploads_base, string $rel, string $bucket = 'products'): string
 {
 	$rel = str_replace('\\', '/', trim($rel));

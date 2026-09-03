@@ -27,10 +27,6 @@ if ($slides === []) {
 }
 
 $slide_count = count($slides);
-if ($slide_count % 2 === 0) {
-	return;
-}
-
 $max_side_radius = $slide_count === 1 ? 0 : ($slide_count === 3 ? 1 : 2);
 $index_influencer_reels_rendered = true;
 ?>

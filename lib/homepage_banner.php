@@ -376,15 +376,20 @@ function homepage_banner_public_src_versioned(
 }
 
 /**
- * Hydrate active banner rows for the storefront: build src/alt/link from DB rows.
- * Trusts active DB rows (do not silently drop them — missing files should not
- * revert the homepage to hardcoded fallback assets).
+ * Hydrate active banner rows for the storefront.
+ * If a DB banner file is missing on disk, keep the slide but point at $fallback_src
+ * so the homepage never shows a blank broken hero.
  *
  * @param list<array<string, mixed>> $rows
- * @return list<array{id: int, image_url: string, src: string, alt_text: string, link_url: ?string}>
+ * @return list<array{id: int, image_url: string, src: string, alt_text: string, link_url: ?string, width: int, height: int}>
  */
-function homepage_banner_hydrate_for_display(array $rows, string $uploads_base, string $default_alt, string $link_fallback = ''): array
-{
+function homepage_banner_hydrate_for_display(
+	array $rows,
+	string $uploads_base,
+	string $default_alt,
+	string $link_fallback = '',
+	string $fallback_src = ''
+): array {
 	$ready = [];
 	foreach ($rows as $row) {
 		$rel = homepage_banner_safe_rel_path((string) ($row['image_url'] ?? ''));
@@ -393,13 +398,21 @@ function homepage_banner_hydrate_for_display(array $rows, string $uploads_base, 
 		}
 		$id = (int) ($row['id'] ?? 0);
 		$updated_at = isset($row['updated_at']) ? (string) $row['updated_at'] : null;
-		$src = homepage_banner_public_src_versioned($rel, $uploads_base, $id > 0 ? $id : null, $updated_at);
+		$on_disk = homepage_banner_file_exists($rel);
+		$src = $on_disk
+			? homepage_banner_public_src_versioned($rel, $uploads_base, $id > 0 ? $id : null, $updated_at)
+			: $fallback_src;
 		if ($src === '') {
 			continue;
 		}
 		$alt = trim((string) ($row['alt_text'] ?? ''));
 		$link = homepage_banner_safe_href($row['link_url'] ?? null, $link_fallback);
-		$dims = homepage_banner_image_dimensions($rel);
+		$dims = $on_disk
+			? homepage_banner_image_dimensions($rel)
+			: [
+				'width' => defined('BANNER_RECOMMENDED_WIDTH') ? (int) BANNER_RECOMMENDED_WIDTH : 2560,
+				'height' => defined('BANNER_RECOMMENDED_HEIGHT') ? (int) BANNER_RECOMMENDED_HEIGHT : 1200,
+			];
 		$ready[] = [
 			'id' => $id,
 			'image_url' => $rel,

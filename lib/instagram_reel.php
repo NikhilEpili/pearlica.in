@@ -706,8 +706,16 @@ function instagram_reel_slide_view(array $row, string $base_path = ''): array
 	$path = $media_type === 'post' ? 'p' : 'reel';
 	$permalink = instagram_reel_normalize_url((string) ($row['instagram_url'] ?? ''));
 
-	$video_url = instagram_reel_media_url($row['video_path'] ?? null, $base_path);
-	$poster_url = instagram_reel_media_url($row['poster_path'] ?? null, $base_path);
+	$video_rel = trim((string) ($row['video_path'] ?? ''));
+	$poster_rel = trim((string) ($row['poster_path'] ?? ''));
+	$video_on_disk = $video_rel !== '' && function_exists('media_serve_resolve')
+		&& media_serve_resolve('reels', $video_rel) !== null;
+	$poster_on_disk = $poster_rel !== '' && function_exists('media_serve_resolve')
+		&& media_serve_resolve('reels', $poster_rel) !== null;
+
+	// Only emit local media URLs when files exist — otherwise use Instagram embed.
+	$video_url = $video_on_disk ? instagram_reel_media_url($video_rel, $base_path) : '';
+	$poster_url = $poster_on_disk ? instagram_reel_media_url($poster_rel, $base_path) : '';
 
 	// Only fall back to scraping Instagram when no poster was uploaded.
 	$thumbnail_url = $poster_url;

@@ -72,9 +72,9 @@
 			<span class="sidebar-icon" aria-hidden="true"><i class="fa-solid fa-stethoscope"></i></span>
 			<span class="sidebar-text">Media health</span>
 		</a>
-		<a href="<?= h(admin_url('media-migrate.php')) ?>" class="admin-sidebar-link" title="Migrate media">
+		<a href="<?= h(admin_url('media-migrate.php')) ?>" class="admin-sidebar-link" title="Restore media">
 			<span class="sidebar-icon" aria-hidden="true"><i class="fa-solid fa-hard-drive"></i></span>
-			<span class="sidebar-text">Migrate media</span>
+			<span class="sidebar-text">Restore media</span>
 		</a>
 		<a href="<?= h(admin_url('promo-codes/')) ?>" class="admin-sidebar-link" title="Promo Codes">
 			<span class="sidebar-icon" aria-hidden="true"><i class="fa-solid fa-tag"></i></span>

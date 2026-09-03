@@ -166,9 +166,11 @@ try {
 $hero_banners = homepage_banner_hydrate_for_display(
 	$hero_rows,
 	$banners_upload_base,
-	'Pearlica homepage banner'
+	'Pearlica homepage banner',
+	'',
+	$hero_fallback_src
 );
-if ($hero_rows === []) {
+if ($hero_banners === []) {
 	$hero_banners = [
 		[
 			'id' => 0,
