@@ -211,9 +211,9 @@ contact_csrf_token();
 							<p class="contact-info-card-label">Registered Office</p>
 							<div class="contact-address">
 								Pearlica<br>
-								Shop No. 02, Vijaylaxmi Jewellers<br>
-								Plot No. 710, Opp. Girija Nursing Home<br>
-								Lal Chakki, Station Road<br>
+								1st Floor, 40/1<br>
+								Plot No. 710, Lal Chakki<br>
+								Behind Vijaylaxmi Jewellers<br>
 								Ulhasnagar – 421004<br>
 								Thane, Maharashtra, India
 							</div>

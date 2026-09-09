@@ -329,7 +329,7 @@ if (!defined('REFRENS_SELLER_NAME')) {
 if (!defined('REFRENS_SELLER_STREET')) {
 	define(
 		'REFRENS_SELLER_STREET',
-		'Shop No. 02, Vijaylaxmi Jewellers, Plot No. 710, Opp. Girija Nursing Home, Lal Chakki, Station Road, Ulhasnagar, Thane'
+		'1st Floor, 40/1, Plot No. 710, Lal Chakki, Behind Vijaylaxmi Jewellers, Ulhasnagar, Thane, Maharashtra'
 	);
 }
 if (!defined('REFRENS_SELLER_PINCODE')) {
