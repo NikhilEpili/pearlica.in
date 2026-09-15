@@ -121,30 +121,46 @@ body.homepage .index-picks {
 
 .index-hero-banners .carousel-control-prev,
 .index-hero-banners .carousel-control-next {
-	width: 44px;
-	height: 44px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	min-width: 36px;
+	max-width: 36px;
+	padding: 0;
+	border: 0;
 	top: 50%;
 	bottom: auto;
 	transform: translateY(-50%);
-	background: rgba(0, 0, 0, 0.35);
-	border-radius: 999px;
+	background: transparent;
+	border-radius: 0;
 	margin: 0;
-	left: 12px;
+	left: 4px;
 	right: auto;
-	opacity: 0.9;
+	opacity: 1;
+	color: #fff;
 	z-index: 5;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+	transition: opacity 0.2s ease;
 }
 
 .index-hero-banners .carousel-control-next {
 	left: auto;
-	right: 12px;
+	right: 4px;
 }
 
-.index-hero-banners .carousel-control-prev-icon,
-.index-hero-banners .carousel-control-next-icon {
-	width: 18px;
-	height: 18px;
-	background-size: 18px 18px;
+.index-hero-banners .carousel-control-prev:hover,
+.index-hero-banners .carousel-control-next:hover {
+	opacity: 0.65;
+}
+
+.index-hero-banners .index-hero-banner-nav-icon {
+	font-size: 28px;
+	line-height: 1;
+	font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 24;
+	filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.55));
 }
 
 .index-hero-banners .carousel-indicators {
@@ -164,18 +180,6 @@ body.homepage .index-picks {
 @media (max-width: 767px) {
 	.index-hero-banners .carousel-inner {
 		min-height: clamp(120px, 46vw, 420px);
-	}
-
-	.index-hero-banners .carousel-control-prev,
-	.index-hero-banners .carousel-control-next {
-		width: 44px;
-		height: 44px;
-		left: 8px;
-	}
-
-	.index-hero-banners .carousel-control-next {
-		left: auto;
-		right: 8px;
 	}
 
 	.index-hero-banners .carousel-indicators {

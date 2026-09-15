@@ -240,10 +240,10 @@ if ($hero_banners === []) {
 			</div>
 			<?php if (count($hero_banners) > 1): ?>
 				<button class="carousel-control-prev" type="button" data-bs-target="#index-hero-carousel" data-bs-slide="prev" aria-label="Previous banner">
-					<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+					<span class="material-symbols-outlined index-hero-banner-nav-icon" aria-hidden="true">chevron_left</span>
 				</button>
 				<button class="carousel-control-next" type="button" data-bs-target="#index-hero-carousel" data-bs-slide="next" aria-label="Next banner">
-					<span class="carousel-control-next-icon" aria-hidden="true"></span>
+					<span class="material-symbols-outlined index-hero-banner-nav-icon" aria-hidden="true">chevron_right</span>
 				</button>
 				<div class="carousel-indicators">
 					<?php foreach ($hero_banners as $hi => $_): ?>

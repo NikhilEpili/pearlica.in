@@ -48,6 +48,14 @@ require_once __DIR__ . '/../includes/asset_url.php';
 		echo $page_head_extra;
 	} ?>
 	<link rel="stylesheet" type="text/css" href="<?php echo asset_url('assets/css/pearlica-contrast.css', $base_path); ?>">
+	<!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-FCQW9SZ8VF"></script>
+	<script>
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+	gtag('config', 'G-FCQW9SZ8VF');
+	</script>
 	<!-- Meta Pixel Code -->
 	<script>
 	!function(f,b,e,v,n,t,s)
