@@ -37,6 +37,104 @@ function product_list_paginated(PDO $pdo, $page, $per_page, $search = '', $categ
 }
 
 /**
+ * All products for admin CSV/Excel export (respects list filters; expands category tree).
+ *
+ * @return list<array<string, mixed>>
+ */
+function product_list_for_export(PDO $pdo, string $search = '', string $category_id = '', string $status = '', bool $include_subcategories = true): array
+{
+    $where = ['p.deleted_at IS NULL'];
+    $params = [];
+    if ($search !== '') {
+        $where[] = '(p.name LIKE ? OR p.sku LIKE ?)';
+        $params[] = '%' . $search . '%';
+        $params[] = '%' . $search . '%';
+    }
+    if ($category_id !== '') {
+        $cid = (int) $category_id;
+        if ($include_subcategories) {
+            $ids = product_store_expand_category_tree_ids($pdo, [$cid]);
+            if ($ids === []) {
+                $ids = [$cid];
+            }
+            $ph = implode(',', array_fill(0, count($ids), '?'));
+            $where[] = "p.category_id IN ({$ph})";
+            foreach ($ids as $id) {
+                $params[] = $id;
+            }
+        } else {
+            $where[] = 'p.category_id = ?';
+            $params[] = $cid;
+        }
+    }
+    if ($status !== '') {
+        $where[] = 'p.status = ?';
+        $params[] = $status;
+    }
+    $where_sql = implode(' AND ', $where);
+    $sql = "SELECT p.id, p.name, p.description, p.specification, p.additional_information,
+        p.styling_tips, p.metal_type, p.purity, p.mrp, p.discount_percentage, p.sku,
+        p.weight_grams, p.stock_quantity,
+        c.name AS category_name,
+        (SELECT GROUP_CONCAT(pm.url ORDER BY pm.is_primary DESC, pm.sort_order ASC SEPARATOR '||')
+         FROM product_media pm
+         WHERE pm.product_id = p.id AND pm.deleted_at IS NULL) AS image_paths
+        FROM products p
+        LEFT JOIN categories c ON c.id = p.category_id AND c.deleted_at IS NULL
+        WHERE {$where_sql}
+        ORDER BY c.name ASC, p.name ASC";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/** Website selling price after discount (numeric string for export). */
+function product_export_selling_price($mrp, $discount_percentage = 0): string
+{
+    if ($mrp === null || $mrp === '') {
+        return '';
+    }
+    $mrp = (float) $mrp;
+    $discount = (float) ($discount_percentage ?? 0);
+    if ($discount > 0) {
+        return number_format($mrp * (1 - $discount / 100), 2, '.', '');
+    }
+
+    return number_format($mrp, 2, '.', '');
+}
+
+/** Strip HTML for spreadsheet cells. */
+function product_export_plain_text(?string $html): string
+{
+    if ($html === null || trim($html) === '') {
+        return '';
+    }
+    $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $text = preg_replace('/\s+/u', ' ', trim($text));
+
+    return $text ?? '';
+}
+
+/** Build absolute image URLs for export (semicolon-separated). */
+function product_export_image_urls(string $image_paths, string $site_public_url): string
+{
+    if (trim($image_paths) === '') {
+        return '';
+    }
+    $base = rtrim($site_public_url, '/') . '/uploads/products';
+    $urls = [];
+    foreach (explode('||', $image_paths) as $rel) {
+        $rel = trim(str_replace('\\', '/', $rel), '/');
+        if ($rel !== '') {
+            $urls[] = $base . '/' . $rel;
+        }
+    }
+
+    return implode('; ', $urls);
+}
+
+/**
  * Category IDs whose slug/name match a storefront gender segment (Men's / Women's).
  * Empty array if nothing matches — caller should treat as “no gender filter”.
  */

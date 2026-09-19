@@ -13,6 +13,18 @@ $per_page = ADMIN_ITEMS_PER_PAGE;
 $result = product_list_paginated($pdo, $page, $per_page, $search, $category_id, $status);
 $total_pages = pagination_total_pages($result['total'], $per_page);
 $categories = category_list_for_select($pdo);
+$export_query = [];
+if ($search !== '') {
+	$export_query['search'] = $search;
+}
+if ($category_id !== '') {
+	$export_query['category_id'] = $category_id;
+}
+if ($status !== '') {
+	$export_query['status'] = $status;
+}
+$export_qs = $export_query === [] ? '' : ('?' . http_build_query($export_query));
+$export_base = admin_url('products/export.php') . $export_qs;
 $page_title = 'Products';
 $success = flash_get('success');
 $error = flash_get('error');
@@ -25,7 +37,18 @@ $error = flash_get('error');
 <main class="container-fluid p-4 admin-content admin-products-page">
 <div class="admin-products-page-header">
 	<h1 class="page-title mb-0">Products</h1>
-	<div class="admin-products-header-actions">
+	<div class="admin-products-header-actions d-flex flex-wrap gap-2">
+		<div class="dropdown">
+			<button class="btn btn-outline-secondary dropdown-toggle" type="button" id="productExportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+				Export
+			</button>
+			<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="productExportDropdown">
+				<li><a class="dropdown-item" href="<?= h($export_base . ($export_qs === '' ? '?' : '&') . 'format=csv') ?>">CSV (all columns)</a></li>
+				<li><a class="dropdown-item" href="<?= h($export_base . ($export_qs === '' ? '?' : '&') . 'format=excel') ?>">Excel (.xls)</a></li>
+				<li><hr class="dropdown-divider"></li>
+				<li><a class="dropdown-item" href="<?= h($export_base . ($export_qs === '' ? '?' : '&') . 'format=csv&split=1') ?>">By category (ZIP of CSVs)</a></li>
+			</ul>
+		</div>
 		<a href="<?= h(admin_url('products/add.php')) ?>" class="btn btn-primary">Add Product</a>
 	</div>
 </div>
