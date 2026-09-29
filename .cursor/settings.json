@@ -1,0 +1,7 @@
+{
+  "plugins": {
+    "hostinger-cursor-plugin": {
+      "enabled": true
+    }
+  }
+}
