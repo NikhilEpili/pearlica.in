@@ -27,6 +27,7 @@ $page_title = 'Page not found | Pearlica';
 <?php include __DIR__ . '/components/head.php'; ?>
 
 <body class="homepage">
+	<?php include __DIR__ . '/components/gtm_body.php'; ?>
 	<?php include __DIR__ . '/components/navbar.php'; ?>
 	<main class="py-5">
 		<div class="page-content-constrained text-center">

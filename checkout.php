@@ -158,6 +158,7 @@ $page_title = 'Checkout | Pearlica 925 Silver Jewellery';
 	data-is-guest="<?php echo $is_guest ? '1' : '0'; ?>"
 	data-registration-complete="<?php echo $checkout_registration_complete ? '1' : '0'; ?>"
 	data-shipping-complete="<?php echo $checkout_shipping_complete ? '1' : '0'; ?>">
+	<?php include __DIR__ . '/components/gtm_body.php'; ?>
 	<?php include __DIR__ . '/components/navbar.php'; ?>
 
 	<main class="checkout-main">

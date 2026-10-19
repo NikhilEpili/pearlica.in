@@ -136,6 +136,7 @@ contact_csrf_token();
 <link rel="stylesheet" href="<?php echo h(asset_url('assets/css/contact.css', $base_path)); ?>">
 
 <body class="homepage contact-page">
+	<?php include __DIR__ . '/components/gtm_body.php'; ?>
 	<?php include __DIR__ . '/components/navbar.php'; ?>
 	<main>
 		<section class="contact-section py-4 py-lg-5 page-content-constrained">

@@ -17,6 +17,7 @@ $page_head_extra = '<link rel="stylesheet" href="' . htmlspecialchars(asset_url(
 <?php include __DIR__ . '/components/head.php'; ?>
 
 <body class="about-page faqs-page">
+	<?php include __DIR__ . '/components/gtm_body.php'; ?>
 
 	<?php include __DIR__ . '/components/navbar.php'; ?>
 

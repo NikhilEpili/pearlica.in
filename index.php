@@ -202,6 +202,7 @@ if ($hero_banners === []) {
 <link rel="stylesheet" href="<?php echo asset_url('assets/css/index.css'); ?>">
 
 <body class="homepage">
+	<?php include __DIR__ . '/components/gtm_body.php'; ?>
 
 	<?php include 'components/navbar.php'; ?>
 

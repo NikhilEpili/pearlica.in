@@ -36,6 +36,7 @@ $page_title = 'Order Confirmed | Pearlica';
 <?php include __DIR__ . '/components/head.php'; ?>
 
 <body class="homepage">
+	<?php include __DIR__ . '/components/gtm_body.php'; ?>
 	<?php include __DIR__ . '/components/navbar.php'; ?>
 	<main class="py-5 page-content-constrained">
 		<div class="text-center" style="max-width:720px;margin:0 auto;">

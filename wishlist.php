@@ -87,6 +87,7 @@ $page_title = 'Wishlist | Pearlica 925 Silver Jewellery';
 <link rel="stylesheet" href="<?php echo h(asset_url('assets/css/cart.css', $base_path)); ?>">
 
 <body class="homepage">
+	<?php include __DIR__ . '/components/gtm_body.php'; ?>
 
 	<?php include __DIR__ . '/components/navbar.php'; ?>
 

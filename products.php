@@ -141,6 +141,7 @@ if ($listing_heading !== 'All Products') {
 <link rel="stylesheet" href="<?php echo h(asset_url('assets/css/products.css', $base_path)); ?>">
 
 <body class="products-page">
+	<?php include __DIR__ . '/components/gtm_body.php'; ?>
 
 	<?php include __DIR__ . '/components/navbar.php'; ?>
 

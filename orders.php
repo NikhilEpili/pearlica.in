@@ -53,6 +53,7 @@ $page_title = 'My Orders | Pearlica 925 Silver Jewellery';
 <link rel="stylesheet" href="<?php echo h(asset_url('assets/css/profile.css', $base_path)); ?>">
 <link rel="stylesheet" href="<?php echo h(asset_url('assets/css/orders.css', $base_path)); ?>">
 <body class="profile-page orders-page">
+	<?php include __DIR__ . '/components/gtm_body.php'; ?>
 	<?php include __DIR__ . '/components/navbar.php'; ?>
 	<main class="profile-main">
 		<div class="profile-wrap page-content-constrained">

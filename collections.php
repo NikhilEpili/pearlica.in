@@ -59,6 +59,7 @@ $meta_keywords = 'Pearlica, collections, curated jewellery, 925 silver, sterling
 <link rel="stylesheet" href="<?php echo h(asset_url('assets/css/collections.css', $base_path)); ?>">
 
 <body class="products-page collections-page">
+	<?php include __DIR__ . '/components/gtm_body.php'; ?>
 
 	<?php include __DIR__ . '/components/navbar.php'; ?>
 

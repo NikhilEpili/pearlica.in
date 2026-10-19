@@ -42,6 +42,7 @@ if (!$result['ok'] || !is_array($result['post'])) {
 <?php include __DIR__ . '/../components/head.php'; ?>
 
 <body class="blogs-post-page">
+	<?php include __DIR__ . '/../components/gtm_body.php'; ?>
 
 	<?php include __DIR__ . '/../components/navbar.php'; ?>
 

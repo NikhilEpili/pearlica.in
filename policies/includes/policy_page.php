@@ -38,6 +38,7 @@ $body_html = site_policy_render_body($policy['body_html'], $base_path);
 <?php include __DIR__ . '/../../components/head.php'; ?>
 
 <body class="homepage">
+	<?php include __DIR__ . '/../../components/gtm_body.php'; ?>
 
 	<?php include __DIR__ . '/../../components/navbar.php'; ?>
 

@@ -46,6 +46,7 @@ $home_url = $base_path ? $base_path . 'index' : 'index';
 <?php include __DIR__ . '/components/head.php'; ?>
 
 <body class="homepage">
+	<?php include __DIR__ . '/components/gtm_body.php'; ?>
 	<?php include __DIR__ . '/components/navbar.php'; ?>
 
 	<main class="py-5">

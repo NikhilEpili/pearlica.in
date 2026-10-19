@@ -206,6 +206,7 @@ $product_share_url = (defined('SITE_PUBLIC_URL') && (string) SITE_PUBLIC_URL !==
 <body class="homepage product-detail-page" data-product-id="<?php echo (int) $product['id']; ?>"
 	data-base-path="<?php echo h($base_path); ?>"
 	data-checkout-csrf="<?php echo h($product_delivery_csrf); ?>">
+	<?php include __DIR__ . '/components/gtm_body.php'; ?>
 
 	<?php include __DIR__ . '/components/navbar.php'; ?>
 
