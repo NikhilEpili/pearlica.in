@@ -41,6 +41,10 @@
 			<span class="sidebar-icon" aria-hidden="true"><i class="fa-solid fa-images"></i></span>
 			<span class="sidebar-text">Banners</span>
 		</a>
+		<a href="<?= h(admin_url('announcement-bar.php')) ?>" class="admin-sidebar-link" title="Announcement bar">
+			<span class="sidebar-icon" aria-hidden="true"><i class="fa-solid fa-bullhorn"></i></span>
+			<span class="sidebar-text">Announcement bar</span>
+		</a>
 		<?php endif; ?>
 		<?php if (current_user_can('reels')): ?>
 		<a href="<?= h(admin_url('reels/')) ?>" class="admin-sidebar-link" title="Instagram reels">
