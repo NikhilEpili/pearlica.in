@@ -14,6 +14,11 @@ function homepage_banner_placements(): array
  */
 function homepage_banner_ensure_schema(PDO $pdo): void
 {
+	static $done = false;
+	if ($done) {
+		return;
+	}
+
 	$pdo->exec(
 		'CREATE TABLE IF NOT EXISTS `homepage_banners` (
 		  `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -42,6 +47,8 @@ function homepage_banner_ensure_schema(PDO $pdo): void
 			 ADD COLUMN `can_banners` TINYINT(1) NOT NULL DEFAULT 1 AFTER `can_orders`'
 		);
 	}
+
+	$done = true;
 }
 
 function homepage_banner_list_all(PDO $pdo): array

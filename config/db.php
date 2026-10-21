@@ -27,15 +27,50 @@ $options = [
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     PDO::ATTR_EMULATE_PREPARES   => false,
 ];
-try {
-    $pdo = new PDO($dsn, $db_user, $db_pass, $options);
-    // Force consistent connection collation to avoid "Illegal mix of collations"
-    // when comparing strings across tables/columns with different utf8mb4 collations.
-    $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
-    $pdo->exec("SET collation_connection = 'utf8mb4_unicode_ci'");
+
+$pdo = null;
+$last_db_error = '';
+$max_attempts = $is_local ? 1 : 3;
+for ($attempt = 1; $attempt <= $max_attempts; $attempt++) {
+    try {
+        $pdo = new PDO($dsn, $db_user, $db_pass, $options);
+        // Force consistent connection collation to avoid "Illegal mix of collations"
+        // when comparing strings across tables/columns with different utf8mb4 collations.
+        $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+        $pdo->exec("SET collation_connection = 'utf8mb4_unicode_ci'");
+        break;
+    } catch (PDOException $e) {
+        $last_db_error = $e->getMessage();
+        $pdo = null;
+        if ($attempt < $max_attempts) {
+            usleep(150000 * $attempt);
+        }
+    }
+}
+
+if ($pdo instanceof PDO) {
     $GLOBALS['pdo'] = $pdo;
-} catch (PDOException $e) {
-    $pdo = null;
+} else {
     $GLOBALS['pdo'] = null;
-    error_log('Pearlica DB connection failed: ' . $e->getMessage());
+    error_log('Pearlica DB connection failed after ' . $max_attempts . ' attempt(s): ' . $last_db_error);
+}
+
+if (!function_exists('pearlica_pdo')) {
+    function pearlica_pdo(): ?PDO
+    {
+        $pdo = $GLOBALS['pdo'] ?? null;
+        return $pdo instanceof PDO ? $pdo : null;
+    }
+}
+
+if (!function_exists('pearlica_require_pdo')) {
+    function pearlica_require_pdo(): PDO
+    {
+        $pdo = pearlica_pdo();
+        if ($pdo instanceof PDO) {
+            return $pdo;
+        }
+        require_once dirname(__DIR__) . '/includes/pearlica_http.php';
+        pearlica_service_unavailable('Pearlica DB unavailable for request ' . ($_SERVER['REQUEST_URI'] ?? ''));
+    }
 }

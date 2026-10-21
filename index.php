@@ -18,7 +18,7 @@ if (!function_exists('h')) {
 	}
 }
 
-$pdo = $GLOBALS['pdo'];
+$pdo = pearlica_require_pdo();
 $uploads_base = pearlica_uploads_products_base($base_path ?? '/');
 
 $new_arrivals_filters = ['sort' => 'newest'];
@@ -39,7 +39,6 @@ $wishlist_return = 'index';
 
 $influencer_reels = [];
 try {
-	instagram_reel_ensure_schema($pdo);
 	$influencer_reels = instagram_reel_list_active($pdo);
 } catch (Throwable $e) {
 	$influencer_reels = [];
@@ -153,8 +152,7 @@ $mid_fallback_src = $base_path . 'assets/images/banner_1.png';
 $hero_banners = [];
 $hero_rows = [];
 try {
-	if ($pdo) {
-		homepage_banner_ensure_schema($pdo);
+	if ($pdo instanceof PDO) {
 		$hero_rows = homepage_banner_list_active($pdo, 'hero');
 	}
 } catch (Throwable $e) {

@@ -4,6 +4,14 @@
  */
 declare(strict_types=1);
 
+require_once __DIR__ . '/includes/cart_cookie.php';
+require_once __DIR__ . '/includes/store_base_path.php';
+$base_path = store_base_path_from_request();
+if (empty(cart_from_cookie())) {
+	header('Location: ' . $base_path . 'cart', true, 302);
+	exit;
+}
+
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/db.php';
 require_once __DIR__ . '/lib/product.php';
@@ -25,20 +33,14 @@ if (!function_exists('h')) {
 	}
 }
 
-$base_path = store_base_path_from_request();
 $user_id = auth_cookie_user_id();
 $is_guest = $user_id === null;
 
 $cart = cart_from_cookie();
-if (empty($cart)) {
-	header('Location: ' . $base_path . 'index', true, 302);
-	exit;
-}
-
-$pdo = $GLOBALS['pdo'];
+$pdo = pearlica_require_pdo();
 $cart = cart_prune_unavailable($pdo, $cart);
 if (empty($cart)) {
-	header('Location: ' . $base_path . 'index', true, 302);
+	header('Location: ' . $base_path . 'cart', true, 302);
 	exit;
 }
 $user = null;

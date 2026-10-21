@@ -5,6 +5,11 @@
 
 function instagram_reel_ensure_schema(PDO $pdo): void
 {
+	static $done = false;
+	if ($done) {
+		return;
+	}
+
 	$pdo->exec(
 		'CREATE TABLE IF NOT EXISTS `instagram_reels` (
 		  `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -94,6 +99,8 @@ function instagram_reel_ensure_schema(PDO $pdo): void
 			}
 		}
 	}
+
+	$done = true;
 }
 
 /**

@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			]);
 			exit;
 		}
-		header('Location: ' . (empty($cart) ? $base_path . 'index' : $base_path . 'checkout'), true, 302);
+		header('Location: ' . (empty($cart) ? $base_path . 'index?open_cart=1' : $base_path . 'checkout'), true, 302);
 		exit;
 	}
 }
@@ -116,7 +116,7 @@ if (isset($_GET['remove']) && $_GET['remove'] !== '') {
 	// $_COOKIE still holds the previous cart this request — keep $cart as updated above.
 	$is_ajax_remove = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 	if (!$is_ajax_remove) {
-		header('Location: ' . (empty($cart) ? $base_path . 'index' : $base_path . 'checkout'), true, 302);
+		header('Location: ' . (empty($cart) ? $base_path . 'index?open_cart=1' : $base_path . 'checkout'), true, 302);
 		exit;
 	}
 }
@@ -130,5 +130,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $is_ajax) {
 	exit;
 }
 
-header('Location: ' . (empty($cart) ? $base_path . 'index' : $base_path . 'checkout'), true, 302);
+header('Location: ' . (empty($cart) ? $base_path . 'index?open_cart=1' : $base_path . 'checkout'), true, 302);
 exit;

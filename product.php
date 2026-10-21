@@ -21,6 +21,7 @@ if (empty($_SESSION['checkout_csrf_token']) || !is_string($_SESSION['checkout_cs
 	$_SESSION['checkout_csrf_token'] = bin2hex(random_bytes(32));
 }
 $product_delivery_csrf = (string) $_SESSION['checkout_csrf_token'];
+store_session_release_lock();
 
 if (!function_exists('h')) {
 	function h($s)
@@ -46,7 +47,7 @@ if ($slug === '') {
 	exit;
 }
 
-$pdo = $GLOBALS['pdo'];
+$pdo = pearlica_require_pdo();
 $stmt = $pdo->prepare('SELECT p.id, p.name, p.slug, p.sku, p.description, p.specification, p.additional_information, p.styling_tips, p.mrp, p.discount_percentage, p.stock_quantity, p.category_id, p.product_group_id, p.metal_type, p.purity, p.weight_grams, p.size, p.meta_title, p.meta_description, p.meta_keywords, p.is_gifting, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id = p.category_id AND c.deleted_at IS NULL WHERE p.slug = ? AND p.deleted_at IS NULL AND p.status = ? LIMIT 1');
 $stmt->execute([$slug, 'active']);
 $product = $stmt->fetch();

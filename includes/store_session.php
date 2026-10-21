@@ -34,3 +34,15 @@ if (!function_exists('store_session_start')) {
 }
 
 store_session_start();
+
+if (!function_exists('store_session_release_lock')) {
+	/**
+	 * Release the session write lock after reading $_SESSION (allows parallel requests under load).
+	 */
+	function store_session_release_lock(): void
+	{
+		if (session_status() === PHP_SESSION_ACTIVE) {
+			session_write_close();
+		}
+	}
+}

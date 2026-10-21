@@ -43,6 +43,11 @@ function faq_default_rows(): array
  */
 function faq_ensure_schema(PDO $pdo): void
 {
+	static $done = false;
+	if ($done) {
+		return;
+	}
+
 	$pdo->exec(
 		'CREATE TABLE IF NOT EXISTS `faqs` (
 		  `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -125,6 +130,8 @@ function faq_ensure_schema(PDO $pdo): void
 			// ignore
 		}
 	}
+
+	$done = true;
 }
 
 function faq_seed_defaults(PDO $pdo): void

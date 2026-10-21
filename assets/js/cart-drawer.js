@@ -29,6 +29,19 @@
 			document.body.style.overflow = '';
 		}
 
+		try {
+			var params = new URLSearchParams(window.location.search);
+			if (params.get('open_cart') === '1') {
+				openDrawer();
+				params.delete('open_cart');
+				var qs = params.toString();
+				var next = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+				window.history.replaceState(null, '', next);
+			}
+		} catch (e) {
+			// ignore
+		}
+
 		document.body.addEventListener('click', function (e) {
 			if (e.target.closest('.cart-drawer-trigger')) {
 				e.preventDefault();
