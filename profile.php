@@ -139,10 +139,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 			$gender = '';
 		}
 
-		$birthday = profile_normalize_birthday($birthday_raw);
-		if ($birthday === false) {
-			$errors[] = 'Please enter a valid date of birth.';
+		if ($birthday_raw === '') {
 			$birthday = null;
+		} else {
+			$birthday = profile_normalize_birthday($birthday_raw);
+			if ($birthday === false) {
+				$errors[] = 'Please enter a valid date of birth.';
+				$birthday = null;
+			}
 		}
 
 		$pincode_digits = preg_replace('/\D+/', '', $pincode);

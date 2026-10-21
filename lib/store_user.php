@@ -333,23 +333,16 @@ function store_user_create_registered(PDO $pdo, array $profile, ?string $passwor
 
 /**
  * Profile fields required after OTP login (address collected separately at checkout).
+ * Date of birth and gender are optional.
  */
 function store_user_registration_complete(array $user): bool
 {
 	$name = trim((string) ($user['full_name'] ?? ''));
 	$email = trim((string) ($user['email'] ?? ''));
-	$birthday = trim((string) ($user['birthday'] ?? ''));
-	$gender = strtolower(trim((string) ($user['gender'] ?? '')));
 	if ($name === '') {
 		return false;
 	}
 	if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-		return false;
-	}
-	if ($birthday === '') {
-		return false;
-	}
-	if (!in_array($gender, ['female', 'male', 'other'], true)) {
 		return false;
 	}
 

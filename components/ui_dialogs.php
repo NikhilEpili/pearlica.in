@@ -127,13 +127,13 @@ if ($ui_logged_in && isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
 						</div>
 						<div class="pearlica-form-row">
 							<div class="pearlica-form-field">
-								<label for="pearlica-reg-birthday" class="pearlica-form-label">Date of birth *</label>
+								<label for="pearlica-reg-birthday" class="pearlica-form-label">Date of birth <span class="pearlica-optional">(optional)</span></label>
 								<input type="date" id="pearlica-reg-birthday" class="login-phone-input pearlica-form-input"
-									max="<?php echo h(date('Y-m-d')); ?>" min="1900-01-01" required>
+									max="<?php echo h(date('Y-m-d')); ?>" min="1900-01-01">
 							</div>
 							<div class="pearlica-form-field">
-								<label for="pearlica-reg-gender" class="pearlica-form-label">Gender *</label>
-								<select id="pearlica-reg-gender" class="login-phone-input pearlica-form-input pearlica-form-select" required>
+								<label for="pearlica-reg-gender" class="pearlica-form-label">Gender <span class="pearlica-optional">(optional)</span></label>
+								<select id="pearlica-reg-gender" class="login-phone-input pearlica-form-input pearlica-form-select">
 									<option value="">Select</option>
 									<option value="female">Female</option>
 									<option value="male">Male</option>

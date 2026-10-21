@@ -129,9 +129,20 @@
 	}
 }
 
-.checkout-delivery-heading-label {
-	margin-bottom: 0 !important;
-	display: inline-block;
+/* Match left column: section label sits above the card, not inside it. */
+.checkout-panel-section-head {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: var(--space-sm);
+	min-height: calc(10px * 1.2 + 12px);
+	margin-bottom: 0;
+}
+
+.checkout-panel-section-label {
+	margin: 0 0 12px;
+	flex: 1 1 auto;
+	min-width: 0;
 }
 
 .checkout-promo-wrap {
@@ -433,12 +444,109 @@
 	background: var(--off-white, #f7f6f4);
 	padding: var(--space-xl);
 }
-.checkout-delivery-header {
+
+.checkout-guest-form .pearlica-optional,
+.checkout-delivery-card .pearlica-optional {
+	font-weight: 400;
+	opacity: 0.75;
+	text-transform: none;
+	letter-spacing: 0;
+}
+
+.checkout-guest-form {
+	margin-top: 0;
+}
+
+/* Guest fields sit on off-white panel — not inside .login-card-form, so need explicit borders. */
+.checkout-guest-form .login-phone-input.pearlica-form-input,
+.checkout-guest-form select.login-phone-input.pearlica-form-input {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 12px 14px;
+	border: var(--border-width) solid var(--border);
+	border-radius: var(--pearlica-input-radius);
+	background: var(--white);
+	color: var(--text-main);
+	font-family: var(--font-body);
+	font-size: var(--font-size-ui);
+	letter-spacing: 0.04em;
+	transition: border-color var(--motion-fast, 0.15s ease);
+}
+
+.checkout-guest-form .login-phone-input.pearlica-form-input:focus,
+.checkout-guest-form select.login-phone-input.pearlica-form-input:focus {
+	outline: none;
+	border-color: var(--black);
+	box-shadow: none;
+}
+
+.checkout-guest-form .login-phone-input.pearlica-form-input::placeholder {
+	color: var(--text-muted);
+	opacity: 1;
+}
+
+.checkout-guest-form .login-phone-field {
+	border: var(--border-width) solid var(--border);
+	border-radius: var(--pearlica-input-radius);
+	background: var(--white);
+}
+
+.checkout-guest-form .login-phone-field:focus-within {
+	border-color: var(--black);
+	box-shadow: none;
+}
+
+.checkout-guest-form .login-phone-field .login-phone-input {
+	padding: 12px 14px;
+	color: var(--text-main);
+	background: transparent;
+}
+
+.checkout-guest-form .login-phone-field .login-phone-input::placeholder {
+	color: var(--text-muted);
+	opacity: 1;
+}
+
+.checkout-guest-form .pearlica-form-label {
+	color: var(--text-muted);
+}
+
+.checkout-delivery-card .login-otp-input {
+	border: var(--border-width) solid var(--border);
+	background: var(--white);
+	color: var(--text-main);
+}
+
+.checkout-guest-form .pearlica-form-field {
+	margin-bottom: var(--space-sm);
+}
+.checkout-guest-form .pearlica-form-row {
 	display: flex;
-	justify-content: space-between;
-	align-items: flex-start;
-	margin-bottom: var(--space-md);
+	flex-wrap: wrap;
 	gap: var(--space-sm);
+}
+.checkout-guest-form .pearlica-form-row .pearlica-form-field {
+	flex: 1 1 140px;
+}
+.checkout-guest-form-error {
+	margin: var(--space-xs) 0 0;
+}
+.checkout-cod-otp-block {
+	margin-top: var(--space-md);
+	padding-top: var(--space-md);
+	border-top: var(--border-width) solid var(--border);
+}
+.checkout-cod-otp-input {
+	display: block;
+	width: 100%;
+	max-width: 220px;
+	margin-bottom: var(--space-sm);
+}
+.checkout-cod-otp-resend {
+	margin-bottom: 0;
+}
+.checkout-panel-section-head .checkout-delivery-header-actions {
+	margin-bottom: 12px;
 }
 .checkout-delivery-header-actions {
 	display: inline-flex;

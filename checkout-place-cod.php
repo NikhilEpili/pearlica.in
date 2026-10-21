@@ -17,6 +17,7 @@ require_once __DIR__ . '/includes/cart_cookie.php';
 require_once __DIR__ . '/includes/auth_cookie.php';
 require_once __DIR__ . '/includes/indian_states.php';
 require_once __DIR__ . '/includes/checkout_shipping.php';
+require_once __DIR__ . '/includes/checkout_guest.php';
 require_once __DIR__ . '/payment/shiprocket/shiprocket_init.php';
 require_once __DIR__ . '/lib/email_notifications.php';
 require_once __DIR__ . '/lib/refrens.php';
@@ -39,12 +40,6 @@ if ($csrf === '' || !hash_equals($_SESSION['checkout_csrf_token'] ?? '', $csrf))
 	exit;
 }
 
-if ($user_id === null) {
-	http_response_code(401);
-	echo json_encode(['ok' => false, 'error' => 'Please sign in to place your order.']);
-	exit;
-}
-
 $cart = cart_from_cookie();
 if (empty($cart)) {
 	http_response_code(400);
@@ -59,43 +54,29 @@ if (empty($cart)) {
 	echo json_encode(['ok' => false, 'error' => 'Cart is empty']);
 	exit;
 }
-$user = store_user_find_by_id($pdo, (int) $user_id);
-if (!$user) {
-	http_response_code(401);
-	echo json_encode(['ok' => false, 'error' => 'Session expired. Please sign in again.']);
-	exit;
-}
-
-// Prefer the address the shopper confirmed at checkout, else their default/profile address.
-$address_row = store_user_address_resolve_for_checkout($pdo, (int) $user_id, $user);
-if ($address_row) {
-	store_user_address_sync_profile($pdo, (int) $user_id, $address_row);
-	$user = store_user_find_by_id($pdo, (int) $user_id) ?? $user;
-}
-
-$shipping_name = trim((string) ($user['full_name'] ?? ''));
-$shipping_email = trim((string) ($user['email'] ?? ''));
-$shipping_phone = trim((string) ($user['phone'] ?? ''));
-$shipping_address_1 = trim((string) ($user['address'] ?? ''));
-$shipping_address_2 = trim((string) ($user['address_line_2'] ?? ''));
-$shipping_city = trim((string) ($user['city'] ?? ''));
-$shipping_state = trim((string) ($user['state'] ?? ''));
-$shipping_pincode = trim((string) ($user['pincode'] ?? ''));
-
-if ($shipping_email !== '' && !filter_var($shipping_email, FILTER_VALIDATE_EMAIL)) {
+if ($user_id === null && !checkout_guest_cod_otp_verified()) {
 	http_response_code(400);
-	echo json_encode(['ok' => false, 'error' => 'Invalid email on your profile.']);
+	echo json_encode(['ok' => false, 'error' => 'Please verify your mobile number to confirm Cash on Delivery.', 'needs_cod_otp' => true]);
 	exit;
 }
-if ($shipping_name === '') {
-	$shipping_name = $shipping_email !== '' ? $shipping_email : 'Customer';
-}
-if ($shipping_address_1 === '' || $shipping_city === '' || $shipping_state === '' || $shipping_pincode === '') {
-	http_response_code(400);
-	echo json_encode(['ok' => false, 'error' => 'Please choose or add a delivery address before placing your order.']);
+
+$customer = checkout_resolve_order_customer($pdo, $user_id);
+if (empty($customer['ok'])) {
+	$http = (int) ($customer['http'] ?? 400);
+	http_response_code($http);
+	echo json_encode(['ok' => false, 'error' => (string) ($customer['error'] ?? 'Unable to continue.')]);
 	exit;
 }
-$order_store_user_id = (int) $user_id;
+
+$shipping_name = (string) ($customer['shipping_name'] ?? '');
+$shipping_email = (string) ($customer['shipping_email'] ?? '');
+$shipping_phone = (string) ($customer['shipping_phone'] ?? '');
+$shipping_address_1 = (string) ($customer['shipping_address_1'] ?? '');
+$shipping_address_2 = (string) ($customer['shipping_address_2'] ?? '');
+$shipping_city = (string) ($customer['shipping_city'] ?? '');
+$shipping_state = (string) ($customer['shipping_state'] ?? '');
+$shipping_pincode = (string) ($customer['shipping_pincode'] ?? '');
+$order_store_user_id = (int) ($customer['store_user_id'] ?? 0);
 
 $shipping_address = $shipping_address_1 . ($shipping_address_2 !== '' ? ("\n" . $shipping_address_2) : '');
 
@@ -239,6 +220,7 @@ try {
 
 	cart_to_cookie([]);
 	order_success_grant($order_id);
+	unset($_SESSION['checkout_guest'], $_SESSION['checkout_cod_otp_verified_e164']);
 
 	echo json_encode(['ok' => true, 'order_id' => $order_id], JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {

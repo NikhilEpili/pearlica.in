@@ -16,6 +16,7 @@ require_once __DIR__ . '/includes/store_base_path.php';
 require_once __DIR__ . '/lib/promo_code.php';
 require_once __DIR__ . '/includes/indian_states.php';
 require_once __DIR__ . '/includes/checkout_shipping.php';
+require_once __DIR__ . '/includes/checkout_guest.php';
 
 if (!function_exists('h')) {
 	function h($s)
@@ -139,7 +140,11 @@ $cod_max_paise = (int) max(0, (int) CHECKOUT_COD_MAX_ORDER_RUPEES * 100);
 $cod_eligible_initial = $initial_grand_paise > 0 && $initial_grand_paise <= $cod_max_paise;
 $checkout_possible = $razorpay_ready || $cod_eligible_initial;
 $checkout_registration_complete = !$is_guest && $user && store_user_registration_complete($user);
-$checkout_shipping_complete = !$is_guest && $user && store_user_shipping_complete($user, $pdo);
+$checkout_shipping_complete = $is_guest
+	? checkout_guest_is_complete()
+	: ($user && store_user_shipping_complete($user, $pdo));
+$guest_form = $is_guest ? checkout_guest_prefill_for_form() : [];
+$guest_cod_otp_verified = $is_guest && checkout_guest_cod_otp_verified();
 
 $page_title = 'Checkout | Pearlica 925 Silver Jewellery';
 ?>
@@ -157,7 +162,8 @@ $page_title = 'Checkout | Pearlica 925 Silver Jewellery';
 	data-razorpay-ready="<?php echo $razorpay_ready ? '1' : '0'; ?>"
 	data-is-guest="<?php echo $is_guest ? '1' : '0'; ?>"
 	data-registration-complete="<?php echo $checkout_registration_complete ? '1' : '0'; ?>"
-	data-shipping-complete="<?php echo $checkout_shipping_complete ? '1' : '0'; ?>">
+	data-shipping-complete="<?php echo $checkout_shipping_complete ? '1' : '0'; ?>"
+	data-cod-otp-verified="<?php echo $guest_cod_otp_verified ? '1' : '0'; ?>">
 	<?php include __DIR__ . '/components/gtm_body.php'; ?>
 	<?php include __DIR__ . '/components/navbar.php'; ?>
 
@@ -277,24 +283,79 @@ $page_title = 'Checkout | Pearlica 925 Silver Jewellery';
 
 				<!-- Right: sticky column — delivery, totals, buttons (matches cart summary width) -->
 				<div class="checkout-panel">
-					<div class="checkout-delivery-card">
-						<div class="checkout-delivery-header">
-							<span class="checkout-section-label checkout-delivery-heading-label">Delivery
-								details</span>
+					<div class="checkout-panel-section-head">
+						<p class="checkout-section-label checkout-panel-section-label">Delivery details</p>
+						<?php if (!$is_guest): ?>
 							<span class="checkout-delivery-header-actions" id="checkout-delivery-actions">
-								<?php if ($is_guest): ?>
-									<a href="<?php echo h($base_path); ?>login?return_url=<?php echo rawurlencode('checkout'); ?>"
-										class="checkout-edit-link">Log in</a>
-								<?php else: ?>
-									<button type="button" class="checkout-edit-link" id="checkout-change-address-btn">Change address</button>
-									<a href="<?php echo h($base_path); ?>logout" class="checkout-edit-link ms-2">Sign out</a>
-								<?php endif; ?>
+								<button type="button" class="checkout-edit-link" id="checkout-change-address-btn">Change address</button>
+								<a href="<?php echo h($base_path); ?>logout" class="checkout-edit-link ms-2">Sign out</a>
 							</span>
-						</div>
+						<?php endif; ?>
+					</div>
+					<div class="checkout-delivery-card">
 						<div id="checkout-delivery-body">
 							<?php if ($is_guest): ?>
-								<p class="small text-secondary mb-3">Sign in to review delivery details and place your order.</p>
-								<button type="button" class="checkout-btn-primary checkout-signin-trigger" id="checkout-signin-btn">Sign in to continue</button>
+								<p class="small text-secondary mb-3">Enter where we should deliver your order. No account required.</p>
+								<form id="checkout-guest-form" class="checkout-guest-form pearlica-profile-form" novalidate autocomplete="on">
+									<div class="pearlica-form-field">
+										<label for="checkout-guest-name" class="pearlica-form-label">Full name</label>
+										<input type="text" id="checkout-guest-name" class="login-phone-input pearlica-form-input" name="full_name"
+											autocomplete="name" maxlength="255" required value="<?php echo h($guest_form['full_name'] ?? ''); ?>">
+									</div>
+									<div class="pearlica-form-field">
+										<label for="checkout-guest-email" class="pearlica-form-label">Email</label>
+										<input type="email" id="checkout-guest-email" class="login-phone-input pearlica-form-input" name="email"
+											autocomplete="email" maxlength="255" required value="<?php echo h($guest_form['email'] ?? ''); ?>">
+									</div>
+									<div class="pearlica-form-field">
+										<label for="checkout-guest-phone" class="pearlica-form-label">Mobile number</label>
+										<div class="login-phone-field">
+											<span class="login-phone-prefix" aria-hidden="true"><span class="login-flag">&#127470;&#127475;</span><span>+91</span></span>
+											<input type="tel" id="checkout-guest-phone" class="login-phone-input" name="phone"
+												inputmode="numeric" autocomplete="tel-national" maxlength="10" placeholder="10-digit mobile" required
+												value="<?php echo h($guest_form['phone'] ?? ''); ?>">
+										</div>
+									</div>
+									<div class="pearlica-form-field">
+										<label for="checkout-guest-line1" class="pearlica-form-label">Address line 1</label>
+										<input type="text" id="checkout-guest-line1" class="login-phone-input pearlica-form-input" name="address"
+											autocomplete="address-line1" maxlength="255" required value="<?php echo h($guest_form['address'] ?? ''); ?>">
+									</div>
+									<div class="pearlica-form-field">
+										<label for="checkout-guest-line2" class="pearlica-form-label">Address line 2 <span class="pearlica-optional">(optional)</span></label>
+										<input type="text" id="checkout-guest-line2" class="login-phone-input pearlica-form-input" name="address_line_2"
+											autocomplete="address-line2" maxlength="255" value="<?php echo h($guest_form['address_line_2'] ?? ''); ?>">
+									</div>
+									<div class="pearlica-form-row">
+										<div class="pearlica-form-field">
+											<label for="checkout-guest-city" class="pearlica-form-label">City</label>
+											<input type="text" id="checkout-guest-city" class="login-phone-input pearlica-form-input" name="city"
+												maxlength="120" required value="<?php echo h($guest_form['city'] ?? ''); ?>">
+										</div>
+										<div class="pearlica-form-field">
+											<label for="checkout-guest-state" class="pearlica-form-label">State</label>
+											<select id="checkout-guest-state" class="login-phone-input pearlica-form-input pearlica-form-select" name="state" required>
+												<option value="">Select state</option>
+												<?php foreach ($checkout_states as $st): ?>
+													<option value="<?php echo h($st); ?>"<?php echo ($guest_form['state'] ?? '') === $st ? ' selected' : ''; ?>><?php echo h($st); ?></option>
+												<?php endforeach; ?>
+											</select>
+										</div>
+									</div>
+									<div class="pearlica-form-field">
+										<label for="checkout-guest-pincode" class="pearlica-form-label">Pincode</label>
+										<input type="text" id="checkout-guest-pincode" class="login-phone-input pearlica-form-input" name="pincode"
+											inputmode="numeric" maxlength="6" required value="<?php echo h($guest_form['pincode'] ?? ''); ?>">
+									</div>
+									<p class="checkout-guest-form-error text-danger small" id="checkout-guest-form-error" hidden role="alert"></p>
+								</form>
+								<div class="checkout-cod-otp-block" id="checkout-cod-otp-block" hidden>
+									<p class="checkout-section-label">Confirm mobile for COD</p>
+									<p class="small text-secondary mb-2">Enter the code sent to <strong id="checkout-cod-phone-mask">your number</strong> to place a Cash on Delivery order.</p>
+									<input type="text" id="checkout-cod-otp" class="login-otp-input checkout-cod-otp-input" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="0000">
+									<button type="button" class="checkout-btn-secondary checkout-cod-otp-resend" id="checkout-cod-otp-resend">Resend code</button>
+									<p class="checkout-cod-otp-error text-danger small" id="checkout-cod-otp-error" hidden role="alert"></p>
+								</div>
 							<?php else: ?>
 								<div class="checkout-recipient-name"><?php echo h($user['full_name'] ?: ($user['email'] ?? '')); ?>
 								</div>

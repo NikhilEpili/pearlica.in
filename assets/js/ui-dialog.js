@@ -352,10 +352,14 @@
 				if (values.phone.length !== 10) return 'Please enter a valid 10-digit mobile number.';
 				break;
 			case 'pearlica-reg-birthday':
-				if (!isValidRegisterBirthday(values.birthday)) return 'Please enter a valid date of birth.';
+				if (String(values.birthday).trim() !== '' && !isValidRegisterBirthday(values.birthday)) {
+					return 'Please enter a valid date of birth.';
+				}
 				break;
 			case 'pearlica-reg-gender':
-				if (!values.gender) return 'Please select your gender.';
+				if (String(values.gender).trim() !== '' && ['female', 'male', 'other'].indexOf(values.gender) === -1) {
+					return 'Please select a valid gender.';
+				}
 				break;
 			default:
 				break;
@@ -617,7 +621,7 @@
 				return requireSignIn('Your session expired. Please sign in again to place your order.');
 			}
 			if (!status.registration_complete) {
-				toast('Please complete your profile (name, email, date of birth, gender) before checkout.', { type: 'error' });
+				toast('Please complete your profile (name and email) before checkout.', { type: 'error' });
 				window.location.href = apiUrl('profile');
 				return false;
 			}

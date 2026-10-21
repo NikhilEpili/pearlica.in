@@ -65,15 +65,17 @@ if (!function_exists('store_profile_validate_registration')) {
 			$errors[] = 'That email is already linked to another account.';
 		}
 
-		$birthday = store_profile_normalize_birthday($birthday_raw);
-		if ($birthday === false) {
-			$errors[] = 'Please enter a valid date of birth.';
+		if ($birthday_raw === '') {
 			$birthday = null;
+		} else {
+			$birthday = store_profile_normalize_birthday($birthday_raw);
+			if ($birthday === false) {
+				$errors[] = 'Please enter a valid date of birth.';
+				$birthday = null;
+			}
 		}
 
-		if ($gender === '') {
-			$errors[] = 'Please select your gender.';
-		} elseif (!in_array($gender, ['female', 'male', 'other'], true)) {
+		if ($gender !== '' && !in_array($gender, ['female', 'male', 'other'], true)) {
 			$errors[] = 'Please select a valid gender.';
 			$gender = '';
 		}

@@ -35,6 +35,125 @@ document.addEventListener('DOMContentLoaded', function () {
 		return !document.body || document.body.getAttribute('data-logged-in') !== '1';
 	}
 
+	function isCheckoutGuest() {
+		return document.body && document.body.getAttribute('data-is-guest') === '1';
+	}
+
+	function otpDigitLength() {
+		return parseInt(document.body.getAttribute('data-login-otp-length') || '4', 10) || 4;
+	}
+
+	function sanitizeGuestPhone(val) {
+		return String(val || '').replace(/\D/g, '').slice(-10);
+	}
+
+	function guestFormPayload(csrf) {
+		var get = function (id) {
+			var el = document.getElementById(id);
+			return el ? String(el.value || '').trim() : '';
+		};
+		return {
+			csrf_token: csrf,
+			full_name: get('checkout-guest-name'),
+			email: get('checkout-guest-email'),
+			phone: sanitizeGuestPhone(get('checkout-guest-phone')),
+			address: get('checkout-guest-line1'),
+			address_line_2: get('checkout-guest-line2'),
+			city: get('checkout-guest-city'),
+			state: get('checkout-guest-state'),
+			pincode: sanitizeGuestPhone(get('checkout-guest-pincode')).slice(0, 6),
+		};
+	}
+
+	function showGuestFormError(message) {
+		var el = document.getElementById('checkout-guest-form-error');
+		if (!el) return;
+		if (message) {
+			el.textContent = message;
+			el.hidden = false;
+		} else {
+			el.textContent = '';
+			el.hidden = true;
+		}
+	}
+
+	function showCodOtpError(message) {
+		var el = document.getElementById('checkout-cod-otp-error');
+		if (!el) return;
+		if (message) {
+			el.textContent = message;
+			el.hidden = false;
+		} else {
+			el.textContent = '';
+			el.hidden = true;
+		}
+	}
+
+	function codOtpVerified() {
+		return document.body && document.body.getAttribute('data-cod-otp-verified') === '1';
+	}
+
+	function setCodOtpVerified(on) {
+		if (document.body) {
+			document.body.setAttribute('data-cod-otp-verified', on ? '1' : '0');
+		}
+	}
+
+	function showCodOtpBlock(show) {
+		var block = document.getElementById('checkout-cod-otp-block');
+		if (!block) return;
+		if (show) {
+			block.removeAttribute('hidden');
+		} else {
+			block.setAttribute('hidden', 'hidden');
+		}
+	}
+
+	var codOtpUiActive = false;
+
+	function saveGuestDelivery(csrf) {
+		return postForm('checkout-save-guest', guestFormPayload(csrf)).then(function (res) {
+			var d = res && res.data ? res.data : {};
+			if (res && res.ok && d.ok) {
+				showGuestFormError('');
+				if (document.body) {
+					document.body.setAttribute('data-shipping-complete', '1');
+				}
+				return true;
+			}
+			showGuestFormError(d.error || 'Please check your delivery details.');
+			return false;
+		});
+	}
+
+	function sendCodOtp(csrf) {
+		return postForm('checkout-cod-otp', { csrf_token: csrf, action: 'send' }).then(function (res) {
+			var d = res && res.data ? res.data : {};
+			if (res && res.ok && d.ok) {
+				var mask = document.getElementById('checkout-cod-phone-mask');
+				if (mask && d.phone_mask) mask.textContent = d.phone_mask;
+				showCodOtpError('');
+				uiToast('Verification code sent.', 'success');
+				return true;
+			}
+			showCodOtpError(d.error || 'Could not send verification code.');
+			return false;
+		});
+	}
+
+	function verifyCodOtp(csrf, otp) {
+		return postForm('checkout-cod-otp', { csrf_token: csrf, action: 'verify', otp: otp }).then(function (res) {
+			var d = res && res.data ? res.data : {};
+			if (res && res.ok && d.ok && d.verified) {
+				setCodOtpVerified(true);
+				showCodOtpError('');
+				return true;
+			}
+			showCodOtpError(d.error || 'Invalid code.');
+			return false;
+		});
+	}
+
 	function escapeHtml(value) {
 		return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
 			return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
@@ -145,10 +264,33 @@ document.addEventListener('DOMContentLoaded', function () {
 		window.location.href = apiUrl('login?return_url=checkout');
 	}
 
-	var signInBtn = document.getElementById('checkout-signin-btn');
-	if (signInBtn) {
-		signInBtn.addEventListener('click', function () {
-			requireSignIn('Sign in to complete your purchase securely.');
+	var guestPhoneInput = document.getElementById('checkout-guest-phone');
+	if (guestPhoneInput) {
+		guestPhoneInput.addEventListener('input', function () {
+			var n = sanitizeGuestPhone(guestPhoneInput.value);
+			if (guestPhoneInput.value !== n) guestPhoneInput.value = n;
+			setCodOtpVerified(false);
+			codOtpUiActive = false;
+			showCodOtpBlock(false);
+		});
+	}
+	var guestPinInput = document.getElementById('checkout-guest-pincode');
+	if (guestPinInput) {
+		guestPinInput.addEventListener('input', function () {
+			var n = sanitizeGuestPhone(guestPinInput.value).slice(0, 6);
+			if (guestPinInput.value !== n) guestPinInput.value = n;
+		});
+	}
+	var codOtpInput = document.getElementById('checkout-cod-otp');
+	if (codOtpInput) {
+		codOtpInput.setAttribute('maxlength', String(otpDigitLength()));
+		codOtpInput.setAttribute('placeholder', String('0').repeat(otpDigitLength()));
+	}
+	var codResendBtn = document.getElementById('checkout-cod-otp-resend');
+	if (codResendBtn) {
+		codResendBtn.addEventListener('click', function () {
+			var csrf = btn.getAttribute('data-csrf-token') || '';
+			sendCodOtp(csrf);
 		});
 	}
 
@@ -262,7 +404,11 @@ document.addEventListener('DOMContentLoaded', function () {
 			}
 		}
 		var defaultLabel = btn.getAttribute('data-default-label') || 'Proceed';
-		btn.textContent = codOn ? 'Place order' : defaultLabel;
+		if (isCheckoutGuest() && codOn && codOtpUiActive && !codOtpVerified()) {
+			btn.textContent = 'Verify & place order';
+		} else {
+			btn.textContent = codOn ? 'Place order' : defaultLabel;
+		}
 		var canSubmit = codOn || rpReady;
 		btn.disabled = !canSubmit;
 		btn.setAttribute('aria-disabled', canSubmit ? 'false' : 'true');
@@ -447,6 +593,27 @@ document.addEventListener('DOMContentLoaded', function () {
 			}
 		}
 
+		function placeCodOrder(csrf) {
+			var codPayload = getAppliedPromoPayload(csrf);
+			codPayload.payment_method = 'cod';
+			return postForm('checkout-place-cod', codPayload).then(function (res) {
+				var d = res && res.data ? res.data : {};
+				if (res && res.ok && d.order_id) {
+					window.location.href = apiUrl('order-success?order_id=' + encodeURIComponent(String(d.order_id)));
+					return { ok: true };
+				}
+				if (res && res.status === 401) {
+					syncCheckoutPayState();
+					requireSignIn(d.error || 'Please sign in to place your order.', startCheckout);
+					return { ok: false, auth: true };
+				}
+				if (d && d.needs_cod_otp) {
+					return { ok: false, needs_cod_otp: true, error: d.error };
+				}
+				throw new Error(d.error || 'Unable to place your order');
+			});
+		}
+
 		function proceedWithPayment() {
 			var method = selectedPaymentMethod();
 			var csrf = btn.getAttribute('data-csrf-token') || '';
@@ -455,21 +622,14 @@ document.addEventListener('DOMContentLoaded', function () {
 			btn.textContent = 'Please wait...';
 
 			if (method === 'cod') {
-				var codPayload = getAppliedPromoPayload(csrf);
-				codPayload.payment_method = 'cod';
-				postForm('checkout-place-cod', codPayload)
-					.then(function (res) {
-						var d = res && res.data ? res.data : {};
-						if (res && res.ok && d.order_id) {
-							window.location.href = apiUrl('order-success?order_id=' + encodeURIComponent(String(d.order_id)));
-							return;
+				placeCodOrder(csrf)
+					.then(function (result) {
+						if (result && result.needs_cod_otp) {
+							codOtpUiActive = true;
+							showCodOtpBlock(true);
+							showCodOtpError(result.error || '');
+							return sendCodOtp(csrf);
 						}
-						if (res && res.status === 401) {
-							syncCheckoutPayState();
-							requireSignIn(d.error || 'Please sign in to place your order.', startCheckout);
-							return;
-						}
-						throw new Error(d.error || 'Unable to place your order');
 					})
 					.catch(function (e) {
 						uiAlert(e.message || 'Unable to place your order');
@@ -583,6 +743,54 @@ document.addEventListener('DOMContentLoaded', function () {
 		 * (COD or online) and can still change/add via "Change address".
 		 */
 		function startCheckout() {
+			if (isCheckoutGuest()) {
+				var csrf = btn.getAttribute('data-csrf-token') || '';
+				btn.disabled = true;
+				btn.textContent = 'Please wait...';
+				saveGuestDelivery(csrf).then(function (saved) {
+					if (!saved) {
+						syncCheckoutPayState();
+						var deliveryCard = document.querySelector('.checkout-delivery-card');
+						if (deliveryCard && deliveryCard.scrollIntoView) {
+							deliveryCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+						}
+						return;
+					}
+					var method = selectedPaymentMethod();
+					if (method === 'cod' && !codOtpVerified()) {
+						if (codOtpUiActive) {
+							var otp = codOtpInput ? String(codOtpInput.value || '').replace(/\D/g, '') : '';
+							if (otp.length !== otpDigitLength()) {
+								showCodOtpError('Please enter the ' + otpDigitLength() + '-digit code from your SMS.');
+								syncCheckoutPayState();
+								return;
+							}
+							verifyCodOtp(csrf, otp).then(function (verified) {
+								if (!verified) {
+									syncCheckoutPayState();
+									return;
+								}
+								codOtpUiActive = false;
+								showCodOtpBlock(false);
+								scrollToPaymentSection();
+								proceedWithPayment();
+							});
+							return;
+						}
+						codOtpUiActive = true;
+						showCodOtpBlock(true);
+						sendCodOtp(csrf).then(function (sent) {
+							syncCheckoutPayState();
+							if (sent && codOtpInput) codOtpInput.focus();
+						});
+						return;
+					}
+					scrollToPaymentSection();
+					proceedWithPayment();
+				});
+				return;
+			}
+
 			if (window.PearlicaUI && typeof PearlicaUI.ensureCheckoutReady === 'function') {
 				PearlicaUI.ensureCheckoutReady({
 					returnUrl: 'checkout',
