@@ -131,11 +131,12 @@ if ($promo_code_raw !== '') {
 		$promo_code_id = (int) $validation['promo_id'];
 	}
 }
-$merch_net_paise = checkout_merchandise_net_paise($subtotal_paise, $discount_paise);
-$delivery_fee_paise = checkout_delivery_fee_paise($merch_net_paise);
-// `shipping_paise` stores delivery + gift packaging (no separate columns).
-$shipping_paise = $delivery_fee_paise + $gift_packaging_paise;
-$total_paise = (int) max(0, $subtotal_paise + $shipping_paise - $discount_paise);
+$totals = checkout_compute_totals_paise($subtotal_paise, $discount_paise, true, $gift_packaging_paise);
+$merch_net_paise = $totals['merch_net_paise'];
+$delivery_fee_paise = $totals['delivery_fee_paise'];
+$shipping_paise = $totals['shipping_paise'];
+$discount_paise = $totals['discount_paise'];
+$total_paise = $totals['total_paise'];
 
 // Razorpay enforces a minimum order amount (₹1 / 100 paise for INR).
 // Prevent creating local orders that can never be paid.

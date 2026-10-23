@@ -135,9 +135,17 @@ $razorpay_cfg = razorpay_config();
 $razorpay_ready = $razorpay_cfg['key_id'] !== '' && $razorpay_cfg['key_secret'] !== '';
 
 $subtotal_paise = (int) round($cart_total * 100);
-$merch_net_paise = checkout_merchandise_net_paise($subtotal_paise, $checkout_prefill_discount_paise);
-$delivery_fee_paise = checkout_delivery_fee_paise($merch_net_paise);
-$initial_grand_paise = (int) max(0, $merch_net_paise + $delivery_fee_paise);
+$checkout_totals_initial = checkout_compute_totals_paise(
+	$subtotal_paise,
+	$checkout_prefill_discount_paise,
+	true,
+	0
+);
+$merch_net_paise = $checkout_totals_initial['merch_net_paise'];
+$delivery_fee_paise = $checkout_totals_initial['delivery_fee_paise'];
+$checkout_prepaid_discount_paise = $checkout_totals_initial['prepaid_discount_paise'];
+$initial_grand_paise = $checkout_totals_initial['total_paise'];
+$prepaid_discount_label = checkout_prepaid_discount_percent_label();
 $cod_max_paise = (int) max(0, (int) CHECKOUT_COD_MAX_ORDER_RUPEES * 100);
 $cod_eligible_initial = $initial_grand_paise > 0 && $initial_grand_paise <= $cod_max_paise;
 $checkout_possible = $razorpay_ready || $cod_eligible_initial;
@@ -160,6 +168,7 @@ $page_title = 'Checkout | Pearlica 925 Silver Jewellery';
 	data-gift-packaging-paise="<?php echo (int) CHECKOUT_GIFT_PACKAGING_PAISE; ?>"
 	data-free-shipping-min-paise="<?php echo (int) CHECKOUT_FREE_SHIPPING_MIN_MERCH_PAISE; ?>"
 	data-shipping-fee-paise="<?php echo (int) CHECKOUT_SHIPPING_FEE_BELOW_MIN_PAISE; ?>"
+	data-prepaid-discount-bps="<?php echo (int) CHECKOUT_PREPAID_DISCOUNT_BPS; ?>"
 	data-cod-max-paise="<?php echo (int) $cod_max_paise; ?>"
 	data-razorpay-ready="<?php echo $razorpay_ready ? '1' : '0'; ?>"
 	data-is-guest="<?php echo $is_guest ? '1' : '0'; ?>"
@@ -413,6 +422,10 @@ $page_title = 'Checkout | Pearlica 925 Silver Jewellery';
 								<span>Promo code</span>
 								<span id="checkout-promo-value" class="<?php echo $checkout_prefill_discount_paise > 0 ? 'checkout-promo-value--active' : ''; ?>"><?php echo $checkout_prefill_discount_paise > 0 ? '−₹' . number_format($checkout_prefill_discount_paise / 100, 0) : '—'; ?></span>
 							</div>
+							<div class="checkout-total-row checkout-total-row--savings" id="checkout-prepaid-discount-row">
+								<span>Prepaid discount (<?php echo h($prepaid_discount_label); ?>%)</span>
+								<span id="checkout-prepaid-value" class="<?php echo $checkout_prepaid_discount_paise > 0 ? 'checkout-promo-value--active' : ''; ?>"><?php echo $checkout_prepaid_discount_paise > 0 ? '−₹' . number_format($checkout_prepaid_discount_paise / 100, 0) : '—'; ?></span>
+							</div>
 							<div class="checkout-total-row grand">
 								<span>Order Total</span>
 								<span class="checkout-amount"
@@ -437,6 +450,9 @@ $page_title = 'Checkout | Pearlica 925 Silver Jewellery';
 							</div>
 							<p class="checkout-payment-methods__note small text-secondary mb-2" id="checkout-cod-unavailable-note" hidden>Cash on Delivery is only available when your order total is ₹<?php echo number_format((int) CHECKOUT_COD_MAX_ORDER_RUPEES, 0); ?> or less.</p>
 							<div id="checkout-online-pay-block">
+								<p class="checkout-prepaid-discount-note small mb-2" id="checkout-prepaid-discount-note">
+									We have applied an extra <?php echo h($prepaid_discount_label); ?>% discount on your prepaid order.
+								</p>
 								<p class="checkout-payment-methods__note small text-secondary mb-0">Pay securely online via
 									Razorpay (UPI, cards, net banking).</p>
 								<?php if (!$razorpay_ready): ?>

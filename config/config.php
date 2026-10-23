@@ -174,6 +174,8 @@ define('CHECKOUT_FREE_SHIPPING_MIN_MERCH_PAISE', 70000);
 define('CHECKOUT_SHIPPING_FEE_BELOW_MIN_PAISE', 19900);
 /** Policy: COD not offered above this order total (rupees); informational until COD checkout is enabled. */
 define('CHECKOUT_COD_MAX_ORDER_RUPEES', 10000);
+/** Extra discount on online (prepaid) checkout only — basis points (500 = 5%). Not applied to COD. */
+define('CHECKOUT_PREPAID_DISCOUNT_BPS', 500);
 define('ADMIN_PATH', BASE_PATH . '/admin');
 define('AUTH_COOKIE_NAME', 'pearlica_user');
 define('AUTH_COOKIE_DAYS', 7);

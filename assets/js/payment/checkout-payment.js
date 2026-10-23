@@ -329,8 +329,14 @@ document.addEventListener('DOMContentLoaded', function () {
 			return '₹' + v.toLocaleString('en-IN');
 		}
 		var netMerchPaise = Math.max(0, subtotalPaise - discountPaise);
+		var codOn = !!(codCb && codCb.checked);
+		var prepaidBps = parseInt(document.body.getAttribute('data-prepaid-discount-bps') || '500', 10) || 0;
+		var prepaidDiscountPaise = 0;
+		if (!codOn && prepaidBps > 0 && netMerchPaise > 0) {
+			prepaidDiscountPaise = Math.round(netMerchPaise * prepaidBps / 10000);
+		}
 		var deliveryPaise = netMerchPaise > 0 && netMerchPaise < freeMinPaise ? shipFeePaise : 0;
-		var totalPaise = Math.max(0, netMerchPaise + deliveryPaise + giftPaise);
+		var totalPaise = Math.max(0, netMerchPaise + deliveryPaise + giftPaise - prepaidDiscountPaise);
 
 		var shipDisp = document.getElementById('checkout-shipping-display');
 		if (shipDisp) {
@@ -352,6 +358,31 @@ document.addEventListener('DOMContentLoaded', function () {
 				promoEl.classList.add('checkout-promo-value--active');
 			} else {
 				promoEl.classList.remove('checkout-promo-value--active');
+			}
+		}
+		var prepaidRow = document.getElementById('checkout-prepaid-discount-row');
+		var prepaidEl = document.getElementById('checkout-prepaid-value');
+		var prepaidNote = document.getElementById('checkout-prepaid-discount-note');
+		if (prepaidRow) {
+			if (codOn) {
+				prepaidRow.setAttribute('hidden', 'hidden');
+			} else {
+				prepaidRow.removeAttribute('hidden');
+			}
+		}
+		if (prepaidNote) {
+			if (codOn) {
+				prepaidNote.setAttribute('hidden', 'hidden');
+			} else {
+				prepaidNote.removeAttribute('hidden');
+			}
+		}
+		if (prepaidEl) {
+			prepaidEl.textContent = prepaidDiscountPaise > 0 ? fmtInrFromPaise(prepaidDiscountPaise, '−') : '—';
+			if (prepaidDiscountPaise > 0) {
+				prepaidEl.classList.add('checkout-promo-value--active');
+			} else {
+				prepaidEl.classList.remove('checkout-promo-value--active');
 			}
 		}
 		var giftAmt = document.getElementById('checkout-gift-value');
@@ -418,7 +449,9 @@ document.addEventListener('DOMContentLoaded', function () {
 		giftCb.addEventListener('change', recalcCheckoutTotals);
 	}
 	if (codCb) {
-		codCb.addEventListener('change', syncCheckoutPayState);
+		codCb.addEventListener('change', function () {
+			recalcCheckoutTotals();
+		});
 	}
 	recalcCheckoutTotals();
 
