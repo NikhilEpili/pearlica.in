@@ -60,20 +60,6 @@
 				}
 				return;
 			}
-			var checkoutLink = e.target.closest('a.cart-drawer-btn-primary');
-			if (checkoutLink && document.body.getAttribute('data-logged-in') !== '1') {
-				e.preventDefault();
-				closeDrawer();
-				if (window.PearlicaUI && typeof PearlicaUI.openLogin === 'function') {
-					PearlicaUI.openLogin({
-						returnUrl: 'checkout',
-						message: 'Sign in or create an account to complete your purchase.',
-					});
-				} else {
-					window.location.href = checkoutLink.getAttribute('href') || (getCartBasePath() + 'login?return_url=checkout');
-				}
-				return;
-			}
 			var removeLink = e.target.closest('.cart-drawer-remove[data-remove]');
 			if (removeLink) {
 				e.preventDefault();
