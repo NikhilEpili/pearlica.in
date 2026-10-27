@@ -194,8 +194,7 @@ label,
 .btn-cta-primary,
 .btn-primary.pearlica-cta,
 .cart-summary .btn-primary,
-.checkout-summary .checkout-btn-pay,
-.cookie-consent-accept-btn {
+.checkout-summary .checkout-btn-pay {
 	display: inline-block;
 	width: 100%;
 	font-family: var(--font-body);

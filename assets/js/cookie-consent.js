@@ -16,11 +16,17 @@
 		document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + d.toUTCString() + '; path=/; SameSite=Lax';
 	}
 
+	function hasConsent() {
+		var v = getCookie(COOKIE_NAME);
+		return v === 'accepted' || v === 'necessary';
+	}
+
 	function showBanner() {
 		var el = document.getElementById(BANNER_ID);
 		if (el) {
 			el.hidden = false;
 		}
+		document.documentElement.classList.add('cookie-consent-open');
 	}
 
 	function hideBanner() {
@@ -28,21 +34,27 @@
 		if (el) {
 			el.hidden = true;
 		}
+		document.documentElement.classList.remove('cookie-consent-open');
+	}
+
+	function bindConsentButton(id, value) {
+		var btn = document.getElementById(id);
+		if (!btn) {
+			return;
+		}
+		btn.addEventListener('click', function () {
+			setCookie(COOKIE_NAME, value, COOKIE_DAYS);
+			hideBanner();
+		});
 	}
 
 	document.addEventListener('DOMContentLoaded', function () {
-		if (getCookie(COOKIE_NAME) === 'accepted') {
+		if (hasConsent()) {
 			hideBanner();
 			return;
 		}
 		showBanner();
-
-		var btn = document.getElementById('cookie-consent-accept');
-		if (btn) {
-			btn.addEventListener('click', function () {
-				setCookie(COOKIE_NAME, 'accepted', COOKIE_DAYS);
-				hideBanner();
-			});
-		}
+		bindConsentButton('cookie-consent-accept', 'accepted');
+		bindConsentButton('cookie-consent-necessary', 'necessary');
 	});
 })();
