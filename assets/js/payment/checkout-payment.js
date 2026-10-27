@@ -298,7 +298,8 @@ document.addEventListener('DOMContentLoaded', function () {
 	var codCb = document.getElementById('checkout-cod');
 	var codWrap = document.getElementById('checkout-cod-wrap');
 	var codNote = document.getElementById('checkout-cod-unavailable-note');
-	var onlineBlock = document.getElementById('checkout-online-pay-block');
+	var payOnlineBtn = document.getElementById('checkout-pay-online-btn');
+	var payCodBtn = document.getElementById('checkout-pay-cod-btn');
 	var payMethodHidden = document.getElementById('checkout-payment-method');
 	var secureNote = document.getElementById('checkout-secure-note-block');
 	var checkoutTotalPaise = 0;
@@ -306,6 +307,16 @@ document.addEventListener('DOMContentLoaded', function () {
 	function giftPackagingPaise() {
 		var n = parseInt(document.body.getAttribute('data-gift-packaging-paise') || '3000', 10);
 		return n > 0 ? n : 3000;
+	}
+
+	function fmtInrFromPaise(paise, sign) {
+		var v = (parseInt(paise || '0', 10) || 0) / 100;
+		var s = Math.abs(v).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+		return (sign || '') + '₹' + s;
+	}
+	function fmtInrWholeFromPaise(paise) {
+		var v = Math.round((parseInt(paise || '0', 10) || 0) / 100);
+		return '₹' + v.toLocaleString('en-IN');
 	}
 
 	function recalcCheckoutTotals() {
@@ -318,16 +329,6 @@ document.addEventListener('DOMContentLoaded', function () {
 		var giftPaise = (giftCb && giftCb.checked) ? giftPackagingPaise() : 0;
 		var freeMinPaise = parseInt(document.body.getAttribute('data-free-shipping-min-paise') || '70000', 10);
 		var shipFeePaise = parseInt(document.body.getAttribute('data-shipping-fee-paise') || '19900', 10);
-
-		function fmtInrFromPaise(paise, sign) {
-			var v = (parseInt(paise || '0', 10) || 0) / 100;
-			var s = Math.abs(v).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-			return (sign || '') + '₹' + s;
-		}
-		function fmtInrWholeFromPaise(paise) {
-			var v = Math.round((parseInt(paise || '0', 10) || 0) / 100);
-			return '₹' + v.toLocaleString('en-IN');
-		}
 		var netMerchPaise = Math.max(0, subtotalPaise - discountPaise);
 		var codOn = !!(codCb && codCb.checked);
 		var prepaidBps = parseInt(document.body.getAttribute('data-prepaid-discount-bps') || '500', 10) || 0;
@@ -352,6 +353,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 
 		var promoEl = document.getElementById('checkout-promo-value');
+		var promoRow = document.getElementById('checkout-promo-total-row');
 		if (promoEl) {
 			promoEl.textContent = discountPaise > 0 ? fmtInrFromPaise(discountPaise, '−') : '—';
 			if (discountPaise > 0) {
@@ -360,21 +362,20 @@ document.addEventListener('DOMContentLoaded', function () {
 				promoEl.classList.remove('checkout-promo-value--active');
 			}
 		}
+		if (promoRow) {
+			if (discountPaise > 0) {
+				promoRow.removeAttribute('hidden');
+			} else {
+				promoRow.setAttribute('hidden', 'hidden');
+			}
+		}
 		var prepaidRow = document.getElementById('checkout-prepaid-discount-row');
 		var prepaidEl = document.getElementById('checkout-prepaid-value');
-		var prepaidNote = document.getElementById('checkout-prepaid-discount-note');
 		if (prepaidRow) {
 			if (codOn) {
 				prepaidRow.setAttribute('hidden', 'hidden');
 			} else {
 				prepaidRow.removeAttribute('hidden');
-			}
-		}
-		if (prepaidNote) {
-			if (codOn) {
-				prepaidNote.setAttribute('hidden', 'hidden');
-			} else {
-				prepaidNote.removeAttribute('hidden');
 			}
 		}
 		if (prepaidEl) {
@@ -391,6 +392,25 @@ document.addEventListener('DOMContentLoaded', function () {
 		}
 		var totalEl = document.getElementById('checkout-order-total');
 		if (totalEl) totalEl.textContent = fmtInrWholeFromPaise(totalPaise);
+		var mobileBarTotal = document.getElementById('checkout-mobile-bar-total');
+		if (mobileBarTotal) mobileBarTotal.textContent = fmtInrWholeFromPaise(totalPaise);
+		var mobileFooterTotal = document.getElementById('checkout-mobile-footer-total');
+		if (mobileFooterTotal) mobileFooterTotal.textContent = fmtInrWholeFromPaise(totalPaise);
+		var productSavePaise = parseInt(document.body.getAttribute('data-product-savings-paise') || '0', 10) || 0;
+		var savingsPaise = productSavePaise + discountPaise + prepaidDiscountPaise;
+		var savingsBanner = document.getElementById('checkout-savings-banner');
+		if (savingsBanner) {
+			if (savingsPaise > 0) {
+				savingsBanner.textContent = 'You save ₹' + Math.round(savingsPaise / 100).toLocaleString('en-IN') + ' on this order';
+				savingsBanner.removeAttribute('hidden');
+			} else {
+				savingsBanner.setAttribute('hidden', 'hidden');
+			}
+		}
+		var mobileSave = document.getElementById('checkout-mobile-save');
+		if (mobileSave) {
+			mobileSave.textContent = savingsPaise > 0 ? 'You save ₹' + Math.round(savingsPaise / 100).toLocaleString('en-IN') : '';
+		}
 		checkoutTotalPaise = totalPaise;
 		syncCheckoutPayState();
 	}
@@ -420,25 +440,28 @@ document.addEventListener('DOMContentLoaded', function () {
 		if (payMethodHidden) {
 			payMethodHidden.value = codOn ? 'cod' : 'razorpay';
 		}
-		if (onlineBlock) {
+		if (payOnlineBtn) {
 			if (codOn) {
-				onlineBlock.setAttribute('hidden', 'hidden');
+				payOnlineBtn.classList.remove('checkout-pay-option--active');
 			} else {
-				onlineBlock.removeAttribute('hidden');
+				payOnlineBtn.classList.add('checkout-pay-option--active');
+			}
+		}
+		if (payCodBtn) {
+			if (codOn) {
+				payCodBtn.classList.add('checkout-pay-option--active');
+			} else {
+				payCodBtn.classList.remove('checkout-pay-option--active');
 			}
 		}
 		if (secureNote) {
-			if (codOn) {
-				secureNote.setAttribute('hidden', 'hidden');
-			} else {
-				secureNote.removeAttribute('hidden');
-			}
+			secureNote.setAttribute('hidden', 'hidden');
 		}
-		var defaultLabel = btn.getAttribute('data-default-label') || 'Proceed';
+		var paySecureLabel = 'Pay ' + fmtInrWholeFromPaise(checkoutTotalPaise) + ' securely';
 		if (isCheckoutGuest() && codOn && codOtpUiActive && !codOtpVerified()) {
 			btn.textContent = 'Verify & place order';
 		} else {
-			btn.textContent = codOn ? 'Place order' : defaultLabel;
+			btn.textContent = codOn ? 'Place order' : paySecureLabel;
 		}
 		var canSubmit = codOn || rpReady;
 		btn.disabled = !canSubmit;
@@ -447,6 +470,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	if (giftCb) {
 		giftCb.addEventListener('change', recalcCheckoutTotals);
+	}
+	function setPaymentChoice(cod) {
+		if (codCb) codCb.checked = !!cod;
+		recalcCheckoutTotals();
+	}
+	if (payOnlineBtn) {
+		payOnlineBtn.addEventListener('click', function () {
+			setPaymentChoice(false);
+		});
+	}
+	if (payCodBtn) {
+		payCodBtn.addEventListener('click', function () {
+			var codMax = parseInt(document.body.getAttribute('data-cod-max-paise') || '0', 10) || 0;
+			if (codMax > 0 && checkoutTotalPaise > 0 && checkoutTotalPaise <= codMax) {
+				setPaymentChoice(true);
+			}
+		});
 	}
 	if (codCb) {
 		codCb.addEventListener('change', function () {

@@ -3,6 +3,13 @@ require_once dirname(__DIR__) . '/config.php';
 require_permission('products');
 require_once ROOT . '/lib/product.php';
 
+if (function_exists('store_session_release_lock')) {
+	store_session_release_lock();
+}
+while (ob_get_level() > 0) {
+	ob_end_clean();
+}
+
 $pdo = $GLOBALS['pdo'];
 $search = trim($_GET['search'] ?? '');
 $category_id = trim($_GET['category_id'] ?? '');
@@ -115,6 +122,8 @@ if ($split_by_category) {
 	header('Content-Type: application/zip');
 	header('Content-Disposition: attachment; filename="products-by-category-' . $date_suffix . '.zip"');
 	header('Content-Length: ' . (string) filesize($tmp));
+	header('Cache-Control: no-store, no-cache, must-revalidate');
+	header('Pragma: public');
 	readfile($tmp);
 	@unlink($tmp);
 	exit;
@@ -129,6 +138,8 @@ if ($format === 'excel') {
 	header('Content-Type: text/csv; charset=UTF-8');
 	header('Content-Disposition: attachment; filename="products-' . $date_suffix . '.csv"');
 }
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Pragma: public');
 
 echo $csv;
 exit;

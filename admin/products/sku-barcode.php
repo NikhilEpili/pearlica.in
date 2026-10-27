@@ -1,8 +1,15 @@
 <?php
 require_once dirname(__DIR__) . '/config.php';
-require_admin_login();
+require_permission('products');
 require_once ROOT . '/vendor/autoload.php';
 require_once ROOT . '/lib/product.php';
+
+if (function_exists('store_session_release_lock')) {
+	store_session_release_lock();
+}
+while (ob_get_level() > 0) {
+	ob_end_clean();
+}
 
 $pdo = $GLOBALS['pdo'];
 $id = (int) ($_GET['id'] ?? 0);
@@ -28,18 +35,25 @@ if ($sku === '') {
 	exit('Product has no SKU');
 }
 
+$safe_name = 'barcode-' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $sku);
+$as_attachment = isset($_GET['download']) && (string) $_GET['download'] === '1';
+$disposition = $as_attachment ? 'attachment' : 'inline';
+
 try {
 	if ($format === 'svg') {
 		$generator = new \Picqer\Barcode\BarcodeGeneratorSVG();
 		$data = $generator->getBarcode($sku, $generator::TYPE_CODE_128);
-		header('Content-Type: image/svg+xml');
-		header('Content-Disposition: inline; filename="barcode-' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $sku) . '.svg"');
+		header('Content-Type: image/svg+xml; charset=UTF-8');
+		header('Content-Disposition: ' . $disposition . '; filename="' . $safe_name . '.svg"');
+		header('Cache-Control: private, max-age=3600');
 		echo $data;
 	} else {
 		$generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
 		$data = $generator->getBarcode($sku, $generator::TYPE_CODE_128, 2, 48);
 		header('Content-Type: image/png');
-		header('Content-Disposition: inline; filename="barcode-' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $sku) . '.png"');
+		header('Content-Disposition: ' . $disposition . '; filename="' . $safe_name . '.png"');
+		header('Content-Length: ' . (string) strlen($data));
+		header('Cache-Control: private, max-age=3600');
 		echo $data;
 	}
 } catch (Throwable $e) {

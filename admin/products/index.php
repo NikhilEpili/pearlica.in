@@ -43,10 +43,10 @@ $error = flash_get('error');
 				Export
 			</button>
 			<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="productExportDropdown">
-				<li><a class="dropdown-item" href="<?= h($export_base . ($export_qs === '' ? '?' : '&') . 'format=csv') ?>">CSV (all columns)</a></li>
-				<li><a class="dropdown-item" href="<?= h($export_base . ($export_qs === '' ? '?' : '&') . 'format=excel') ?>">Excel (.xls)</a></li>
+				<li><a class="dropdown-item" href="<?= h($export_base . ($export_qs === '' ? '?' : '&') . 'format=csv') ?>" download="products-export.csv">CSV (all columns)</a></li>
+				<li><a class="dropdown-item" href="<?= h($export_base . ($export_qs === '' ? '?' : '&') . 'format=excel') ?>" download="products-export.xls">Excel (.xls)</a></li>
 				<li><hr class="dropdown-divider"></li>
-				<li><a class="dropdown-item" href="<?= h($export_base . ($export_qs === '' ? '?' : '&') . 'format=csv&split=1') ?>">By category (ZIP of CSVs)</a></li>
+				<li><a class="dropdown-item" href="<?= h($export_base . ($export_qs === '' ? '?' : '&') . 'format=csv&split=1') ?>" download="products-by-category.zip">By category (ZIP of CSVs)</a></li>
 			</ul>
 		</div>
 		<a href="<?= h(admin_url('products/add.php')) ?>" class="btn btn-primary">Add Product</a>

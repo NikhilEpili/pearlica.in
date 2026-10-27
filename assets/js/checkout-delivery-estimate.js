@@ -159,4 +159,124 @@
 			if (v !== input.value) input.value = v;
 		});
 	});
+
+	document.addEventListener('DOMContentLoaded', function () {
+		var pinInput = document.getElementById('checkout-guest-pincode');
+		var etaEl = document.getElementById('checkout-guest-pin-eta');
+		if (!pinInput || !etaEl) return;
+
+		var body = document.body;
+		var basePath = (body && body.getAttribute('data-base-path')) ? body.getAttribute('data-base-path') : '';
+		if (basePath && basePath[basePath.length - 1] !== '/') basePath += '/';
+
+		function apiUrl(relPath) {
+			relPath = String(relPath || '').replace(/^\//, '');
+			var bp = basePath || '';
+			if (bp && bp[bp.length - 1] !== '/') bp += '/';
+			var combined = bp + relPath;
+			if (combined.charAt(0) !== '/') combined = '/' + combined;
+			return combined;
+		}
+
+		function digitsOnly(s) {
+			return String(s || '').replace(/\D/g, '');
+		}
+
+		function parseJsonSafe(text) {
+			if (!text || typeof text !== 'string') return null;
+			var t = text.trim();
+			if (!t) return null;
+			try {
+				return JSON.parse(t);
+			} catch (e) {
+				return null;
+			}
+		}
+
+		function showEta(text, ok) {
+			if (!text) {
+				etaEl.setAttribute('hidden', 'hidden');
+				etaEl.textContent = '';
+				return;
+			}
+			etaEl.textContent = text;
+			etaEl.classList.toggle('checkout-pin-eta--muted', !ok);
+			etaEl.removeAttribute('hidden');
+		}
+
+		function formatCheckoutEta(d) {
+			var min = d.min_days;
+			var max = d.max_days;
+			var hasMin = typeof min === 'number' && min > 0;
+			var hasMax = typeof max === 'number' && max > 0;
+			if (hasMin && hasMax) {
+				var codMax = parseInt(body.getAttribute('data-cod-max-paise') || '0', 10) || 0;
+				var codHint = codMax > 0 ? ' · COD available' : '';
+				if (min === max) {
+					return '✓ Delivery in ' + min + (min === 1 ? ' working day' : ' working days') + codHint;
+				}
+				return '✓ Delivery in ' + min + '–' + max + ' working days' + codHint;
+			}
+			if (d.ok) {
+				return '✓ Delivery available to this PIN';
+			}
+			return '';
+		}
+
+		var pinTimer = null;
+		function schedulePinCheck() {
+			if (pinTimer) clearTimeout(pinTimer);
+			pinTimer = setTimeout(runPinCheck, 400);
+		}
+
+		function runPinCheck() {
+			var pin = digitsOnly(pinInput.value);
+			if (pin.length !== 6) {
+				showEta('', false);
+				return;
+			}
+			var csrf = body.getAttribute('data-checkout-csrf') || '';
+			if (!csrf) return;
+
+			var fd = new FormData();
+			fd.append('csrf_token', csrf);
+			fd.append('pincode', pin);
+
+			fetch(apiUrl('checkout-delivery-estimate'), {
+				method: 'POST',
+				body: fd,
+				credentials: 'same-origin',
+			})
+				.then(function (res) {
+					return res.text().then(function (text) {
+						return { status: res.status, data: parseJsonSafe(text) };
+					});
+				})
+				.then(function (out) {
+					var d = out.data;
+					if (!d || typeof d !== 'object') return;
+					var line = formatCheckoutEta(d);
+					if (line) {
+						showEta(line, true);
+						return;
+					}
+					var msg = typeof d.message === 'string' ? d.message.trim() : '';
+					if (msg) showEta(msg, !!d.ok);
+				})
+				.catch(function () {});
+		}
+
+		pinInput.addEventListener('input', function () {
+			var v = digitsOnly(pinInput.value).slice(0, 6);
+			if (pinInput.value !== v) pinInput.value = v;
+			if (v.length === 6) {
+				schedulePinCheck();
+			} else {
+				showEta('', false);
+			}
+		});
+		if (digitsOnly(pinInput.value).length === 6) {
+			schedulePinCheck();
+		}
+	});
 })();

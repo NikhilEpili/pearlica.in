@@ -352,9 +352,9 @@ $include_cropper = true;
 									style="width: 100%; max-width: 100%; height: auto; display: block;">
 							</div>
 							<div class="d-flex flex-wrap gap-2">
-								<a href="<?= h($barcode_png) ?>" class="btn btn-sm btn-primary"
+								<a href="<?= h($barcode_png . '&download=1') ?>" class="btn btn-sm btn-primary"
 									download="barcode-<?= h($safe_sku_file) ?>.png">Download PNG</a>
-								<a href="<?= h($barcode_svg) ?>" class="btn btn-sm btn-primary"
+								<a href="<?= h($barcode_svg . '&download=1') ?>" class="btn btn-sm btn-primary"
 									download="barcode-<?= h($safe_sku_file) ?>.svg">Download SVG</a>
 							</div>
 						</div>
@@ -365,9 +365,9 @@ $include_cropper = true;
 									style="width: 200px; max-width: 100%; height: auto; display: block;">
 							</div>
 							<div class="d-flex flex-wrap gap-2">
-								<a href="<?= h($qrcode_png) ?>" class="btn btn-sm btn-primary"
+								<a href="<?= h($qrcode_png . '&download=1') ?>" class="btn btn-sm btn-primary"
 									download="qrcode-<?= h($safe_sku_file) ?>.png">Download PNG</a>
-								<a href="<?= h($qrcode_svg) ?>" class="btn btn-sm btn-primary"
+								<a href="<?= h($qrcode_svg . '&download=1') ?>" class="btn btn-sm btn-primary"
 									download="qrcode-<?= h($safe_sku_file) ?>.svg">Download SVG</a>
 							</div>
 						</div>
