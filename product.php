@@ -753,16 +753,24 @@ $product_share_url = (defined('SITE_PUBLIC_URL') && (string) SITE_PUBLIC_URL !==
 				<?php endif; ?>
 			</div>
 
-			<?php if (!$in_cart): ?>
-				<div class="product-sticky-cta d-lg-none" id="product-sticky-cta" aria-hidden="true">
-					<div class="product-sticky-cta-inner page-content-constrained">
+			<div class="product-sticky-cta d-lg-none" id="product-sticky-cta" aria-hidden="true">
+				<div class="product-sticky-cta-inner">
+					<div class="product-sticky-price">
+						<span class="product-sticky-price-current">₹<?php echo number_format($sale_price, 0); ?></span>
+						<?php if ($discount > 0): ?>
+							<span class="product-sticky-price-original">₹<?php echo number_format($mrp, 0); ?></span>
+						<?php endif; ?>
+					</div>
+					<?php if ($in_cart): ?>
+						<a href="<?php echo h($base_path); ?>checkout"
+							class="product-sticky-btn product-sticky-btn--primary product-sticky-checkout">Checkout</a>
+					<?php else: ?>
 						<form method="post" action="<?php echo h($base_path . 'cart'); ?>" class="product-sticky-cta-form">
 							<input type="hidden" name="action" value="add">
 							<input type="hidden" name="product_id" value="<?php echo (int) $product['id']; ?>">
 							<input type="hidden" name="return_url" value="<?php echo h($return_slug_q); ?>">
 							<input type="hidden" name="quantity" value="1">
-							<button type="submit" class="product-sticky-btn product-sticky-btn--secondary">Add to
-								Cart</button>
+							<button type="submit" class="product-sticky-btn product-sticky-btn--secondary">Add to Cart</button>
 						</form>
 						<form method="post" action="<?php echo h($base_path . 'cart'); ?>" class="product-sticky-cta-form">
 							<input type="hidden" name="action" value="add">
@@ -771,9 +779,9 @@ $product_share_url = (defined('SITE_PUBLIC_URL') && (string) SITE_PUBLIC_URL !==
 							<input type="hidden" name="quantity" value="1">
 							<button type="submit" class="product-sticky-btn product-sticky-btn--primary">Buy Now</button>
 						</form>
-					</div>
+					<?php endif; ?>
 				</div>
-			<?php endif; ?>
+			</div>
 		</section>
 	</main>
 

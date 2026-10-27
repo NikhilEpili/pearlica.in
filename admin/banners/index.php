@@ -52,7 +52,9 @@ function admin_banner_src(array $b, string $uploads_base): string
 		Manage the homepage hero carousel and the mid-page banner. Upload at
 		<strong><?= (int) (defined('BANNER_RECOMMENDED_WIDTH') ? BANNER_RECOMMENDED_WIDTH : 2560) ?>×<?= (int) (defined('BANNER_RECOMMENDED_HEIGHT') ? BANNER_RECOMMENDED_HEIGHT : 1200) ?></strong>
 		or larger for sharp retina displays (JPG/PNG/WebP, max <?= (int) round((defined('BANNER_MAX_UPLOAD_SIZE') ? BANNER_MAX_UPLOAD_SIZE : (15 * 1024 * 1024)) / (1024 * 1024)) ?>MB).
-		Images are stored at full quality up to <?= (int) (defined('BANNER_MAX_STORE_WIDTH') ? BANNER_MAX_STORE_WIDTH : 3840) ?>px wide. Drag hero slides to reorder.
+		Images are stored at full quality up to <?= (int) (defined('BANNER_MAX_STORE_WIDTH') ? BANNER_MAX_STORE_WIDTH : 3840) ?>px wide.
+		Hostinger CDN still serves a smaller copy (about 1600px on desktop, 800px on phones) until Smart image optimization is raised or turned off.
+		Drag hero slides to reorder.
 		On phones the storefront keeps the same wide ratio — keep important content toward the center.
 	</p>
 

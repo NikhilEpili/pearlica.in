@@ -114,9 +114,6 @@ body.homepage .index-picks {
 	height: 100% !important;
 	object-fit: cover;
 	object-position: center center;
-	-webkit-backface-visibility: hidden;
-	backface-visibility: hidden;
-	transform: translateZ(0);
 }
 
 .index-hero-banners .carousel-control-prev,

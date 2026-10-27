@@ -187,11 +187,15 @@ function media_serve_stream(string $bucket, string $rel): bool
 	$mtime = @filemtime($file) ?: time();
 	$etag = '"' . md5($file . '|' . $mtime . '|' . (string) $size) . '"';
 	$max_age = ($bucket === 'banners' || $bucket === 'reels') ? 3600 : 604800;
+	// no-transform: Hostinger CDN smart optimization otherwise rewrites banners
+	// to about 1600px on desktop and 800px on phones.
+	$cache_control = 'public, max-age=' . $max_age . ', must-revalidate'
+		. ($bucket === 'banners' ? ', no-transform' : '');
 
 	if (isset($_SERVER['HTTP_IF_NONE_MATCH']) && trim((string) $_SERVER['HTTP_IF_NONE_MATCH']) === $etag) {
 		http_response_code(304);
 		header('ETag: ' . $etag);
-		header('Cache-Control: public, max-age=' . $max_age . ', must-revalidate');
+		header('Cache-Control: ' . $cache_control);
 		return true;
 	}
 
@@ -200,7 +204,7 @@ function media_serve_stream(string $bucket, string $rel): bool
 	header('Content-Length: ' . (string) (int) $size);
 	header('ETag: ' . $etag);
 	header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $mtime) . ' GMT');
-	header('Cache-Control: public, max-age=' . $max_age . ', must-revalidate');
+	header('Cache-Control: ' . $cache_control);
 	header('X-Content-Type-Options: nosniff');
 
 	$out = fopen($file, 'rb');

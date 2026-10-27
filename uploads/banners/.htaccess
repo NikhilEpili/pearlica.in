@@ -2,3 +2,7 @@ Options -Indexes
 <IfModule mod_authz_core.c>
 	Require all granted
 </IfModule>
+# Ask Hostinger CDN not to resize these masters (default cap is 1600px / 800px).
+<IfModule mod_headers.c>
+	Header set Cache-Control "public, max-age=3600, must-revalidate, no-transform"
+</IfModule>
