@@ -9,6 +9,7 @@ require_once __DIR__ . '/includes/cart_cookie.php';
 require_once __DIR__ . '/includes/wishlist_cookie.php';
 require_once __DIR__ . '/includes/shop_product_helpers.php';
 require_once __DIR__ . '/lib/product_review.php';
+require_once __DIR__ . '/lib/size_guide.php';
 require_once __DIR__ . '/includes/auth_cookie.php';
 require_once __DIR__ . '/lib/store_user.php';
 
@@ -48,7 +49,7 @@ if ($slug === '') {
 }
 
 $pdo = pearlica_require_pdo();
-$stmt = $pdo->prepare('SELECT p.id, p.name, p.slug, p.sku, p.description, p.specification, p.additional_information, p.styling_tips, p.mrp, p.discount_percentage, p.stock_quantity, p.category_id, p.product_group_id, p.metal_type, p.purity, p.weight_grams, p.size, p.meta_title, p.meta_description, p.meta_keywords, p.is_gifting, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id = p.category_id AND c.deleted_at IS NULL WHERE p.slug = ? AND p.deleted_at IS NULL AND p.status = ? LIMIT 1');
+$stmt = $pdo->prepare('SELECT p.id, p.name, p.slug, p.sku, p.description, p.specification, p.additional_information, p.styling_tips, p.mrp, p.discount_percentage, p.stock_quantity, p.category_id, p.product_group_id, p.metal_type, p.purity, p.weight_grams, p.size, p.meta_title, p.meta_description, p.meta_keywords, p.is_gifting, c.name AS category_name, c.slug AS category_slug, pc.name AS parent_category_name, pc.slug AS parent_category_slug FROM products p LEFT JOIN categories c ON c.id = p.category_id AND c.deleted_at IS NULL LEFT JOIN categories pc ON pc.id = c.parent_id AND pc.deleted_at IS NULL WHERE p.slug = ? AND p.deleted_at IS NULL AND p.status = ? LIMIT 1');
 $stmt->execute([$slug, 'active']);
 $product = $stmt->fetch();
 if (!$product) {
@@ -178,6 +179,15 @@ foreach ($spec_map as $key => $val) {
 		continue;
 	$spec_grid[] = ['label' => $key, 'value' => $val];
 }
+$size_guide_kind = size_guide_kind(
+	(string) ($product['category_name'] ?? ''),
+	(string) ($product['category_slug'] ?? ''),
+	(string) ($product['parent_category_name'] ?? ''),
+	(string) ($product['parent_category_slug'] ?? '')
+);
+$size_guide_image = $size_guide_kind !== null ? size_guide_image($size_guide_kind, $base_path) : null;
+$size_guide_value = trim((string) ($product['size'] ?? ''));
+$size_guide_label = $size_guide_kind !== null ? size_guide_measure_label($size_guide_kind) : '';
 
 $rating_avg = (float) ($review_stats['average'] ?? 0);
 $rating_cnt = (int) ($review_stats['count'] ?? 0);
@@ -378,6 +388,19 @@ $product_share_url = (defined('SITE_PUBLIC_URL') && (string) SITE_PUBLIC_URL !==
 							<span
 								class="product-rating-meta"><?php echo $rating_cnt > 0 ? h(number_format($rating_avg, 1)) . ' · ' . (int) $rating_cnt . ' verified review' . ($rating_cnt === 1 ? '' : 's') : 'No reviews yet'; ?></span>
 						</div>
+
+						<?php if ($size_guide_image !== null): ?>
+							<div class="product-size-row fade-up fade-up-delay-5" data-fade-up>
+								<?php if ($size_guide_value !== ''): ?>
+									<p class="product-size-measure">
+										<span class="product-spec-label"><?php echo h($size_guide_label); ?></span>
+										<span class="product-spec-value"><?php echo h($size_guide_value); ?></span>
+									</p>
+								<?php endif; ?>
+								<button type="button" class="product-size-guide-link" data-size-guide-open
+									aria-haspopup="dialog" aria-controls="size-guide-dialog">Size Guide</button>
+							</div>
+						<?php endif; ?>
 
 						<?php if (!empty($spec_grid)): ?>
 							<div class="product-specs-grid fade-up fade-up-delay-5" data-fade-up>
@@ -786,6 +809,22 @@ $product_share_url = (defined('SITE_PUBLIC_URL') && (string) SITE_PUBLIC_URL !==
 	</main>
 
 	<?php include __DIR__ . '/components/footer.php'; ?>
+
+	<?php if ($size_guide_image !== null): ?>
+		<dialog class="size-guide-dialog" id="size-guide-dialog" aria-labelledby="size-guide-title">
+			<div class="size-guide-dialog-panel" role="document">
+				<div class="size-guide-dialog-bar">
+					<h2 class="size-guide-dialog-title" id="size-guide-title">Size Guide</h2>
+					<button type="button" class="size-guide-dialog-close" data-size-guide-close aria-label="Close size guide">
+						<span class="material-symbols-outlined" aria-hidden="true">close</span>
+					</button>
+				</div>
+				<div class="size-guide-dialog-body">
+					<img src="<?php echo h($size_guide_image['src']); ?>" alt="<?php echo h($size_guide_image['alt']); ?>">
+				</div>
+			</div>
+		</dialog>
+	<?php endif; ?>
 
 	<script src="<?php echo h(asset_url('assets/js/jquery.min.js', $base_path)); ?>"></script>
 	<script src="<?php echo h(asset_url('assets/js/plugins.js', $base_path)); ?>"></script>

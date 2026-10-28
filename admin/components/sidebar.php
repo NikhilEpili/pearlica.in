@@ -45,6 +45,10 @@
 			<span class="sidebar-icon" aria-hidden="true"><i class="fa-solid fa-bullhorn"></i></span>
 			<span class="sidebar-text">Announcement bar</span>
 		</a>
+		<a href="<?= h(admin_url('size-guide.php')) ?>" class="admin-sidebar-link" title="Size guides">
+			<span class="sidebar-icon" aria-hidden="true"><i class="fa-solid fa-ruler"></i></span>
+			<span class="sidebar-text">Size guides</span>
+		</a>
 		<?php endif; ?>
 		<?php if (current_user_can('reels')): ?>
 		<a href="<?= h(admin_url('reels/')) ?>" class="admin-sidebar-link" title="Instagram reels">

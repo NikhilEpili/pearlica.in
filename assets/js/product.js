@@ -301,4 +301,23 @@ document.addEventListener('DOMContentLoaded', function () {
 			window.prompt('Copy product link:', url);
 		});
 	}
+
+	var sizeGuideOpen = document.querySelector('[data-size-guide-open]');
+	var sizeGuideDialog = document.getElementById('size-guide-dialog');
+	if (sizeGuideOpen && sizeGuideDialog && typeof sizeGuideDialog.showModal === 'function') {
+		sizeGuideOpen.addEventListener('click', function () {
+			sizeGuideDialog.showModal();
+		});
+		sizeGuideDialog.addEventListener('click', function (event) {
+			if (event.target === sizeGuideDialog) {
+				sizeGuideDialog.close();
+			}
+		});
+		var sizeGuideClose = sizeGuideDialog.querySelector('[data-size-guide-close]');
+		if (sizeGuideClose) {
+			sizeGuideClose.addEventListener('click', function () {
+				sizeGuideDialog.close();
+			});
+		}
+	}
 });
