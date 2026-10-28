@@ -10,6 +10,7 @@ require_once __DIR__ . '/config/db.php';
 require_once __DIR__ . '/lib/product.php';
 require_once __DIR__ . '/includes/cart_cookie.php';
 require_once __DIR__ . '/includes/store_base_path.php';
+require_once __DIR__ . '/lib/store_analytics.php';
 
 $base_path = store_base_path_from_request();
 $cart = cart_from_cookie();
@@ -31,6 +32,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 					$current = (int) ($cart[$product_id] ?? 0);
 					$cart[$product_id] = min($stock, $current + $quantity);
 					cart_to_cookie($cart);
+					$line = store_analytics_line_from_product($product, $quantity);
+					$bundle = store_analytics_bundle_lines([$line], $line['value']);
+					store_analytics_session_push('AddToCart', [
+						'currency' => STORE_ANALYTICS_CURRENCY,
+						'value' => $bundle['value'],
+						'content_ids' => $bundle['content_ids'],
+						'contents' => $bundle['contents'],
+						'ga_items' => $bundle['ga_items'],
+					]);
 				}
 			}
 		}

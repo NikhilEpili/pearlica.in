@@ -10,6 +10,7 @@ require_once __DIR__ . '/includes/wishlist_cookie.php';
 require_once __DIR__ . '/includes/shop_product_helpers.php';
 require_once __DIR__ . '/lib/product_review.php';
 require_once __DIR__ . '/lib/size_guide.php';
+require_once __DIR__ . '/lib/store_analytics.php';
 require_once __DIR__ . '/includes/auth_cookie.php';
 require_once __DIR__ . '/lib/store_user.php';
 
@@ -207,6 +208,7 @@ $product_share_path = ltrim($base_path . 'product?slug=' . rawurlencode((string)
 $product_share_url = (defined('SITE_PUBLIC_URL') && (string) SITE_PUBLIC_URL !== '')
 	? rtrim((string) SITE_PUBLIC_URL, '/') . '/' . $product_share_path
 	: '';
+$page_analytics_view_content = store_analytics_build_view_content($product, $sale_price);
 ?>
 <!DOCTYPE html>
 <html lang="en" class="product-detail-no-scrollbar">

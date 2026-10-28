@@ -75,6 +75,12 @@ $footer_asset_base = htmlspecialchars($footer_base ?? '', ENT_QUOTES, 'UTF-8');
 <script src="<?php echo asset_url('assets/js/cookie-consent.js', $footer_asset_base); ?>"></script>
 <script src="<?php echo asset_url('assets/js/cart.js', $footer_asset_base); ?>"></script>
 <script src="<?php echo asset_url('assets/js/cart-drawer.js', $footer_asset_base); ?>"></script>
+<?php
+if (is_file(__DIR__ . '/../lib/store_analytics.php')) {
+	require_once __DIR__ . '/../lib/store_analytics.php';
+	include __DIR__ . '/analytics_bootstrap.php';
+}
+?>
 <script>
 	(function () {
 		var originalTitle = document.title;

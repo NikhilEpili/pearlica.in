@@ -110,6 +110,10 @@
 			<span class="sidebar-icon" aria-hidden="true"><i class="fa-solid fa-file-invoice"></i></span>
 			<span class="sidebar-text">Invoicing Settings</span>
 		</a>
+		<a href="<?= h(admin_url('analytics.php')) ?>" class="admin-sidebar-link" title="Analytics">
+			<span class="sidebar-icon" aria-hidden="true"><i class="fa-solid fa-chart-line"></i></span>
+			<span class="sidebar-text">Analytics</span>
+		</a>
 
 		<div class="admin-sidebar-section-label">Users</div>
 		<a href="<?= h(admin_url('store-users/')) ?>" class="admin-sidebar-link" title="Customers">

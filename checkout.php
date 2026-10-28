@@ -25,6 +25,7 @@ require_once __DIR__ . '/lib/promo_code.php';
 require_once __DIR__ . '/includes/indian_states.php';
 require_once __DIR__ . '/includes/checkout_shipping.php';
 require_once __DIR__ . '/includes/checkout_guest.php';
+require_once __DIR__ . '/lib/store_analytics.php';
 
 if (!function_exists('h')) {
 	function h($s)
@@ -162,6 +163,7 @@ $initial_savings_rupees = $product_savings + ($checkout_prefill_discount_paise /
 $initial_pay_label = 'Pay ₹' . number_format($initial_grand_paise / 100, 0) . ' securely';
 $product_savings_paise = (int) round($product_savings * 100);
 
+$page_analytics_initiate_checkout = store_analytics_build_initiate_checkout($cart_items, $initial_grand_paise / 100);
 $page_title = 'Checkout | Pearlica 925 Silver Jewellery';
 ?>
 <!DOCTYPE html>

@@ -81,4 +81,5 @@ require_once __DIR__ . '/../includes/asset_url.php';
 	src="https://www.facebook.com/tr?id=1606163897779149&ev=PageView&noscript=1"
 	/></noscript>
 	<!-- End Meta Pixel Code -->
+	<script src="<?php echo asset_url('assets/js/analytics.js', $base_path); ?>"></script>
 </head>

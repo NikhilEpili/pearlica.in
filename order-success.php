@@ -7,6 +7,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/db.php';
 require_once __DIR__ . '/lib/order.php';
+require_once __DIR__ . '/lib/store_analytics.php';
 require_once __DIR__ . '/includes/auth_cookie.php';
 
 if (!function_exists('h')) {
@@ -22,10 +23,21 @@ $auth_user_id = auth_cookie_user_id();
 
 $pdo = $GLOBALS['pdo'];
 $order = null;
+$page_analytics_purchase = null;
 if ($order_id > 0) {
 	$found = order_find_by_id($pdo, $order_id);
 	if ($found && order_success_can_view($found, $auth_user_id)) {
 		$order = $found;
+		$order_items = order_items_list($pdo, $order_id);
+		$purchase_payload = store_analytics_claim_purchase($pdo, $order_id, $found, $order_items);
+		if ($purchase_payload !== null) {
+			$success_path = 'order-success?order_id=' . rawurlencode((string) $order_id);
+			$event_source_url = (defined('SITE_PUBLIC_URL') && (string) SITE_PUBLIC_URL !== '')
+				? rtrim((string) SITE_PUBLIC_URL, '/') . '/' . ltrim($success_path, '/')
+				: '';
+			store_analytics_meta_capi_send_purchase($purchase_payload, $found, $event_source_url !== '' ? $event_source_url : null);
+			$page_analytics_purchase = $purchase_payload;
+		}
 	}
 }
 

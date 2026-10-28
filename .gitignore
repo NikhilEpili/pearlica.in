@@ -13,6 +13,7 @@ uploads/**
 # Admin-saved Razorpay settings (runtime; contains key secrets)
 storage/razorpay.mode
 storage/razorpay.settings.json
+storage/analytics.settings.json
 storage/cache/
 
 # Blogs: Ignore everything in blogs except index.php, post.php, and rss.php
